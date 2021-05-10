@@ -10,8 +10,8 @@ const event = require('./event');
 const api = require('./api');
 var Gpio = require('pigpio').Gpio; //include pigpio to interact with the GPIO
 
-var wallStorage = require('./wallApi');
-var wall = require('./test');
+// require wall objects
+var wall = require('./wallApi');
 
 let ArraySensor = function(){
     let temp = {};
