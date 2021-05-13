@@ -1,6 +1,5 @@
 /**
- * Main file
- * Pi connect to server via websocket using socket.io-client
+ * GPIO controll
  * Access GPIO with pigpio
  */
 var frontLightPort = 0 << 7;
