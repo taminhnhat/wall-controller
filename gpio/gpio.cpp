@@ -1,7 +1,8 @@
 /**
  * GPIO controll
  * Using pigpio
- * Compile:g++ -Wall gpio.cpp -o gpio -pthread -lpigpio -lrt
+ * Compile:
+ * g++ -Wall gpio.cpp -o gpio -pthread -lpigpio -lrt
  */
 #include <iostream>
 #include <thread>
@@ -56,8 +57,8 @@ const int buttonCountToEmit = 40;         //minimum number of times that button 
 int tempTimerTick = 0;
 
 //  PIPE_____________________________________________________________________________________________________________________
-char *readpipe_path = "./pipe/pipe_emit_light";
-char *writepipe_path = "./pipe/pipe_button_callback";
+char *readpipe_path = "../pipe/pipe_emit_light";
+char *writepipe_path = "../pipe/pipe_button_callback";
 
 char arr1[100], arr2[100];
 uint32_t timerCount = 0;
@@ -98,7 +99,7 @@ class lightSystem{
       }
       else if(state == 0){
         uint32_t frontLightBitMask = (1 << bitDes) ^ 4294967296;
-        this->frontLightBitmap |= frontLightBitMask;
+        this->frontLightBitmap &= frontLightBitMask;
       }
     }
     void backLightGenerate(int col, int row, int state){
@@ -265,16 +266,16 @@ int main(int argc, char *argv[]){
       char arr[30];
       mypipe.readPipe(arr);
       std::cout << "read from pipe" << arr << std::endl;
-      //  arr: "M-1-1:FR:ON"  "M-1-1:BK:OF"
+      //  arr: "M-1-1:front:on"  "M-1-1:back:off"
 
       int col = charToInt(arr[2]);
       int row = charToInt(arr[4]);
       int side;
-      if(arr[6] == 'F') side = 0;
-      else if(arr[6] == 'B') side = 1;
+      if(arr[6] == 'f') side = 0;
+      else if(arr[6] == 'b') side = 1;
       int state;
-      if(arr[10] == 'N') state = 1;
-      else if(arr[10] == 'F') state = 0;
+      if(arr[12] == 'o' && arr[13] == 'n') state = 1;
+      else if(arr[12] == 'f' && arr[13] == 'f') state = 0;
 
       if(side == 0){
         lightSys.frontLightGenerate(col, row, state);

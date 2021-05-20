@@ -41,16 +41,6 @@ fifo_b.on('exit', function(status) {
     fifoWs.on('error', function(err){
         console.log('error at writing pipe', err);
     })
-
-    setTimeout(function(){
-        event.emit('light:on', {wall: 'M-1-1', side: 'front'});
-        console.log('emitted');
-    }, 2000);
-
-
-    const timer = setInterval(function(){
-        console.log('timer tick for 1 s');
-    }, 1000);
     
     
     /**
@@ -98,7 +88,7 @@ fifo_b.on('exit', function(status) {
      * @param {String} state 'on'|'off'
      */
     function emitLightToPipe(wallname, side, state){
-        let mess = wallname + ":" + side + ":" + state;
+        let mess = wallname + ":" + side + ":" + state + '\n';
         fifoWs.write(mess);
         console.log('emit message to pipe:', mess);
     }

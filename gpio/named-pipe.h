@@ -86,7 +86,7 @@ void mypipe::init(char*readpipe_path, char*writepipe_path){
     std::cout << readpipe_path << "|" << writepipe_path << std::endl;
     char * str1, *str2;
     str1 = strcpy(this->readPipe_path, readPipe_path);
-    str2 = sstrcpy(this->writePipe_path, writePipe_path);
+    str2 = strcpy(this->writePipe_path, writePipe_path);
 }
 
 void mypipe::startPipe(){

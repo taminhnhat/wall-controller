@@ -13,12 +13,12 @@ var socket = io.connect('ws://172.16.0.100:3000');
 //var socket = io.connect('http://192.168.1.157:3001');
 
 
-if(process.platform == 'linux'){
-    var ioControl = require('./ioControl');
-}
-else if(process.platform == 'win32'){
-    //
-}
+// if(process.platform == 'linux'){
+//     var ioControl = require('./ioControl');
+// }
+// else if(process.platform == 'win32'){
+//     //
+// }
 
 //  UNIX SOCKET_________________________________________________________________________
 
@@ -125,7 +125,7 @@ function restoreFromBackupDb(){
         });
     });
 }
-restoreFromBackupDb();
+//restoreFromBackupDb();
 
 //  HANDLE EVENTS FROM EVENT EMITTER_______________________________________________________________________________________
 
