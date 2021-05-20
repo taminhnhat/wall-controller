@@ -270,7 +270,7 @@ function turnLight(type, col, row, side, state){
 button1.on('alert', function(level, tick){
     if(level === 0){
         if(timerTick - tempButton1 > buttonDelay){
-            let tempParams = api.generateButtonParams('M', 1, 1);
+            let tempParams = api.generateButtonParams('M-1-1');
             if(wall('M-1-1').frontLight){
             }
             event.emit('button:front', tempParams);
@@ -283,7 +283,7 @@ button1.on('alert', function(level, tick){
 button2.on('alert', function(level, tick){
     if(level === 0){
         if(timerTick - tempButton2 > buttonDelay){
-            let tempParams = api.generateButtonParams('M', 1, 1);
+            let tempParams = api.generateButtonParams('M-1-1');
             if(wall('M-1-1').backLight){
             }
             event.emit('button:back', tempParams);
@@ -296,7 +296,7 @@ button2.on('alert', function(level, tick){
 button3.on('alert', function(level, tick){
     if(level === 0){
         if(timerTick - tempButton3 > buttonDelay){
-            let tempParams = api.generateButtonParams('M', 1, 2);
+            let tempParams = api.generateButtonParams('M-1-2');
             if(wall('M-1-2').frontLight){
             }
             event.emit('button:front', tempParams);
@@ -309,7 +309,7 @@ button3.on('alert', function(level, tick){
 button4.on('alert', function(level, tick){
     if(level === 0){
         if(timerTick - tempButton4 > buttonDelay){
-            let tempParams = api.generateButtonParams('M', 1, 2);
+            let tempParams = api.generateButtonParams('M-1-2');
             if(wall('M-1-2').backLight){
             }
             event.emit('button:back', tempParams);
@@ -322,7 +322,7 @@ button4.on('alert', function(level, tick){
 button5.on('alert', function(level, tick){
     if(level === 0){
         if(timerTick - tempButton5 > buttonDelay){
-            let tempParams = api.generateButtonParams('M', 1, 3);
+            let tempParams = api.generateButtonParams('M-1-3');
             if(wall('M-1-3').frontLight){
             }
             event.emit('button:front', tempParams);
@@ -335,7 +335,7 @@ button5.on('alert', function(level, tick){
 button6.on('alert', function(level, tick){
     if(level === 0){
         if(timerTick - tempButton6 > buttonDelay){
-            let tempParams = api.generateButtonParams('M', 1, 3);
+            let tempParams = api.generateButtonParams('M-1-3');
             if(wall('M-1-3').backLight){
             }
             event.emit('button:back', tempParams);
@@ -348,7 +348,7 @@ button6.on('alert', function(level, tick){
 button7.on('alert', function(level, tick){
     if(level === 0){
         if(timerTick - tempButton7 > buttonDelay){
-            let tempParams = api.generateButtonParams('M', 1, 4);
+            let tempParams = api.generateButtonParams('M-1-4');
             if(wall('M-1-4').frontLight){
             }
             event.emit('button:front', tempParams);
@@ -361,7 +361,7 @@ button7.on('alert', function(level, tick){
 button8.on('alert', function(level, tick){
     if(level === 0){
         if(timerTick - tempButton8 > buttonDelay){
-            let tempParams = api.generateButtonParams('M', 1, 4);
+            let tempParams = api.generateButtonParams('M-1-4');
             if(wall('M-1-4').backLight){
             }
             event.emit('button:back', tempParams);

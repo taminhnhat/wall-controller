@@ -25,15 +25,12 @@ const api = {
 
     /**
      * 
-     * @param {*} type type of wall
-     * @param {*} col column of wall
-     * @param {*} row row of wall
-     * @param {*} side side of wall
+     * @param {String} wall 
      * @returns object
      */
-    generateButtonParams: function(type, col, row){
+    generateButtonParams: function(wall){
         let buttonObj = {};
-        buttonObj.wall = type + '-' + col + '-' + row;
+        buttonObj.wall = wall;
         return buttonObj;
     },
 

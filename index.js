@@ -47,7 +47,7 @@ if(process.platform == 'linux'){
 //  NAMED PIPE____________________________________________________________________________
 
 // IPC using named pipe, easy to communicate with python
-//const pipe = require('./pipe/pipe');
+require('./named-pipe');
 
 //  EVENT EMITTER__________________________________________________________________________
 
