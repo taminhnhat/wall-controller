@@ -91,8 +91,8 @@ void mypipe::init(char*readpipe_path, char*writepipe_path){
 
 void mypipe::startPipe(){
     std::cout << "pipe start:" << this->readPipe_path << "|" << this->writePipe_path << std::endl;
-    mkfifo(this->readPipe_path, 0666);
-    mkfifo(this->writePipe_path, 0666);
+    //mkfifo(this->readPipe_path, 0666);
+    //mkfifo(this->writePipe_path, 0666);
 
     rpipe = open(this->readPipe_path, O_RDONLY|O_NONBLOCK);
     if(this->log) std::cout << "read pipe opened" << std::endl;
