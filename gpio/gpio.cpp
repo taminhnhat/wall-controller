@@ -118,16 +118,20 @@ class lightSystem{
         int bitVal = (this->frontLightBitmap >> idx) & 1;
         gpioWrite(DS_PIN_1, bitVal);
         gpioTrigger(SHCP_PIN_1, 1, 1);
+        gpioDelay(1);
       }
       gpioTrigger(STCP_PIN, 1, 1);
+      std::cout << "front light apply:" << this->getFrontLightBitmap() << std::endl;
     }
     void backLightApply(){
       for(int idx = 31; idx >= 0; idx --){
         int bitVal = (this->backLightBitmap >> idx) & 1;
         gpioWrite(DS_PIN_2, bitVal);
         gpioTrigger(SHCP_PIN_2, 1, 1);
+        gpioDelay(1);
       }
       gpioTrigger(STCP_PIN, 1, 1);
+      std::cout << "back light apply:" << this->getBackLightBitmap() << std::endl;
     }
     uint32_t getFrontLightBitmap(){
       return this->frontLightBitmap;
@@ -136,90 +140,6 @@ class lightSystem{
       return this->backLightBitmap;
     }
 } lightSys(0, 0);
-
-// lightSystem::lightSystem(uint32_t frontBitmap, uint32_t backBitmap){
-//   this->frontLightBitmap = frontBitmap;
-//   this->backLightBitmap = backBitmap;
-// }
-
-// lightSystem::~lightSystem(){
-//   this->frontLightBitmap = 0;
-//   this->backLightBitmap = 0;
-// }
-
-// /**
-//  * Generate bitmap for front lights
-//  * Input for panel lights     col: 1-6;  row: 1-5
-//  * Input for warning lights   col: 0;   row: 0-1
-//  */
-// void lightSystem::frontLightGenerate(int col, int row, int state){
-//   int bitDes;
-//   if(col != 0){
-//     bitDes = col + 1 + (row - 1)*6;
-//   }
-//   else{
-//     bitDes = row;
-//   }
-//   std::cout << "col:" << col << "|row:" << row << "|bit des:" << bitDes << std::endl;
-//   if(state == 1){
-//     uint32_t frontLightBitMask = 1 << bitDes;
-//     this->frontLightBitmap |= frontLightBitMask;
-//   }
-//   else if(state == 0){
-//     uint32_t frontLightBitMask = (1 << bitDes) ^ 4294967296;
-//     this->frontLightBitmap |= frontLightBitMask;
-//   }
-// }
-
-// /**
-//  * Generate bitmap for back lights
-//  * Input for panel lights     col: 1-6;  row: 1-5
-//  * Input for warning lights   col: 0;   row: 0-1
-//  */
-// void lightSystem::backLightGenerate(int col, int row, int state){
-//   int bitDes;
-//   if(col != 0){
-//     bitDes = col + 1 + (row - 1)*6;
-//   }
-//   else{
-//     bitDes = row;
-//   }
-//   uint32_t backLightBitMask = 1 << bitDes;
-//   this->backLightBitmap |= backLightBitMask;
-// }
-
-// /**
-//  * Apply bitmap to GPIO for front lights
-//  */
-// void lightSystem::frontLightApply(){
-//   for(int idx = 0; idx < 32; idx ++){
-//     int bitVal = (this->frontLightBitmap >> idx) & 1;
-//     gpioWrite(DS_PIN_1, bitVal);
-//     gpioTrigger(SHCP_PIN_1, 1, 1);
-//   }
-//   gpioTrigger(STCP_PIN, 1, 1);
-// }
-
-// /**
-//  * Apply bitmap to GPIO for back lights
-//  */
-// void lightSystem::backLightApply(){
-//   for(int idx = 31; idx >= 0; idx --){
-//     int bitVal = (this->backLightBitmap >> idx) & 1;
-//     gpioWrite(DS_PIN_2, bitVal);
-//     gpioTrigger(SHCP_PIN_2, 1, 1);
-//   }
-//   gpioTrigger(STCP_PIN, 1, 1);
-// }
-
-// uint32_t lightSystem::getFrontLightBitmap(){
-//   return this->frontLightBitmap;
-// }
-
-// uint32_t lightSystem::getBackLightBitmap(){
-//   return this->backLightBitmap;
-// }
-
 
 
 //  DECLARE FUNCTIONS______________________________________________________________________________
