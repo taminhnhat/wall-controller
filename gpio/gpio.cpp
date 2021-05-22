@@ -9,7 +9,7 @@
 #include <pigpio.h>
 #include "./named-pipe.h"
 
-#define CYCLE_TIMER 100 //miliseconds
+#define CYCLE_TIMER 100 //miliseconds`
 
 #define BUTTON_CALL_LEVEL 1
 
