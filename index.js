@@ -9,7 +9,8 @@
 const io = require('socket.io-client');
 //var socket = io.connect('http://app3.fahasa.com:1300/');
 //var socket = io.connect('http://192.168.1.157:8080');
-var socket = io.connect('ws://172.16.0.100:3000');
+//var socket = io.connect('ws://172.16.0.100:3000');
+var socket = io.connect('ws://192.168.50.65:3000');
 //var socket = io.connect('http://192.168.1.157:3001');
 
 

@@ -5,8 +5,12 @@
 const fs              = require('fs');
 const { spawn, fork } = require('child_process');
 const event = require('./event');
+
 const api = require('./api');
+
 let wall = require('./wallApi');
+
+let lightBitmap = require('./gpioMap');
 
 const write_pipe_path = './pipe/pipe_emit_light';
 const read_pipe_path = './pipe/pipe_button_callback';
@@ -82,14 +86,28 @@ fifo_b.on('exit', function(status) {
     });
     
     /**
-     * Emit a message to C++ process via named-pipe
+     * Emit a light message to C++ process via named-pipe
      * @param {String} wallname eg: 'M-1-1'
-     * @param {String} side 'front'|'back'
-     * @param {String} state 'on'|'off'
+     * @param {String} wallSide 'front'|'back'
      */
-    function emitLightToPipe(wallname, side, state){
-        let mess = wallname + ":" + side + ":" + state + '\n';
+    function emitLightToPipe(wallName, wallSide, lightState){
+        const bitIndex = wall(wallName).getIndex();
+        let bitmask;
+        if(light)
+        const mess = `light:${wall(wallName).getIndex()}:${wallSide}`;
         fifoWs.write(mess);
         console.log('emit message to pipe:', mess);
+    }
+
+    
+    function emitErrorToPipe(errorType, side){
+        if(type == 'error'){
+            const mess = `error:1:${side}`;
+            fifoRs.write(mess);
+        }
+        else if(type == 'warning'){
+            const mess = `error:0:${side}`;
+            fifoWs.write(mess);
+        }
     }
 });

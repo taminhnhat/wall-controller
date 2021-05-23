@@ -4,33 +4,38 @@
  */
 class wallState{
     #name;
+    #map;
     #complete;
     #locked;
     #log;
     #key;
-    importTote;
-    exportTote;
-    frontLight;
-    backLight;
-    row;
-    col;
+    #importTote;
+    #exportTote;
+    #frontLight;
+    #backLight;
+    #row;
+    #col;
+    #bitIndex;
     /**
      * 
+     * @param {String} map {'W-1-1'}
      * @param {String} name {'M-1-1'}
      */
-    constructor(name){
+    constructor(map, name){
         this.#name = name;
-        this.importTote = [];
-        this.exportTote = null;
+        this.#map = map;
+        this.#importTote = [];
+        this.#exportTote = null;
         this.#complete = false;
         this.#locked = false;
         this.#key = null;
-        this.frontLight = false;
-        this.backLight = false;
-        let temp = name.split('-');
-        this.row = temp[1];
-        this.col = temp[2];
+        this.#frontLight = false;
+        this.#backLight = false;
+        let temp = map.split('-');
+        this.#col = temp[1];
+        this.#row = temp[2];
         this.#log = 'null';
+        this.#bitIndex = Number(this.#col) + (Number(this.#row) - 1)*6 + 1;
     }
     /**
      * Create a log object that save 1 complete action on wall include: wall name, import totes, export tote, key. Return private #log property
@@ -38,8 +43,8 @@ class wallState{
     combine(){
         let temp = new Object;
         temp.wall = this.#name;
-        temp.importTote = this.importTote;
-        temp.exportTote = this.exportTote;
+        temp.importTote = this.#importTote;
+        temp.exportTote = this.#exportTote;
         temp.key = this.#key;
         this.#log = temp;
     }
@@ -53,12 +58,11 @@ class wallState{
     lightOn(side){
         if(this.#locked) return 'this wall locked';
         if(side == 'front'){
-            this.frontLight = true;
+            this.#frontLight = true;
         }
         else if (side == 'back'){
-            this.backLight = true;
+            this.#backLight = true;
         }
-        console.log(`Light ${this.name} on`, this);
         return 'light on completed';
     }
 
@@ -70,12 +74,11 @@ class wallState{
     lightOff(side){
         if(this.#locked) return 'this wall locked';
         if(side == 'front'){
-            this.frontLight = false;
+            this.#frontLight = false;
         }
         else if (side == 'back'){
-            this.backLight = false;
+            this.#backLight = false;
         }
-        console.log(`Light ${this.name} off`, this);
         return 'light off completed';
     }
 
@@ -86,7 +89,7 @@ class wallState{
      */
     import(tote){
         if(this.#locked) return 'this wall locked';
-        this.importTote.push(tote);
+        this.#importTote.push(tote);
         return 'import tote completed';
     }
 
@@ -97,7 +100,7 @@ class wallState{
      */
     export(tote){
         if(this.#locked) return 'this wall locked';
-        this.exportTote = tote;
+        this.#exportTote = tote;
         this.#complete = true;
         return 'export tote completed';
     }
@@ -117,9 +120,9 @@ class wallState{
      * @returns 
      */
     clear(){
-        this.importTote = [];
-        this.exportTote = null;
-        this.key = null;
+        this.#importTote = [];
+        this.#exportTote = null;
+        this.#key = null;
         this.#complete = false;
         return 'clear completed';
     }
@@ -166,44 +169,62 @@ class wallState{
     getName(){
         return this.#name;
     }
+
+    getInfo(){
+        return {name:this.#name,
+                map: this.#map,
+                col: this.#col,
+                row: this.#row,
+                importTote: this.#importTote,
+                exportTote: this.#exportTote,
+                frontLight: this.#frontLight,
+                backLight: this.#backLight,
+                bitIndex: this.#bitIndex,
+                lastLog: this.#log
+            }
+    }
+
+    getIndex(){
+        return this.#bitIndex;
+    }
 }
 
 //
-let M11 = new wallState('M-1-1');
-let M12 = new wallState('M-1-2');
-let M13 = new wallState('M-1-3');
-let M14 = new wallState('M-1-4');
-let M15 = new wallState('M-1-5');
+let M11 = new wallState('M-1-1', 'M-1-1');
+let M12 = new wallState('M-1-2', 'M-1-2');
+let M13 = new wallState('M-1-3', 'M-1-3');
+let M14 = new wallState('M-1-4', 'M-1-4');
+let M15 = new wallState('M-1-5', 'M-1-5');
 //
-let M21 = new wallState('M-2-1');
-let M22 = new wallState('M-2-2');
-let M23 = new wallState('M-2-3');
-let M24 = new wallState('M-2-4');
-let M25 = new wallState('M-2-5');
+let M21 = new wallState('M-2-1', 'M-1-6');
+let M22 = new wallState('M-2-2', 'M-1-7');
+let M23 = new wallState('M-2-3', 'M-1-8');
+let M24 = new wallState('M-2-4', 'M-1-9');
+let M25 = new wallState('M-2-5', 'M-1-10');
 //
-let M31 = new wallState('M-3-1');
-let M32 = new wallState('M-3-2');
-let M33 = new wallState('M-3-3');
-let M34 = new wallState('M-3-4');
-let M35 = new wallState('M-3-5');
+let M31 = new wallState('M-3-1', 'M-1-11');
+let M32 = new wallState('M-3-2', 'M-1-12');
+let M33 = new wallState('M-3-3', 'M-1-13');
+let M34 = new wallState('M-3-4', 'M-1-14');
+let M35 = new wallState('M-3-5', 'M-1-15');
 //
-let M41 = new wallState('M-4-1');
-let M42 = new wallState('M-4-2');
-let M43 = new wallState('M-4-3');
-let M44 = new wallState('M-4-4');
-let M45 = new wallState('M-4-5');
+let M41 = new wallState('M-4-1', 'M-1-16');
+let M42 = new wallState('M-4-2', 'M-1-17');
+let M43 = new wallState('M-4-3', 'M-1-18');
+let M44 = new wallState('M-4-4', 'M-1-19');
+let M45 = new wallState('M-4-5', 'M-1-20');
 //
-let M51 = new wallState('M-5-1');
-let M52 = new wallState('M-5-2');
-let M53 = new wallState('M-5-3');
-let M54 = new wallState('M-5-4');
-let M55 = new wallState('M-5-5');
+let M51 = new wallState('M-5-1', 'M-1-21');
+let M52 = new wallState('M-5-2', 'M-1-22');
+let M53 = new wallState('M-5-3', 'M-1-23');
+let M54 = new wallState('M-5-4', 'M-1-24');
+let M55 = new wallState('M-5-5', 'M-1-25');
 //
-let M61 = new wallState('M-6-1');
-let M62 = new wallState('M-6-2');
-let M63 = new wallState('M-6-3');
-let M64 = new wallState('M-6-4');
-let M65 = new wallState('M-6-5');
+let M61 = new wallState('M-6-1', 'M-1-26');
+let M62 = new wallState('M-6-2', 'M-1-27');
+let M63 = new wallState('M-6-3', 'M-1-28');
+let M64 = new wallState('M-6-4', 'M-1-29');
+let M65 = new wallState('M-6-5', 'M-1-30');
 //
 
 const M = [M11, M12, M13, M14, M15,
@@ -213,6 +234,9 @@ const M = [M11, M12, M13, M14, M15,
                 M51, M52, M53, M54, M55,
                 M61, M62, M63, M64, M65]
 
+
+console.log(M);
+console.log(accessWall('M-1-2').getInfo())
 /**
  * 
  * @param {string} name 

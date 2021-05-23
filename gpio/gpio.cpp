@@ -7,6 +7,7 @@
 #include <iostream>
 #include <thread>
 #include <pigpio.h>
+#include <string.h>
 #include "./named-pipe.h"
 
 #define CYCLE_TIMER 100 //miliseconds`
@@ -57,8 +58,8 @@ const int buttonCountToEmit = 40;         //minimum number of times that button 
 int tempTimerTick = 0;
 
 //  PIPE_____________________________________________________________________________________________________________________
-char *readpipe_path = "../pipe/pipe_emit_light";
-char *writepipe_path = "../pipe/pipe_button_callback";
+char readpipe_path[] = "../pipe/pipe_emit_light";
+char writepipe_path[] = "../pipe/pipe_button_callback";
 
 char arr1[100], arr2[100];
 uint32_t timerCount = 0;
@@ -84,34 +85,11 @@ class lightSystem{
     ~lightSystem(){
       //
     }
-    void frontLightGenerate(int col, int row, int state){
-      int bitDes;
-      if(col != 0){
-        bitDes = col + 1 + (row - 1)*6;
-      }
-      else{
-        bitDes = row;
-      }
-      std::cout << "col:" << col << "|row:" << row << "|bit des:" << bitDes << std::endl;
-      if(state == 1){
-        uint32_t frontLightBitMask = 1 << bitDes;
-        this->frontLightBitmap |= frontLightBitMask;
-      }
-      else if(state == 0){
-        uint32_t frontLightBitMask = (1 << bitDes) ^ 4294967296;
-        this->frontLightBitmap &= frontLightBitMask;
-      }
+    void frontLightGenerate(uint32_t bitmap){
+      this->frontLightBitmap = bitmap;
     }
-    void backLightGenerate(int col, int row, int state){
-      int bitDes;
-      if(col != 0){
-        bitDes = col + 1 + (row - 1)*6;
-      }
-      else{
-        bitDes = row;
-      }
-      uint32_t backLightBitMask = 1 << bitDes;
-      this->backLightBitmap |= backLightBitMask;
+    void backLightGenerate(uint32_t bitmap){
+      this->backLightBitmap = bitmap;
     }
     void frontLightApply(){
       for(int idx = 0; idx < 32; idx ++){
@@ -169,11 +147,8 @@ int main(int argc, char *argv[]){
   int lineCount = 1;
 
   while(true){
-    //  Get microseconds
-    int microsTick = gpioTick();
-
     // Check every 1 milisecond
-    if(microsTick%1000 == 0){
+    if(gpioTick()%1000 == 0){
       //std::cout << "read row" << lineCount <<std::endl;
       //  Read buttons on a line
       readButtons(lineCount);
@@ -185,25 +160,22 @@ int main(int argc, char *argv[]){
     if(mypipe.readAvailable()){
       char arr[30];
       mypipe.readPipe(arr);
-      std::cout << "read from pipe" << arr << std::endl;
-      //  arr: "M-1-1:front:on"  "M-1-1:back:off"
-
-      int col = charToInt(arr[2]);
-      int row = charToInt(arr[4]);
-      int side;
-      if(arr[6] == 'f') side = 0;
-      else if(arr[6] == 'b') side = 1;
-      int state;
-      if(arr[12] == 'o' && arr[13] == 'n') state = 1;
-      else if(arr[12] == 'f' && arr[13] == 'f') state = 0;
-
-      if(side == 0){
-        lightSys.frontLightGenerate(col, row, state);
-        std::cout << "front bitmap:" << lightSys.getFrontLightBitmap() << std::endl;
+      char delim = ':';
+      char *command = strtok(arr, &delim);
+      char *s_bitmap = strtok(arr, &delim);
+      char *s_side = strtok(arr, &delim);
+      std::cout << "read from pipe" << arr << "|" << s_bitmap << "|" << s_side << std::endl;
+      //  arr: "light:344:front"  "error:2:front"
+      uint32_t bitmap = atoi(s_bitmap);
+      char s_front[] = "front";
+      char s_back[] = "back";
+      if(strncmp(s_side, s_front, 5)){
+        lightSys.frontLightGenerate(bitmap);
+        std::cout << "front bitmap:" << lightSys.getBackLightBitmap() << std::endl;
         lightSys.frontLightApply();
       }
-      else if(side == 1){
-        lightSys.backLightGenerate(col, row, state);
+      else if(strncmp(s_side, s_back, 4)){
+        lightSys.backLightGenerate(bitmap);
         std::cout << "back bitmap:" << lightSys.getBackLightBitmap() << std::endl;
         lightSys.backLightApply();
       }
@@ -289,6 +261,7 @@ int resetButtonTick(){
             buttonTick[i][j] = 0;
         }
     }
+    return 1;
 }
 
 
@@ -316,9 +289,6 @@ void timerTick(){
  * line 11 <=> use for user buttons on the electric cabin
  */
 void readButtons(int line){
-  //  get micros to calculate running time
-  int startMicros = gpioTick();
-
   // set enable pin to 0
   gpioWrite(enablePin[line - 1], 1);
 

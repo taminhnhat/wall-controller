@@ -82,11 +82,10 @@ int mypipe::readAvailable(){
     else return 0;
 }
 
-void mypipe::init(char*readpipe_path, char*writepipe_path){
-    std::cout << readpipe_path << "|" << writepipe_path << std::endl;
-    char * str1, *str2;
-    str1 = strcpy(this->readPipe_path, readPipe_path);
-    str2 = strcpy(this->writePipe_path, writePipe_path);
+void mypipe::init(char*readPipe_path, char*writePipe_path){
+    std::cout << readPipe_path << "|" << writePipe_path << std::endl;
+    strcpy(this->readPipe_path, readPipe_path);
+    strcpy(this->writePipe_path, writePipe_path);
 }
 
 void mypipe::startPipe(){
