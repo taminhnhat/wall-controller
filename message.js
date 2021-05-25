@@ -4,7 +4,7 @@
 const version = '0.0.1';
 const bookstoreId = 67;
 
-const api = {
+const message = {
     /**
      * 
      * @param {*} name name of api
@@ -19,6 +19,7 @@ const api = {
         apiObj.bookstoreId = bookstoreId;
         apiObj.version = version;
         apiObj.params = params;
+        apiObj.date = Date.now();
         apiObj.key = key;
         return apiObj;
     },
@@ -28,9 +29,9 @@ const api = {
      * @param {String} wall 
      * @returns object
      */
-    generateButtonParams: function(wall){
+    generateButtonParams: function(buttonCoordinate){
         let buttonObj = {};
-        buttonObj.wall = wall;
+        buttonObj.button = buttonCoordinate;
         return buttonObj;
     },
 
@@ -46,8 +47,16 @@ const api = {
         scanObj.toColumn = 6;
         scanObj.val = val;
         return scanObj;
+    },
+
+    generateWarning: function(auth, mess){
+        let warningObj;
+        warningObj.createdBy = auth;
+        warningObj.message = mess;
+        warningObj.date = Date(Date.now());
+        return warningObj;
     }
 }
 
 
-module.exports = api;
+module.exports = message;

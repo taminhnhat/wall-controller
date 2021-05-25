@@ -4,14 +4,30 @@
  * Access GPIO with pigpio
  */
 
+//  CONFIGURATION_________________________________________________________________________
+//
+const WALL_NAME = 'M-1';
+//  db and collections name
+const WALL_DB = 'Wall';
+const BACKUP_COLLECTION = 'backup';
+const HISTORY_COLLECTION = 'history';
+const ERROR_COLLECTION = 'error';
+const WARNING_COLECTION = 'warning';
+const REQUEST_COLLECTION = 'request';
+const RESPOND_COLLECTION = 'respond';
+const SCANNER_COLLECTION = 'scanner';
+const FRONT_BUTTON_COLLECTION = 'front_button';
+const BACK_BUTTON_COLLECTION = 'back_button';
+
 //  WEB SOCKET____________________________________________________________________________
 
 const io = require('socket.io-client');
 //var socket = io.connect('http://app3.fahasa.com:1300/');
 //var socket = io.connect('http://192.168.1.157:8080');
 //var socket = io.connect('ws://172.16.0.100:3000');
-var socket = io.connect('ws://192.168.50.65:3000');
+//var socket = io.connect('ws://192.168.50.65:3000');
 //var socket = io.connect('http://192.168.1.157:3001');
+var socket = io.connect('ws://10.233.5.195:3000');
 
 
 // if(process.platform == 'linux'){
@@ -48,7 +64,7 @@ if(process.platform == 'linux'){
 //  NAMED PIPE____________________________________________________________________________
 
 // IPC using named pipe, easy to communicate with python
-require('./named-pipe');
+require('./gpio-ipc');
 
 //  EVENT EMITTER__________________________________________________________________________
 
@@ -76,7 +92,7 @@ var wall = require('./wallApi');
 const createDbSchema = require('./schema')
 
 //  Import API generator send to web socket server
-const api = require('./api');
+const message = require('./message');
 
 
 //  VARIABLES______________________________________________________________________________
@@ -106,23 +122,31 @@ function restoreFromBackupDb(){
     let backupState = {}
     if(mongoEnable)
     mongoClient.connect(url, { useUnifiedTopology: true }, function(err, client) {
-        if (err) throw err;
-        const db = client.db("wall");
-        db.collection("backup").find({}, { projection: { _id: 0, name: 1, frontLight: 1, backLight: 1, importTote: 1, exportTote: 1 } }).toArray(function(err, res){
-            if (err) throw err;
+        if (err) console.error(err);
+        const db = client.db(WALL_DB);
+        db.collection(BACKUP_COLLECTION).find({}, { projection: { _id: 0, name: 1, map: 1, frontLight: 1, backLight: 1, importTote: 1, exportTote: 1 } }).toArray(function(err, res){
+            if (err) console.error(err);
             backupState = res;
             client.close();
+            let frontBitmap = 0;
+            let backBitmap = 0;
+
+            //  Check light state of wall
             for(idx in backupState){
-                let wallState = backupState[idx]
-                console.log('backup', wallState)
+                let wallState = backupState[idx];
+                console.log('backup', wallState);
+                //  Emit light event
                 if(wallState.frontLight == true){
                     event.emit('light:on', {wall: wallState.name, side: 'front'});
+                    frontBitmap |= (1 << wall(wallName).getIndex() >>> 0);
+                    frontBitmap >>> 0;
                 }
                 if(wallState.backLight == true){
-                    event.emit('light:on', {wall: wallState.name, side: 'back'});
+                    backBitmap |= (1 << wall(wallName).getIndex() >>> 0);
+                    backBitmap >>> 0;
                 }
-
             }
+            
         });
     });
 }
@@ -134,14 +158,17 @@ function restoreFromBackupDb(){
 event.on('start', function(){
     console.log('Start listenning events!');
 });
-//
+
+/**
+ * Handle 'button:front' event from gpio
+ */
 event.on('button:front', function(buttonParams){
 
     //logger.info(`${Date(Date.now())} | wallController/index.js | button ${buttonParams.wall} pressed`);
 
-    const wallName = buttonParams.wall;
+    const buttonCoor = buttonParams.button;
     // create query by wall name to access database
-    const queryByName = { name: wallName };
+    const queryByCoor = { coordinate: buttonCoor };
     let newValues = { $set: {frontLight: false} };
 
     let str = `${importToteNow} => ${wallName}`;
@@ -149,7 +176,7 @@ event.on('button:front', function(buttonParams){
     event.emit('print', str);
     event.emit('print:action', `Hang len:\n   Khay ${importToteNow}\nNhap vao\n   Tuong ${wallName}`);
     buttonParams.tote = importToteNow;
-    let tempApi = api.generateApi('pressButton', 'wallController', buttonParams);
+    let tempApi = message.generateApi('pressButton', 'wallController', buttonParams);
     console.log(`Tote ${buttonParams.tote} push to wall ${wallName}, key: ${tempApi.key}`);
     if(importToteNow != null){
         socket.emit('pushToWall', tempApi);
@@ -160,11 +187,11 @@ event.on('button:front', function(buttonParams){
     importToteNow = null;
 
     if(mongoEnable){
-        // Insert new event to database
+        //  Update 'frontLight' to false
         mongoClient.connect(url, { useUnifiedTopology: true }, function(err, client) {
-            if (err) throw err;
-            const db = client.db("wall");
-            db.collection("backup").updateOne(queryByName, newValues, function(err, res){
+            if (err) console.error(err);
+            const db = client.db(WALL_DB);
+            db.collection(BACKUP_COLLECTION).updateOne(queryByCoor, newValues, function(err, res){
                 if (err) console.error(err);
                 console.log('Add newScan event to Db', res.result);
                 client.close();
@@ -175,9 +202,9 @@ event.on('button:front', function(buttonParams){
 
 //  'button:back' emitted in 'ioControl.js' when a button pressed
 event.on('button:back', function(buttonParams){
-    const wallName = buttonParams.wall;
+    const buttonCoor = buttonParams.button;
     // create query by wall name to access database
-    const queryByName = { name: wallName };
+    const queryByCoor = { coordinate: buttonCoor };
     const newBackupValues = { $set: {exportTote: exportToteNow, complete: true, backLight: false} };
     let newHistoryValues = {};
 
@@ -191,22 +218,22 @@ event.on('button:back', function(buttonParams){
         lightParams.side = 'back';
         buttonParams.tote = exportToteNow;
 
-        let tempApi = api.generateApi('pressButton', 'wallController', buttonParams);
+        let tempApi = message.generateApi('pressButton', 'wallController', buttonParams);
         console.log(`Wall ${wallName} pick to tote ${buttonParams.tote}, key: ${tempApi.key}`);
         socket.emit('pickToLight', tempApi);
         
         if(mongoEnable){
             // Insert new event to database
             mongoClient.connect(url, { useUnifiedTopology: true }, function(err, client) {
-                if (err) throw err;
-                const db = client.db("wall");
+                if (err) console.error(err);
+                const db = client.db(WALL_DB);
 
                 // function update 'backup' collection with new tote scanned, set 'backlight' to false and 'complete' to true
                 const updateBackupDb = function(db, callback) {
                     // Get the documents collection
-                    const collection = db.collection('backup');
+                    const collection = db.collection(BACKUP_COLLECTION);
                     // Update document where a is 2, set b equal to 1
-                    collection.updateOne(queryByName, newBackupValues, function(err, result) {
+                    collection.updateOne(queryByCoor, newBackupValues, function(err, result) {
                         callback(result);
                     });
                 };
@@ -214,9 +241,9 @@ event.on('button:back', function(buttonParams){
                 // function ind all proberties of this wall in 'backup' collection
                 const findBackupDb = function(db, callback) {
                     // Get the documents collection
-                    const collection = db.collection('backup');
+                    const collection = db.collection(BACKUP_COLLECTION);
                     // Update document where a is 2, set b equal to 1
-                    collection.findOne(queryByName, function(err, result) {
+                    collection.findOne(queryByCoor, function(err, result) {
                         callback(result);
                     });
                 };
@@ -224,7 +251,7 @@ event.on('button:back', function(buttonParams){
                 // function create a new complete action on this wall then insert to 'history' collection
                 const insertHistoryDb = function(db, callback) {
                     // Get the documents collection
-                    const collection = db.collection('history');
+                    const collection = db.collection(HISTORY_COLLECTION);
                     // Update document where a is 2, set b equal to 1
                     collection.insertOne(newHistoryValues, function(err, result) {
                         callback(result);
@@ -283,11 +310,12 @@ event.on('scanner:front', function(scanParams){
 
     wallKeyNow = frontScanKey;
 
-    let scanApi = api.generateApi('newScan', 'wallController', scanParams, frontScanKey);
+    let scanApi = message.generateApi('newScan', 'wallController', scanParams, frontScanKey);
     let scanArray = scanParams.val.split('-');
     let firstElementScan = scanArray[0];
     let sizeOfScan = scanParams.val.split('-').length;
 
+    //  Check if scanned tote a valid value
     if(sizeOfScan == 2 && (firstElementScan === "M" || firstElementScan === "L" || firstElementScan === "S")){
         console.log(`Scan tote ${scanParams.val}, key: ${frontScanKey}`);
         socket.emit('scanTotePushToWall', scanApi);    
@@ -322,8 +350,8 @@ event.on('scanner:front', function(scanParams){
         // Insert new event to database
         if(mongoEnable)
         mongoClient.connect(url, { useUnifiedTopology: true }, function(err, client) {
-            if (err) throw err;
-            const db = client.db("wall");
+            if (err) console.error(err);
+            const db = client.db(WALL_DB);
 
             function insertFrontScanToDb(db, callback){
                 let scanObject = {};
@@ -364,11 +392,21 @@ event.on('scanner:front', function(scanParams){
         });
 
     }
+    //  If scanned tote not a valid value
     else{
         console.log('Scan unknown tote:', scanParams.val, ', Please scan again!');
         socket.emit('scanner:unknown', scanApi);
+        mongoClient.connect(url, { useUnifiedTopology: true }, function(err, client){
+            const db = client.connect(WALL_DB);
+            const warningMess = `unknown front scan:${scanParams.val}`;
+            const warningObj = message.generateWarning('wall-controller', warningMess);
+            const collection = db.collection(WARNING_COLECTION);
+            collection.insertOne(warningObj, function(err, res){
+                if(err) console.error(err);
+                client.close();
+            });
+        });
     }
-
 });
 
 
@@ -376,7 +414,7 @@ event.on('scanner:back', function(scanParams){
     const query = { name: scanParams.wall };
 
     console.log('---------------');
-    let scanApi = api.generateApi('newScan', 'wallController', scanParams);
+    let scanApi = message.generateApi('newScan', 'wallController', scanParams);
     let scanArray = scanParams.val.split('-');
     let firstElementScan = scanArray[0];
     let sizeOfScan = scanParams.val.split('-').length;
@@ -391,15 +429,15 @@ event.on('scanner:back', function(scanParams){
     if(mongoEnable){
         // Insert new event to database
         mongoClient.connect(url, { useUnifiedTopology: true }, function(err, client) {
-            //if (err) throw err;
-            const db = client.db("wall");
+            if (err) console.error(err);
+            const db = client.db(WALL_DB);
             let temp = {};
             temp.val = scanParams.val;
             temp.side = 'back';
             temp.date = Date(Date.now());
             
             db.collection("scanner").insertOne(temp, function(err, res){
-                if (err) throw err;
+                if (err) console.error(err);
                 client.close();
             });
         });
@@ -407,23 +445,23 @@ event.on('scanner:back', function(scanParams){
 });
 
 
-event.on('wall:completeOne', function(wallName){
+event.on('wall:completeOne', function(wallCoor){
     // create query by wall name to access database
     console.log('wall complete!!!')
-    const queryByName = { name: wallName}
+    const queryByCoor = { coordinate: wallName}
     const newBackupValues = createDbSchema.backupSchema([], "", wallName, null, false, false, false, false);
     console.log('reset shema', newBackupValues);
 
     if(mongoEnable)
     mongoClient.connect(url, { useUnifiedTopology: true }, function(err, client) {
-        if (err) throw err;
-        const db = client.db("wall");
+        if (err) console.error(err);
+        const db = client.db(WALL_DB);
 
         const updateBackupDb = function(db, callback) {
             // Get the documents collection
-            const collection = db.collection('backup');
+            const collection = db.collection(BACKUP_COLLECTION);
             // Update document where a is 2, set b equal to 1
-            collection.updateOne(queryByName, {$set: newBackupValues}, function(err, result) {
+            collection.updateOne(queryByCoor, {$set: newBackupValues}, function(err, result) {
                 callback(result);
             });
         };
@@ -447,7 +485,8 @@ event.on('wall:completeOne', function(wallName){
 //  handle scanner:confirm from server
 socket.on('confirmWall', function(confirmApi){
     console.log('---------------');
-    const confirmKey = confirmApi.key
+    const confirmKey = confirmApi.key;
+    const confirmDate = confirmApi.date;
     console.log('Confirm from server, key:', confirmKey);
     //  Find pennding message match the key then clear interval and remove it from pendingMessage array
     for(let i = 0; i < pendingMessages.length; i ++){
@@ -457,14 +496,14 @@ socket.on('confirmWall', function(confirmApi){
             console.log(pendingMessages);
         }
     }
-    const queryByKey = { key: confirmKey };
+    const queryByKey = { key: confirmKey, date: confirmDate};
     const updateFrontScanValue = {$set: {confirm: true}};
     mongoClient.connect(url, { useUnifiedTopology: true }, function(err, client) {
-        if (err) throw err;
+        if (err) console.error(err);
         //  Find and remove message match the key in database
-        const db = client.db("wall");
+        const db = client.db(WALL_DB);
         db.collection("frontScan").updateOne(queryByKey, updateFrontScanValue, function(err, res){
-            if (err) throw err;
+            if (err) console.error(err);
             console.log(`Delete pending api with key:${confirmKey} from Db`, res.result);
             client.close();
         });
@@ -486,9 +525,7 @@ socket.on('lightOn', function(lightApi){
     const wallName = lightApi.params.wall;
     const wallSide = lightApi.params.side;
     const wallKey = lightApi.key;
-    const queryByName = { name: wallName };
-
-    wall(wallName).frontLight = true;
+    const queryByCoor = { name: wallName };
     
     let newBackupValues = "";
 
@@ -502,28 +539,26 @@ socket.on('lightOn', function(lightApi){
 
     //ipc.of.gpio.emit('light:on', lightApi.params);
 
-    socket.emit('lightOnConfirm', api.generateApi('lightOnConfirm', 'wallController', {wall: wallName}, wallKey));
+    socket.emit('lightOnConfirm', message.generateApi('lightOnConfirm', 'wallController', {wall: wallName}, wallKey));
 
     if(mongoEnable){
         mongoClient.connect(url, { useUnifiedTopology: true }, function(err, client) {
             if (err) console.error(err);
-            const db = client.db("wall");
+            const db = client.db(WALL_DB);
 
             const updateBackupDb = function(db, callback) {
 
-                const collection = db.collection('backup');
+                const collection = db.collection(BACKUP_COLLECTION);
 
                 if(wallSide == 'front'){
-                    wall(wallName).frontLight = true;
                     newBackupValues = { $set: {frontLight: true}, $push: {importTote: importToteNow} };
                 }
                 else if(wallSide == 'back'){
-                    wall(wallName).backLight = true;
                     newBackupValues = { $set: {backLight: true}};
                 }
                 else{}
                 
-                collection.updateOne(queryByName, newBackupValues, function(err, result) {
+                collection.updateOne(queryByCoor, newBackupValues, function(err, result) {
                     callback(result);
                 });
             };
@@ -535,7 +570,7 @@ socket.on('lightOn', function(lightApi){
                 const newLightValue = createDbSchema.lightSchema(wallName, wallSide, 'on', wallKeyNow);
 
                 collection.insertOne(newLightValue , function(err, res){
-                    if (err) throw err;
+                    if (err) console.error(err);
                     callback(res.result);
                 })
             }
@@ -562,7 +597,7 @@ socket.on('lightOff', function(lightApi){
     const wallName = lightApi.params.wall;
     const wallSide = lightApi.params.side;
     const wallKey = lightApi.key;
-    const queryByName = { name: wallName };
+    const queryByCoor = { name: wallName };
     let newBackupValues = "";
     const str = 'light off at address ' + wallName + wallSide;
 
@@ -573,27 +608,25 @@ socket.on('lightOff', function(lightApi){
     event.emit('light:off', lightApi.params);
 
     //wallStorage[lightApi.params.row - 1].backLightEnable = false;
-    socket.emit('lightOffConfirm', api.generateApi('lightOffConfirm', 'wallController', {wall: wallName}, wallKey));
+    socket.emit('lightOffConfirm', message.generateApi('lightOffConfirm', 'wallController', {wall: wallName}, wallKey));
     
     if(mongoEnable){
         mongoClient.connect(url, { useUnifiedTopology: true }, function(err, client) {
             if (err) console.error(err);
-            const db = client.db("wall");
+            const db = client.db(WALL_DB);
 
             const updateBackupDb = function(db, callback) {
 
-                const collection = db.collection('backup');
+                const collection = db.collection(BACKUP_COLLECTION);
 
                 if(wallSide == 'front'){
-                    wall(lightApi.params.wall).frontLight = false;
                     newBackupValues = { $set: {frontLight: false} };
                 }
                 else if(wallSide == 'back'){
-                    wall(lightApi.params.wall).backLight = false;
                     newBackupValues = { $set: {backLight: false} };
                 }
                 
-                collection.updateOne(queryByName, newBackupValues, function(err, res) {
+                collection.updateOne(queryByCoor, newBackupValues, function(err, res) {
                     callback(res);
                 });
             };
@@ -605,7 +638,7 @@ socket.on('lightOff', function(lightApi){
                 const newLightValue = createDbSchema.lightSchema(wallName, wallSide, 'off', wallKeyNow);
 
                 collection.insertOne(newLightValue , function(err, res){
-                    if (err) throw err;
+                    if (err) console.error(err);
                     callback(res);
                 })
             }
@@ -650,27 +683,6 @@ socket.on('errorWall', function(errApi){
         else str += arr[i];
     }
     event.emit('print:action', errApi.params.message);
-});
-
-//  handle
-socket.on('db:clear', function(collectionName, query){
-    console.log('Clear db request from user!');
-    // mongoClient.connect(url, { useUnifiedTopology: true }, function(err, db) {
-    //     if (err) throw err;
-    //     const db = client.db("wall");
-    //     if(query == '')
-    //     db.collection(collectionName).drop(function(err, delOK) {
-    //         if (err) throw err;
-    //         if (delOK) console.log(`Collection ${collectionName} deleted`);
-    //         client.close();
-    //     });
-    //     else
-    //     db.collection(collectionName).deleteOne(query, function(err, obj) {
-    //         if (err) throw err;
-    //         console.log("1 document deleted");
-    //         client.close();
-    //     });
-    // });
 });
 
 //  handle disconnect event

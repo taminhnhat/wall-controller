@@ -1,6 +1,6 @@
 const SerialPort = require('serialport');
 const event = require('./event');
-const api = require('./api');
+const message = require('./message');
 
 var connectPort0 = setInterval(reconnectPort0, 1000);
 var connectPort1 = setInterval(reconnectPort1, 1000);
@@ -48,14 +48,14 @@ port0.on('data', function (data) {
   let scanString = String(data).trim();
   console.log('---------------');
   console.log('Front scanner:', scanString);
-  let scanParams = api.generateScannerParams(scanString);
+  let scanParams = message.generateScannerParams(scanString);
   event.emit('scanner:front', scanParams);
 });
 port1.on('data', function (data) {
   let scanString = String(data).trim();
   console.log('---------------');
   console.log('Back scanner:', scanString);
-  let scanParams = api.generateScannerParams(scanString);
+  let scanParams = message.generateScannerParams(scanString);
   event.emit('scanner:back', scanParams);
 });
 

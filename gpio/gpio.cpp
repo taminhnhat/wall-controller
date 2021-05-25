@@ -124,6 +124,7 @@ class lightSystem{
 
 int initGPIO();
 int resetButtonTick();
+int resetLight();
 void timerTick();
 void readButtons(int);
 void buttonCallback(int, int, uint32_t);
@@ -144,6 +145,9 @@ int main(int argc, char *argv[]){
   //  Reset buttons
   resetButtonTick();
 
+  // Reset light
+  resetLight();
+
   int lineCount = 1;
 
   while(true){
@@ -152,7 +156,7 @@ int main(int argc, char *argv[]){
       //std::cout << "read row" << lineCount <<std::endl;
       //  Read buttons on a line
       readButtons(lineCount);
-      if(lineCount >=10) lineCount = 1;
+      if(lineCount >=11) lineCount = 1;
       else lineCount ++;
     }
 
@@ -160,10 +164,10 @@ int main(int argc, char *argv[]){
     if(mypipe.readAvailable()){
       char arr[30];
       mypipe.readPipe(arr);
-      char delim = ':';
-      char *command = strtok(arr, &delim);
-      char *s_bitmap = strtok(arr, &delim);
-      char *s_side = strtok(arr, &delim);
+      char delim[] = ":";
+      char *command = strtok(arr, delim);
+      char *s_bitmap = strtok(NULL, delim);
+      char *s_side = strtok(NULL, delim);
       std::cout << "read from pipe" << arr << "|" << s_bitmap << "|" << s_side << std::endl;
       //  arr: "light:344:front"  "error:2:front"
       uint32_t bitmap = atoi(s_bitmap);
@@ -184,8 +188,6 @@ int main(int argc, char *argv[]){
 
   return 1;
 }
-
-
 
 
 
@@ -229,13 +231,6 @@ int initGPIO(){
     gpioSetMode(READ_PIN_5, PI_INPUT);
     gpioSetMode(READ_PIN_6, PI_INPUT);
 
-    // gpioSetPullUpDown(READ_PIN_1, PI_PUD_UP);
-    // gpioSetPullUpDown(READ_PIN_2, PI_PUD_UP);
-    // gpioSetPullUpDown(READ_PIN_3, PI_PUD_UP);
-    // gpioSetPullUpDown(READ_PIN_4, PI_PUD_UP);
-    // gpioSetPullUpDown(READ_PIN_5, PI_PUD_UP);
-    // gpioSetPullUpDown(READ_PIN_6, PI_PUD_UP);
-
     gpioSetPullUpDown(READ_PIN_1, PI_PUD_DOWN);
     gpioSetPullUpDown(READ_PIN_2, PI_PUD_DOWN);
     gpioSetPullUpDown(READ_PIN_3, PI_PUD_DOWN);
@@ -262,6 +257,16 @@ int resetButtonTick(){
         }
     }
     return 1;
+}
+
+/**
+ * Turn all light off
+ */
+int resetLight(){
+  lightSys.backLightGenerate(0);
+  lightSys.backLightApply();
+  lightSys.frontLightGenerate(0);
+  lightSys.frontLightApply();
 }
 
 
@@ -315,7 +320,7 @@ void readButtons(int line){
       row = line;
       std::sprintf(side, "front");
   }
-  else if(line >= 6){
+  else if(line >= 6 && line < 11){
       row = line - 5;
       std::sprintf(side, "back");
   }
@@ -323,11 +328,18 @@ void readButtons(int line){
   //  check if button was pressed
   for(int col = 0; col < 6; col ++){
     if(buttonSysnalCountPerCycle[col] > 0)
-    std::cout << "button M-" << col + 1 << "-" << row << ":" << buttonSysnalCountPerCycle[col] << std::endl;
+    std::cout << "button W-" << col + 1 << "-" << row << ":" << buttonSysnalCountPerCycle[col] << std::endl;
 
     if(buttonSysnalCountPerCycle[col] >= buttonCountToEmit && (timerCount - buttonTick[col-1][line-1]) > buttonDelay){
       char arr[100];
-      std::sprintf(arr, "M-%d-%d:%s\n", col + 1, row, side);
+      if(line < 11){
+        //  row 1 to 10 used for panel buttons on the wall
+        std::sprintf(arr, "button:W.%d.%d:%s\n", col + 1, row, side);
+      }
+      else if(line == 11){
+        //  line 11 used for user buttons on the electric cabin
+        std::sprintf(arr, "button:U.%d.1", col + 1);
+      }
       //  print out button address
       std::cout << arr;
       //  emit button via pipes
