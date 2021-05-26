@@ -27,7 +27,7 @@ const io = require('socket.io-client');
 //var socket = io.connect('ws://172.16.0.100:3000');
 //var socket = io.connect('ws://192.168.50.65:3000');
 //var socket = io.connect('http://192.168.1.157:3001');
-var socket = io.connect('ws://10.233.5.195:3000');
+var socket = io.connect('ws://192.168.43.32:3000');
 
 
 // if(process.platform == 'linux'){

@@ -267,6 +267,7 @@ int resetLight(){
   lightSys.backLightApply();
   lightSys.frontLightGenerate(0);
   lightSys.frontLightApply();
+  return 1;
 }
 
 
