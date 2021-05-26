@@ -23,11 +23,11 @@ const BACK_BUTTON_COLLECTION = 'back_button';
 
 const io = require('socket.io-client');
 //var socket = io.connect('http://app3.fahasa.com:1300/');
-//var socket = io.connect('http://192.168.1.157:8080');
+const socket = io.connect('ws://localhost:3000');
 //var socket = io.connect('ws://172.16.0.100:3000');
 //var socket = io.connect('ws://192.168.50.65:3000');
 //var socket = io.connect('http://192.168.1.157:3001');
-var socket = io.connect('ws://192.168.43.32:3000');
+//var socket = io.connect('ws://192.168.43.32:3000');
 
 
 // if(process.platform == 'linux'){
@@ -87,12 +87,15 @@ const path = require('path');
 //  WALL CLASS_____________________________________________________________________________
 
 // require wall objects
-var wall = require('./wallApi');
+var {accessWallByName, accessWallByCoor} = require('./wallApi');
 
 const createDbSchema = require('./schema')
 
 //  Import API generator send to web socket server
 const message = require('./message');
+
+//
+let wall = require('./wallApi');
 
 
 //  VARIABLES______________________________________________________________________________
@@ -138,11 +141,11 @@ function restoreFromBackupDb(){
                 //  Emit light event
                 if(wallState.frontLight == true){
                     event.emit('light:on', {wall: wallState.name, side: 'front'});
-                    frontBitmap |= (1 << wall(wallName).getIndex() >>> 0);
+                    frontBitmap |= (1 << accessWallByName(wallName).getIndex() >>> 0);
                     frontBitmap >>> 0;
                 }
                 if(wallState.backLight == true){
-                    backBitmap |= (1 << wall(wallName).getIndex() >>> 0);
+                    backBitmap |= (1 << accessWallByName(wallName).getIndex() >>> 0);
                     backBitmap >>> 0;
                 }
             }
@@ -171,6 +174,8 @@ event.on('button:front', function(buttonParams){
     const queryByCoor = { coordinate: buttonCoor };
     let newValues = { $set: {frontLight: false} };
 
+    const wallName = accessWallByCoor(buttonCoor).getName();
+
     let str = `${importToteNow} => ${wallName}`;
     console.log(str + ' pressed');
     event.emit('print', str);
@@ -195,6 +200,10 @@ event.on('button:front', function(buttonParams){
                 if (err) console.error(err);
                 console.log('Add newScan event to Db', res.result);
                 client.close();
+                let lightParams = {};
+                lightParams.wall = wallName;
+                lightParams.side = 'back';
+                event.emit('light:off', lightParams);
             });
         });
     }
@@ -207,6 +216,8 @@ event.on('button:back', function(buttonParams){
     const queryByCoor = { coordinate: buttonCoor };
     const newBackupValues = { $set: {exportTote: exportToteNow, complete: true, backLight: false} };
     let newHistoryValues = {};
+
+    const wallName = accessWallByCoor(buttonCoor).getName();
 
     let str = `${wallName} => ${exportToteNow}`;
     console.log(str + ' pressed');
@@ -281,6 +292,31 @@ event.on('button:back', function(buttonParams){
 
     }else{
         console.log('Back button pressed, scan container first!!!');
+    }
+});
+
+event.on('button:user', function(buttonParams){
+    switch(buttonParams.button.split('.')[1]){
+        case 1:
+            break;
+        case 2:
+            //
+            break;
+        case 3:
+            //
+            break;
+        default:
+            //
+    }
+
+    function testLightProgram(){
+        let lightBitmap = 1;
+        let count = 0;
+        const testLightInterval = setInterval(() => {
+            lightBitmap <<= count;
+            lightBitmap >>>= 0;
+            event.emit('light:set', '');
+        }, 200);
     }
 });
 

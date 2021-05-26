@@ -171,6 +171,10 @@ class wallState{
         return this.#name;
     }
 
+    getCoordinate(){
+        return this.#map;
+    }
+
     getInfo(){
         return {name:this.#name,
                 map: this.#map,
@@ -240,11 +244,18 @@ const M = [M11, M12, M13, M14, M15,
  * @param {string} name 
  * @returns wall object with input name
  */
-function accessWall(name){
+function accessWallByName(name){
     for(let i = 0; i < M.length; i ++){
         if(M[i].getName() == name) return M[i];
     }
     return 'invalid wall name';
 }
 
-module.exports = accessWall;
+function accessWallByCoor(coordinate){
+    for(let i = 0; i < M.length; i ++){
+        if(M[i].getCoordinate() == coordinate) return M[i];
+    }
+    return 'invalid wall name';
+}
+
+module.exports = {accessWallByName, accessWallByCoor};

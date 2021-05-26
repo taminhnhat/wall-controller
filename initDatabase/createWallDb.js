@@ -7,7 +7,7 @@ const M = require('./walldb');
 
 mongoClient.connect(function(err, db) {
   if (err) console.error(err);
-  var dbo = db.db("Wall");
+  var dbo = db.db("Wall", );
 
   // dbo.collection("history").drop(function(err, delOK) {
   //   if (err) throw err;

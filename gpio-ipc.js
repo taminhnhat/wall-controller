@@ -8,7 +8,7 @@ const event = require('./event');
 
 const message = require('./message');
 
-let wall = require('./wallApi');
+let {accessWallByName, accessWallByCoor} = require('./wallApi');
 
 let gpioBitmap = require('./gpioMap');
 
@@ -28,12 +28,18 @@ readfifo.on('exit', function(status) {
     fifoRs.on('data', mess => {
         console.log('Message from pipe', String(mess));
         const messarr = String(mess).split(':');
-        const buttonCoor = messarr[0];
-        const wallSide = messarr[1];
-        const buttonEventName = 'button:' + wallSide;
-        let tempParams = message.generateButtonParams(buttonCoor);
-
-        event.emit(buttonEventName, tempParams);
+        const buttonCoor = messarr[1];
+        const wallSide = messarr[2];
+        if(buttonCoor.split('.')[0] == 'W'){
+            const buttonEventName = 'button:' + wallSide;
+            const tempParams = message.generateButtonParams(buttonCoor);
+            event.emit(buttonEventName, tempParams);
+        }
+        else if(buttonCoor.split('.')[0] == 'U'){
+            const buttonEventName = 'button:user';
+            const tempParams = message.generateButtonParams(buttonCoor);
+            event.emit(buttonEventName, tempParams);
+        }
     });
 
     fifoWs.on('error', function(err){
@@ -48,9 +54,9 @@ readfifo.on('exit', function(status) {
      */
      event.on('light:on', function(lightParams){
         console.log('light on event', lightParams);
-        const wallName = lightParams.wall;
+        const wallCoor = lightParams.wall;
         const wallSide = lightParams.side;
-        emitLightToPipe(wallName, wallSide, 'on');
+        emitLightToPipe(wallCoor, wallSide, 'on');
     });
     
     /**
@@ -61,20 +67,18 @@ readfifo.on('exit', function(status) {
      */
     event.on('light:off', function(lightParams){
         console.log('light off event', lightParams);
-        const wallName = lightParams.wall;
+        const wallCoor = lightParams.wall;
         const wallSide = lightParams.side;
-        emitLightToPipe(wallName, wallSide, 'off');
+        emitLightToPipe(wallCoor, wallSide, 'off');
     });
 
-    event.on('light:init', function(lightParams){
+    event.on('light:set', function(lightParams){
         console.log('light init event', lightParams);
+        const lightBitmap = lightParams.bitmap;
+        const wallSide = lightParams.side;
         //  Emit message to named-pipe
-        const frontMess = `light:${lightParams.frontBitmap}:front`;
-        fifoWs.write(frontMess);
-        setTimeout(function(){
-            const backMess = `light:${lightParams.backBitmap}:back`;
-            fifoWs.write(backMess);
-        }, 1000);
+        const mess = `light:${lightBitmap}:${wallSide}`;
+        fifoWs.write(mess);
     });
     
     /**
@@ -95,11 +99,11 @@ readfifo.on('exit', function(status) {
     
     /**
      * Emit a light message to C++ process via named-pipe
-     * @param {String} wallname eg: 'M-1-1'
+     * @param {String} wallCoor eg: 'M-1-1'
      * @param {String} wallSide 'front'|'back'
      */
-    function emitLightToPipe(wallName, wallSide, lightState){
-        const lightIndex = wall(wallName).getIndex();
+    function emitLightToPipe(wallCoor, wallSide, lightState){
+        const lightIndex = accessWallByCoor(wallCoor).getIndex();
         //  generate light bitmap of wall
         gpioBitmap.bitmapGenerate(lightIndex, wallSide, lightState);
         //  get light bitmap of wall
