@@ -8,7 +8,7 @@ const event = require('./event');
 
 const message = require('./message');
 
-let {accessWallByName, accessWallByCoor} = require('./wallApi');
+let {accessWallByName, accessWallByPosition} = require('./wallApi');
 
 let gpioBitmap = require('./gpioMap');
 
@@ -54,9 +54,9 @@ readfifo.on('exit', function(status) {
      */
      event.on('light:on', function(lightParams){
         console.log('light on event', lightParams);
-        const wallCoor = lightParams.wall;
+        const wallPosition = lightParams.wall;
         const wallSide = lightParams.side;
-        emitLightToPipe(wallCoor, wallSide, 'on');
+        emitLightToPipe(wallPosition, wallSide, 'on');
     });
     
     /**
@@ -67,9 +67,9 @@ readfifo.on('exit', function(status) {
      */
     event.on('light:off', function(lightParams){
         console.log('light off event', lightParams);
-        const wallCoor = lightParams.wall;
+        const wallPosition = lightParams.wall;
         const wallSide = lightParams.side;
-        emitLightToPipe(wallCoor, wallSide, 'off');
+        emitLightToPipe(wallPosition, wallSide, 'off');
     });
 
     
@@ -101,13 +101,13 @@ readfifo.on('exit', function(status) {
     
     /**
      * Emit a light message to C++ process via named-pipe
-     * @param {String} wallCoor eg: 'W.1.1'
+     * @param {String} wallPosition eg: 'W.1.1'
      * @param {String} wallSide 'front'|'back'
      */
-    function emitLightToPipe(wallCoor, wallSide, lightState){
-        //console.log('generating', wallCoor, wallSide, lightState);
-        //console.log('get wall', accessWallByCoor(wallCoor).getName());
-        const lightIndex = accessWallByCoor(wallCoor).getIndex();
+    function emitLightToPipe(wallPosition, wallSide, lightState){
+        //console.log('generating', wallPosition, wallSide, lightState);
+        //console.log('get wall', accessWallByPosition(wallPosition).getName());
+        const lightIndex = accessWallByPosition(wallPosition).getIndex();
         //console.log('light index', lightIndex)
         //  generate light bitmap of wall
         gpioBitmap.bitmapGenerate(lightIndex, wallSide, lightState);

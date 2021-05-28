@@ -239,9 +239,6 @@ const M = [M11, M12, M13, M14, M15,
                 M51, M52, M53, M54, M55,
                 M61, M62, M63, M64, M65]
 
-for(let i = 0; i < M.length; i ++){
-    console.log(M[i].getName(), M[i].getIndex())
-}
 /**
  * 
  * @param {string} name 
@@ -254,11 +251,11 @@ function accessWallByName(name){
     return 'invalid wall name';
 }
 
-function accessWallByCoor(coordinate){
+function accessWallByPosition(coordinate){
     for(let i = 0; i < M.length; i ++){
         if(M[i].getCoordinate() == coordinate) return M[i];
     }
-    return 'invalid wall coordinate';
+    return 'invalid wall position';
 }
 
-module.exports = {accessWallByName, accessWallByCoor};
+module.exports = {accessWallByName, accessWallByPosition};

@@ -13,8 +13,8 @@ const BACKUP_COLLECTION = 'backup';
 const HISTORY_COLLECTION = 'history';
 const ERROR_COLLECTION = 'error';
 const WARNING_COLECTION = 'warning';
-const REQUEST_COLLECTION = 'request';
-const RESPOND_COLLECTION = 'respond';
+const RECEIVE_MESSAGE = 'received_messages';
+const SEND_MESSAGE = 'sent_messages';
 const SCANNER_COLLECTION = 'scanner';
 const FRONT_BUTTON_COLLECTION = 'front_button';
 const BACK_BUTTON_COLLECTION = 'back_button';
@@ -22,12 +22,12 @@ const BACK_BUTTON_COLLECTION = 'back_button';
 //  WEB SOCKET____________________________________________________________________________
 
 const io = require('socket.io-client');
-//var socket = io.connect('http://app3.fahasa.com:1300/');
-//const socket = io.connect('ws://localhost:3000');
-//var socket = io.connect('ws://172.16.0.100:3000');
-//var socket = io.connect('ws://192.168.50.65:3000');
-//var socket = io.connect('http://192.168.1.157:3001');
-const socket = io.connect('ws://192.168.1.20:3000');
+//const socket = io.connect('http://app3.fahasa.com:1300/');
+const socket = io.connect('ws://localhost:3000');
+//const socket = io.connect('ws://172.16.0.100:3000');
+//const socket = io.connect('ws://192.168.50.65:3000');
+//const socket = io.connect('http://192.168.1.157:3001');
+//const socket = io.connect('ws://192.168.1.20:3000');
 
 
 // if(process.platform == 'linux'){
@@ -87,7 +87,7 @@ const path = require('path');
 //  WALL CLASS_____________________________________________________________________________
 
 // require wall objects
-var {accessWallByName, accessWallByCoor} = require('./wallApi');
+var {accessWallByName, accessWallByPosition} = require('./wallApi');
 
 const createDbSchema = require('./schema')
 
@@ -121,13 +121,13 @@ var wallKeyNow = null;
 //  RESTORE FROM BACKUP____________________________________________________________________________________________________
 
 function restoreFromBackupDb(){
-    console.log('Waiting to restore from database')
+    console.log(createLog('Restore from backup database', 'debug'));
     let backupState = {}
     if(mongoEnable)
     mongoClient.connect(url, { useUnifiedTopology: true }, function(err, client) {
         if (err) console.error(err);
         const db = client.db(WALL_DB);
-        db.collection(BACKUP_COLLECTION).find({}, { projection: { _id: 0, name: 1, map: 1, frontLight: 1, backLight: 1, importTote: 1, exportTote: 1 } }).toArray(function(err, res){
+        db.collection(BACKUP_COLLECTION).find({}, { projection: { _id: 0, name: 1, coordinate: 1, frontLight: 1, backLight: 1, importTote: 1, exportTote: 1 } }).toArray(function(err, res){
             if (err) console.error(err);
             backupState = res;
             client.close();
@@ -137,7 +137,7 @@ function restoreFromBackupDb(){
             //  Check light state of wall
             for(idx in backupState){
                 let wallState = backupState[idx];
-                console.log('backup', wallState);
+                console.log(wallState.toString());
                 //  Emit light event
                 if(wallState.frontLight == true){
                     event.emit('light:on', {wall: wallState.name, side: 'front'});
@@ -153,7 +153,9 @@ function restoreFromBackupDb(){
         });
     });
 }
-//restoreFromBackupDb();
+
+console.log(createLog('Main process started', 'INFO'));
+restoreFromBackupDb();
 
 //  HANDLE EVENTS FROM EVENT EMITTER_______________________________________________________________________________________
 
@@ -175,7 +177,7 @@ event.on('button:front', function(buttonParams){
     const queryByCoor = { coordinate: buttonCoor };
     let newValues = { $set: {frontLight: false} };
 
-    const wallName = accessWallByCoor(buttonCoor).getName();
+    const wallName = accessWallByPosition(buttonCoor).getName();
 
     let str = `${importToteNow} => ${wallName}`;
     event.emit('print:action', `Hang len:\n   Khay ${importToteNow}\nNhap vao\n   Tuong ${wallName}`);
@@ -219,7 +221,7 @@ event.on('button:back', function(buttonParams){
     const newBackupValues = { $set: {exportTote: exportToteNow, complete: true, backLight: false} };
     let newHistoryValues = {};
 
-    const wallName = accessWallByCoor(buttonCoor).getName();
+    const wallName = accessWallByPosition(buttonCoor).getName();
 
     let str = `${wallName} => ${exportToteNow}`;
     console.log(str + ' pressed');
@@ -773,3 +775,8 @@ socket.on('disconnect', function(){
 socket.on('error', function(){
     console.log(error);
 });
+
+
+function createLog(message, status){
+    return `${Date(Date.now())}|${status.toUpperCase()}|message:${message}|}`;
+}
