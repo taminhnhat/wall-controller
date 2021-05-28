@@ -552,8 +552,6 @@ event.on('wall:completeOne', function(wallCoor){
 
 //  HANDLE EVENTS FROM UNIX SOCKET_______________________________________________________________________________________________________
 
-
-
 //  HANDLE EVENTS FROM WEB SOCKET_________________________________________________________________________________________________________
 
 //  handle scanner:confirm from server
