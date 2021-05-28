@@ -186,3 +186,9 @@ chmod a+x file1 file2
 
 # OK to combine like this with a comma
 chmod g+rx,o+x file  
+
+9. View service log
+
+journalctl -u minhnhat.service
+
+journalctl

@@ -1,0 +1,8 @@
+[Unit]
+Description=Startup
+
+[Service]
+ExecStart=/home/ubuntu/wall-controller/shell/gpio-process.sh
+
+[Install]
+WantedBy=default.target

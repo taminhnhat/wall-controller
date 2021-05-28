@@ -192,6 +192,10 @@ class wallState{
     getIndex(){
         return this.#bitIndex;
     }
+
+    setname(wallName){
+        this.#name = wallName;
+    }
 }
 
 //
