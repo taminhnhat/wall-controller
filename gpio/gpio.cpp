@@ -28,7 +28,7 @@
 #define ENABLE_PIN_10 23   //enable buttons on row M-5 back of wall
 #define ENABLE_PIN_11 0   //enable user buttons on elctric cabin
 
-#define READ_PIN_1 22   //read button 1 on column 1
+#define READ_PIN_1 11   //read button 1 on column 1
 #define READ_PIN_2 27   //read button 2 on column 2
 #define READ_PIN_3 17   //read button 3 on column 3
 #define READ_PIN_4 4    //read button 4 on column 4
@@ -319,17 +319,18 @@ void readButtons(int line){
   char side[6];
   if(line < 6){
       row = line;
-      std::sprintf(side, "front");
+      std::sprintf(side, "back");
   }
   else if(line >= 6 && line < 11){
       row = line - 5;
-      std::sprintf(side, "back");
+      std::sprintf(side, "front");
   }
 
   //  check if button was pressed
   for(int col = 0; col < 6; col ++){
-    if(buttonSysnalCountPerCycle[col] > 0)
-    std::cout << "button W-" << col + 1 << "-" << row << ":" << buttonSysnalCountPerCycle[col] << std::endl;
+    // if(buttonSysnalCountPerCycle[col] > 0){
+    //   std::cout << "button W-" << col + 1 << "-" << row << ":" << buttonSysnalCountPerCycle[col] << std::endl;
+    // }
 
     if(buttonSysnalCountPerCycle[col] >= buttonCountToEmit && (timerCount - buttonTick[col-1][line-1]) > buttonDelay){
       char arr[100];

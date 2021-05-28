@@ -29,9 +29,9 @@ readfifo.on('exit', function(status) {
         console.log('Message from pipe', String(mess));
         const messarr = String(mess).split(':');
         const buttonCoor = messarr[1];
-        const wallSide = messarr[2];
         if(buttonCoor.split('.')[0] == 'W'){
-            const buttonEventName = 'button:' + wallSide;
+            const wallSide = messarr[2].trim();
+            const buttonEventName = `button:${wallSide}`;
             const tempParams = message.generateButtonParams(buttonCoor);
             event.emit(buttonEventName, tempParams);
         }
@@ -72,6 +72,8 @@ readfifo.on('exit', function(status) {
         emitLightToPipe(wallCoor, wallSide, 'off');
     });
 
+    
+
     event.on('light:set', function(lightParams){
         console.log('light init event', lightParams);
         const lightBitmap = lightParams.bitmap;
@@ -99,11 +101,14 @@ readfifo.on('exit', function(status) {
     
     /**
      * Emit a light message to C++ process via named-pipe
-     * @param {String} wallCoor eg: 'M-1-1'
+     * @param {String} wallCoor eg: 'W.1.1'
      * @param {String} wallSide 'front'|'back'
      */
     function emitLightToPipe(wallCoor, wallSide, lightState){
+        //console.log('generating', wallCoor, wallSide, lightState);
+        //console.log('get wall', accessWallByCoor(wallCoor).getName());
         const lightIndex = accessWallByCoor(wallCoor).getIndex();
+        //console.log('light index', lightIndex)
         //  generate light bitmap of wall
         gpioBitmap.bitmapGenerate(lightIndex, wallSide, lightState);
         //  get light bitmap of wall

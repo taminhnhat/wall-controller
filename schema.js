@@ -8,9 +8,9 @@ const historySchema = function(importTote, exportTote, name, key){
     return wallObj
 }
 
-const backupSchema = function(importTote, exportTote, name, key, frontLight, backLight, frozen, complete){
+const backupSchema = function(importTote, exportTote, coordinate, key, frontLight, backLight, frozen, complete){
     const wallObj = {};
-    wallObj.name = name;
+    wallObj.coordinate = coordinate;
     wallObj.importTote = importTote;
     wallObj.exportTote = exportTote;
     wallObj.frontLight = frontLight;

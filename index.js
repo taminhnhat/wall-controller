@@ -23,11 +23,11 @@ const BACK_BUTTON_COLLECTION = 'back_button';
 
 const io = require('socket.io-client');
 //var socket = io.connect('http://app3.fahasa.com:1300/');
-const socket = io.connect('ws://localhost:3000');
+//const socket = io.connect('ws://localhost:3000');
 //var socket = io.connect('ws://172.16.0.100:3000');
 //var socket = io.connect('ws://192.168.50.65:3000');
 //var socket = io.connect('http://192.168.1.157:3001');
-//var socket = io.connect('ws://192.168.43.32:3000');
+const socket = io.connect('ws://192.168.1.20:3000');
 
 
 // if(process.platform == 'linux'){
@@ -166,6 +166,7 @@ event.on('start', function(){
  * Handle 'button:front' event from gpio
  */
 event.on('button:front', function(buttonParams){
+    console.log('button:front event', buttonParams);
 
     //logger.info(`${Date(Date.now())} | wallController/index.js | button ${buttonParams.wall} pressed`);
 
@@ -177,11 +178,10 @@ event.on('button:front', function(buttonParams){
     const wallName = accessWallByCoor(buttonCoor).getName();
 
     let str = `${importToteNow} => ${wallName}`;
-    console.log(str + ' pressed');
-    event.emit('print', str);
     event.emit('print:action', `Hang len:\n   Khay ${importToteNow}\nNhap vao\n   Tuong ${wallName}`);
     buttonParams.tote = importToteNow;
-    let tempApi = message.generateApi('pressButton', 'wallController', buttonParams);
+    const wallParams = {wall: wallName};
+    let tempApi = message.generateApi('pressButton', 'wallController', wallParams);
     console.log(`Tote ${buttonParams.tote} push to wall ${wallName}, key: ${tempApi.key}`);
     if(importToteNow != null){
         socket.emit('pushToWall', tempApi);
@@ -201,8 +201,8 @@ event.on('button:front', function(buttonParams){
                 console.log('Add newScan event to Db', res.result);
                 client.close();
                 let lightParams = {};
-                lightParams.wall = wallName;
-                lightParams.side = 'back';
+                lightParams.wall = buttonCoor;
+                lightParams.side = 'front';
                 event.emit('light:off', lightParams);
             });
         });
@@ -211,6 +211,8 @@ event.on('button:front', function(buttonParams){
 
 //  'button:back' emitted in 'ioControl.js' when a button pressed
 event.on('button:back', function(buttonParams){
+    console.log('button:back event', buttonParams);
+
     const buttonCoor = buttonParams.button;
     // create query by wall name to access database
     const queryByCoor = { coordinate: buttonCoor };
@@ -225,7 +227,7 @@ event.on('button:back', function(buttonParams){
     event.emit('print:action', `Hang xuong:\n   Tuong ${wallName}\nNhap vao\n   Khay ${exportToteNow}`);
     if(exportToteNow != null){
         let lightParams = {};
-        lightParams.wall = wallName;
+        lightParams.wall = buttonCoor;
         lightParams.side = 'back';
         buttonParams.tote = exportToteNow;
 
@@ -296,27 +298,63 @@ event.on('button:back', function(buttonParams){
 });
 
 event.on('button:user', function(buttonParams){
-    switch(buttonParams.button.split('.')[1]){
-        case 1:
+    console.log('button:user event', buttonParams);
+    switch(buttonParams.button){
+        case 'U.1.1':
             break;
-        case 2:
+        case 'U.2.1':
             //
             break;
-        case 3:
+        case 'U.3.1':
             //
+            break;
+        case 'U.4.1':
+            runningLight();
+            break;
+        case 'U.5.1':
+            reloadGPIO();
+            break;
+        case 'U.6.1':
+            testLightProgram();
             break;
         default:
             //
     }
 
-    function testLightProgram(){
+    function runningLight(){
         let lightBitmap = 1;
         let count = 0;
         const testLightInterval = setInterval(() => {
-            lightBitmap <<= count;
-            lightBitmap >>>= 0;
-            event.emit('light:set', '');
-        }, 200);
+            lightBitmap = lightBitmap << count >>> 0;
+            event.emit('light:set', {bitmap: lightBitmap, side: 'front'});
+            count ++;
+            if(count == 32) clearInterval(testLightInterval);
+        }, 500);
+    }
+
+    function reloadGPIO(){
+        event.emit('light:reload', '');
+    }
+
+    function testLightProgram(){
+        // let lightBitmap = 1;
+        // let count = 0;
+        // const testLightInterval = setInterval(() => {
+        //     lightBitmap <<= count;
+        //     lightBitmap >>>= 0;
+        //     event.emit('light:set', '');
+        // }, 200);
+        const bitmap = (2**32 - 1) >>> 0;
+        event.emit('light:set', {bitmap: bitmap, side: 'front'});
+        setTimeout(() => {
+            event.emit('light:set', {bitmap: bitmap, side: 'back'});
+        }, 1000);
+        // setTimeout(() => {
+        //     event.emit('light:set', {bitmap: 0, side: 'front'});
+        // }, 5000);
+        setTimeout(() => {
+            event.emit('light:set', {bitmap: 0, side: 'back'});
+        }, 6000);
     }
 });
 
@@ -362,7 +400,7 @@ event.on('scanner:front', function(scanParams){
 
             tempMess.interval = setInterval(function(){
                 console.log(`Resend message with key #${frontScanKey}!`);
-                socket.emit('scanTotePushToWall', scanApi);
+                //socket.emit('scanTotePushToWall', scanApi);
                 tempMess.count ++;
                 if(tempMess.count >= MAX_RETRY_COUNT){
                     console.log(`Message with key #${frontScanKey} has been called ${MAX_RETRY_COUNT} times and stopped!!!`);
@@ -484,8 +522,8 @@ event.on('scanner:back', function(scanParams){
 event.on('wall:completeOne', function(wallCoor){
     // create query by wall name to access database
     console.log('wall complete!!!')
-    const queryByCoor = { coordinate: wallName}
-    const newBackupValues = createDbSchema.backupSchema([], "", wallName, null, false, false, false, false);
+    const queryByCoor = { coordinate: wallCoor}
+    const newBackupValues = createDbSchema.backupSchema([], "", wallCoor, null, false, false, false, false);
     console.log('reset shema', newBackupValues);
 
     if(mongoEnable)
@@ -571,7 +609,10 @@ socket.on('lightOn', function(lightApi){
     //event.emit('print', str);
 
     //  Emit light:on event to execute in ioControl.js
-    event.emit('light:on', lightApi.params);
+    let lightParams = {};
+    lightParams.wall = accessWallByName(wallName).getCoordinate();
+    lightParams.side = wallSide;
+    event.emit('light:on', lightParams);
 
     //ipc.of.gpio.emit('light:on', lightApi.params);
 
@@ -641,7 +682,10 @@ socket.on('lightOff', function(lightApi){
     //event.emit('print', str);
 
     //  Emit light:on event to execute in ioControl.js
-    event.emit('light:off', lightApi.params);
+    let lightParams = {};
+    lightParams.wall = accessWallByName(wallName).getCoordinate();
+    lightParams.side = wallSide;
+    event.emit('light:off', lightParams);
 
     //wallStorage[lightApi.params.row - 1].backLightEnable = false;
     socket.emit('lightOffConfirm', message.generateApi('lightOffConfirm', 'wallController', {wall: wallName}, wallKey));

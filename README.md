@@ -97,9 +97,9 @@ In raspberry terminal
 >sudo touch minhnhat.rules
 >sudo nano minhnhat.rules
 
-    KERNEL=="ttyACM[0-9]*", SUBSYSTEM=="tty",ATTRS{idVendor}=="065a",ATTRS{idProduct}=="a002",ATTRS{devpath}=="1.1",SYMLINK="frontScanner"
-    KERNEL=="ttyACM[0-9]*", SUBSYSTEM=="tty",ATTRS{idVendor}=="065a",ATTRS{idProduct}=="a002",ATTRS{devpath}=="1.2",SYMLINK="backScanner"
-    KERNEL=="ttyUSB[0-9]*", SUBSYSTEM=="tty",ATTRS{idVendor}=="067b",ATTRS{idProduct}=="2303",ATTRS{devpath}=="1.4",SYMLINK="lcdScreen"
+KERNEL=="ttyACM[0-9]*", SUBSYSTEM=="tty",ATTRS{idVendor}=="065a",ATTRS{idProduct}=="a002",ATTRS{devpath}=="1.1",SYMLINK="frontScanner"
+KERNEL=="ttyACM[0-9]*", SUBSYSTEM=="tty",ATTRS{idVendor}=="065a",ATTRS{idProduct}=="a002",ATTRS{devpath}=="1.2",SYMLINK="backScanner"
+KERNEL=="ttyUSB[0-9]*", SUBSYSTEM=="tty",ATTRS{idVendor}=="067b",ATTRS{idProduct}=="2303",ATTRS{devpath}=="1.4",SYMLINK="lcdScreen"
 
 >sudo udevadm control --reload-rules
 >sudo udevadm trigger

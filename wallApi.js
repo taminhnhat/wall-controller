@@ -32,11 +32,11 @@ class wallState{
         this.#key = null;
         this.#frontLight = false;
         this.#backLight = false;
-        let temp = map.split('-');
+        let temp = map.split('.');
         this.#col = temp[1];
         this.#row = temp[2];
         this.#log = 'null';
-        this.#bitIndex = Number(this.#col) + (Number(this.#row) - 1)*6 + 1;
+        this.#bitIndex = Number(this.#col) + (Number(this.#row) - 1)*6 - 1;
     }
     /**
      * Create a log object that save 1 complete action on wall include: wall name, import totes, export tote, key. Return private #log property
@@ -195,41 +195,41 @@ class wallState{
 }
 
 //
-let M11 = new wallState('M-1-1', 'M-1-1');
-let M12 = new wallState('M-1-2', 'M-1-7');
-let M13 = new wallState('M-1-3', 'M-1-13');
-let M14 = new wallState('M-1-4', 'M-1-19');
-let M15 = new wallState('M-1-5', 'M-1-25');
+let M11 = new wallState('W.1.1', 'M-1-1');
+let M12 = new wallState('W.1.2', 'M-1-7');
+let M13 = new wallState('W.1.3', 'M-1-13');
+let M14 = new wallState('W.1.4', 'M-1-19');
+let M15 = new wallState('W.1.5', 'M-1-25');
 //
-let M21 = new wallState('M-2-1', 'M-1-2');
-let M22 = new wallState('M-2-2', 'M-1-8');
-let M23 = new wallState('M-2-3', 'M-1-14');
-let M24 = new wallState('M-2-4', 'M-1-20');
-let M25 = new wallState('M-2-5', 'M-1-26');
+let M21 = new wallState('W.2.1', 'M-1-2');
+let M22 = new wallState('W.2.2', 'M-1-8');
+let M23 = new wallState('W.2.3', 'M-1-14');
+let M24 = new wallState('W.2.4', 'M-1-20');
+let M25 = new wallState('W.2.5', 'M-1-26');
 //
-let M31 = new wallState('M-3-1', 'M-1-3');
-let M32 = new wallState('M-3-2', 'M-1-9');
-let M33 = new wallState('M-3-3', 'M-1-15');
-let M34 = new wallState('M-3-4', 'M-1-21');
-let M35 = new wallState('M-3-5', 'M-1-27');
+let M31 = new wallState('W.3.1', 'M-1-3');
+let M32 = new wallState('W.3.2', 'M-1-9');
+let M33 = new wallState('W.3.3', 'M-1-15');
+let M34 = new wallState('W.3.4', 'M-1-21');
+let M35 = new wallState('W.3.5', 'M-1-27');
 //
-let M41 = new wallState('M-4-1', 'M-1-4');
-let M42 = new wallState('M-4-2', 'M-1-10');
-let M43 = new wallState('M-4-3', 'M-1-16');
-let M44 = new wallState('M-4-4', 'M-1-22');
-let M45 = new wallState('M-4-5', 'M-1-28');
+let M41 = new wallState('W.4.1', 'M-1-4');
+let M42 = new wallState('W.4.2', 'M-1-10');
+let M43 = new wallState('W.4.3', 'M-1-16');
+let M44 = new wallState('W.4.4', 'M-1-22');
+let M45 = new wallState('W.4.5', 'M-1-28');
 //
-let M51 = new wallState('M-5-1', 'M-1-5');
-let M52 = new wallState('M-5-2', 'M-1-11');
-let M53 = new wallState('M-5-3', 'M-1-17');
-let M54 = new wallState('M-5-4', 'M-1-23');
-let M55 = new wallState('M-5-5', 'M-1-29');
+let M51 = new wallState('W.5.1', 'M-1-5');
+let M52 = new wallState('W.5.2', 'M-1-11');
+let M53 = new wallState('W.5.3', 'M-1-17');
+let M54 = new wallState('W.5.4', 'M-1-23');
+let M55 = new wallState('W.5.5', 'M-1-29');
 //
-let M61 = new wallState('M-6-1', 'M-1-6');
-let M62 = new wallState('M-6-2', 'M-1-12');
-let M63 = new wallState('M-6-3', 'M-1-18');
-let M64 = new wallState('M-6-4', 'M-1-24');
-let M65 = new wallState('M-6-5', 'M-1-30');
+let M61 = new wallState('W.6.1', 'M-1-6');
+let M62 = new wallState('W.6.2', 'M-1-12');
+let M63 = new wallState('W.6.3', 'M-1-18');
+let M64 = new wallState('W.6.4', 'M-1-24');
+let M65 = new wallState('W.6.5', 'M-1-30');
 //
 
 const M = [M11, M12, M13, M14, M15,
@@ -239,6 +239,9 @@ const M = [M11, M12, M13, M14, M15,
                 M51, M52, M53, M54, M55,
                 M61, M62, M63, M64, M65]
 
+for(let i = 0; i < M.length; i ++){
+    console.log(M[i].getName(), M[i].getIndex())
+}
 /**
  * 
  * @param {string} name 
@@ -255,7 +258,7 @@ function accessWallByCoor(coordinate){
     for(let i = 0; i < M.length; i ++){
         if(M[i].getCoordinate() == coordinate) return M[i];
     }
-    return 'invalid wall name';
+    return 'invalid wall coordinate';
 }
 
 module.exports = {accessWallByName, accessWallByCoor};

@@ -36,11 +36,11 @@ port0.open(function (err) {
 
 port1.on('open', function(){
   clearInterval(connectPort1);
-  event.emit('scanner:opened', 'Serial port opened');
+  event.emit('scanner:opened', 'back scanner opened');
 });
 port0.on('open', function(){
   clearInterval(connectPort0);
-  event.emit('scanner:opened', 'Serial port opened');
+  event.emit('scanner:opened', 'Front sacnner opened');
 });
   
 // Switches the port into "flowing mode"
