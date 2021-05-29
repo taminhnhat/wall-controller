@@ -390,9 +390,9 @@ event.on('scanner:front', function(scanParams){
     wallKeyNow = frontScanKey;
 
     let scanApi = message.generateApi('newScan', 'wallController', scanParams, frontScanKey);
-    let scanArray = scanParams.val.split('-');
+    let scanArray = scanParams.value.split('-');
     let firstElementScan = scanArray[0];
-    let sizeOfScan = scanParams.val.split('-').length;
+    let sizeOfScan = scanParams.value.split('-').length;
 
     //  Check if scanned tote a valid value
     if(sizeOfScan == 2 && (firstElementScan === "M" || firstElementScan === "L" || firstElementScan === "S")){
@@ -493,9 +493,9 @@ event.on('scanner:back', function(scanParams){
     const query = { name: scanParams.wall };
 
     let scanApi = message.generateApi('newScan', 'wallController', scanParams);
-    let scanArray = scanParams.val.split('-');
+    let scanArray = scanParams.value.split('-');
     let firstElementScan = scanArray[0];
-    let sizeOfScan = scanParams.val.split('-').length;
+    let sizeOfScan = scanParams.value.split('-').length;
 
     if(sizeOfScan == 2 && (firstElementScan === "M" || firstElementScan === "L" || firstElementScan === "S")){
         exportToteNow = scanParams.val;
@@ -551,6 +551,25 @@ event.on('wall:completeOne', function(wallCoor){
     })
 
 
+})
+
+/**
+ * handle internal error
+ */
+event.on('error:internal', function(errorParams){
+    const errorMessage = errorParams.message;
+    const wallSide = errorParams.side;
+    //  emit 'light:error' event, it will be handled in 'gpio-ipc.js'
+    event.emit('light:error', {status: 'warning', side: wallSide});
+    //  emit 'print:internalError' event, it will be handled in 'serial.js'
+    event.emit('print:internalError', {})
+})
+
+/**
+ * handle error from server
+ */
+event.on('error:fromserver', function(errorParams){
+    //
 })
 
 

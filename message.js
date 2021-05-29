@@ -29,10 +29,8 @@ const message = {
      * @param {String} wall 
      * @returns object
      */
-    generateButtonParams: function(buttonCoordinate){
-        let buttonObj = {};
-        buttonObj.button = buttonCoordinate;
-        return buttonObj;
+    generateButtonParams: function(buttonPosition){
+        return {button: buttonPosition};
     },
 
     /**
@@ -42,11 +40,7 @@ const message = {
      * @returns object
      */
     generateScannerParams: function(val){
-        let scanObj = {};
-        scanObj.fromColumn = 1;
-        scanObj.toColumn = 6;
-        scanObj.val = val;
-        return scanObj;
+        return {wall: 'M-1', value: val};
     },
 
     generateWarning: function(auth, mess){

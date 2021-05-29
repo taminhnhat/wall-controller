@@ -2,8 +2,12 @@ const SerialPort = require('serialport');
 const event = require('./event');
 const message = require('./message');
 
-var connectPort0 = setInterval(reconnectPort0, 1000);
-var connectPort1 = setInterval(reconnectPort1, 1000);
+const logger = require('./logger/logger');
+
+const FILE_NAME = 'wallcontroller/serial.js',
+
+const connectPort0 = setInterval(reconnectPort0, 5000);
+const connectPort1 = setInterval(reconnectPort1, 5000);
 
 // const port = new SerialPort('COM5', {
 //   baudRate: 9600,
@@ -25,12 +29,12 @@ const usb = new SerialPort('/dev/lcdScreen', {
 
 port1.open(function (err) {
   if (err) {
-    return console.log('Error opening port: ', err.message)
+    return logger.debug('Error opening port: ', FILE_NAME, err.message)
   }
 });
 port0.open(function (err) {
   if (err) {
-    return console.log('Error opening port: ', err.message)
+    return logger.debug('Error opening port: ', FILE_NAME, err.message)
   }
 });
 
@@ -46,43 +50,44 @@ port0.on('open', function(){
 // Switches the port into "flowing mode"
 port0.on('data', function (data) {
   let scanString = String(data).trim();
-  console.log('---------------');
-  console.log('Front scanner:', scanString);
-  let scanParams = message.generateScannerParams(scanString);
-  event.emit('scanner:front', scanParams);
+  logger.debug('Front scanner:', FILE_NAME, scanString);
+  
+  event.emit('scanner:front', {value: scanString});
 });
+
 port1.on('data', function (data) {
   let scanString = String(data).trim();
-  console.log('---------------');
-  console.log('Back scanner:', scanString);
-  let scanParams = message.generateScannerParams(scanString);
-  event.emit('scanner:back', scanParams);
+  logger.debug('Back scanner:', FILE_NAME, scanString);
+  
+  event.emit('scanner:back', {value: scanString});
 });
 
 port0.on('close', function(){
   event.emit('scanner:closed', 'Serial port 0 closed');
   connectPort = setInterval(reconnectPort0, 5000);
 });
+
 port1.on('close', function(){
   event.emit('scanner:closed', 'Serial port 1 closed');
   connectPort = setInterval(reconnectPort1, 5000);
 });
 
-event.on('print:action', function(str){
+event.on('print:action', function(printParams){
   try{
-    usb.write(str + '\r');
+    usb.write(printParams.message + '\r');
   }
   catch(err){
-    console.log('Cannot write to usb', err);
+    logger.debug('Cannot write to usb', FILE_NAME, err);
   }
 });
 
-event.on('print:internalError', function(cod, str){
+event.on('print:internalError', function(errorParams){
   try{
-    usb.write(str + '\r');
+    const message = `${errorParams.code}|${errorParams.message}`;
+    usb.write(`${message}\r`);
   }
   catch(err){
-    console.log('Cannot write to usb', err);
+    logger.debug('Cannot write to usb', FILE_NAME, err);
   }
 });
 
@@ -91,15 +96,18 @@ event.on('print:internalError', function(cod, str){
  * Reconnecting to serial port after loss connection
  */
 function reconnectPort0() {
-  //console.log(port);
   port0.open(function(err){
-      //if (err) console.log('Error connecting port 0:', err.message);
+      if (err){
+        //logger.debug('Error connecting port 0:', FILE_NAME, err.message);
+      }
   });
 }
+
 function reconnectPort1() {
-  //console.log(port);
   port1.open(function(err){
-      //if (err) console.log('Error connecting port 1:', err.message);
+      if (err){
+        //logger.debug('Error connecting port 1:', FILE_NAME, err.message);
+      }
   });
 }
 
