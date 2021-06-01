@@ -4,7 +4,7 @@ const message = require('./message');
 
 const logger = require('./logger/logger');
 
-const FILE_NAME = 'wallcontroller/serial.js',
+const FILE_NAME = 'wallcontroller/serial.js';
 
 const connectPort0 = setInterval(reconnectPort0, 5000);
 const connectPort1 = setInterval(reconnectPort1, 5000);
