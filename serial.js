@@ -4,7 +4,7 @@ const message = require('./message');
 
 const logger = require('./logger/logger');
 
-const FILE_NAME = 'wallcontroller/serial.js';
+const FILE_NAME = 'serial.js  ';
 
 const connectPort0 = setInterval(reconnectPort0, 5000);
 const connectPort1 = setInterval(reconnectPort1, 5000);
@@ -17,7 +17,10 @@ const connectPort1 = setInterval(reconnectPort1, 5000);
 
 //  NEED TO CONFIG SERIAL PORT FIRST, READ 'README.md'
 
-const port0 = new SerialPort('/dev/frontScanner', {
+// const port0 = new SerialPort('/dev/frontScanner', {
+//   baudRate: 9600
+// });
+const port0 = new SerialPort('/dev/tty.usbmodem143401', {
   baudRate: 9600
 });
 const port1 = new SerialPort('/dev/backScanner', {
@@ -29,12 +32,12 @@ const usb = new SerialPort('/dev/lcdScreen', {
 
 port1.open(function (err) {
   if (err) {
-    return logger.debug('Error opening port: ', FILE_NAME, err.message)
+    return logger.debug({message: 'Error opening port: ', location: FILE_NAME, value: err.message})
   }
 });
 port0.open(function (err) {
   if (err) {
-    return logger.debug('Error opening port: ', FILE_NAME, err.message)
+    return logger.debug({message: 'Error opening port: ', location: FILE_NAME, value: err.message})
   }
 });
 
@@ -50,14 +53,14 @@ port0.on('open', function(){
 // Switches the port into "flowing mode"
 port0.on('data', function (data) {
   let scanString = String(data).trim();
-  logger.debug('Front scanner:', FILE_NAME, scanString);
+  logger.debug({message: 'Front scanner:', location: FILE_NAME, value: scanString});
   
   event.emit('scanner:front', {value: scanString});
 });
 
 port1.on('data', function (data) {
   let scanString = String(data).trim();
-  logger.debug('Back scanner:', FILE_NAME, scanString);
+  logger.debug({message: 'Back scanner:', location: FILE_NAME, value: scanString});
   
   event.emit('scanner:back', {value: scanString});
 });
@@ -72,22 +75,22 @@ port1.on('close', function(){
   connectPort = setInterval(reconnectPort1, 5000);
 });
 
-event.on('print:action', function(printParams){
+event.on('lcd:print:action', function(printParams){
   try{
     usb.write(printParams.message + '\r');
   }
   catch(err){
-    logger.debug('Cannot write to usb', FILE_NAME, err);
+    logger.error({message: 'Cannot write to usb', location: FILE_NAME, value: err});
   }
 });
 
-event.on('print:internalError', function(errorParams){
+event.on('lcd:print:error', function(errorParams){
   try{
     const message = `${errorParams.code}|${errorParams.message}`;
     usb.write(`${message}\r`);
   }
   catch(err){
-    logger.debug('Cannot write to usb', FILE_NAME, err);
+    logger.error({message: 'Cannot write to usb', location: FILE_NAME, value: err});
   }
 });
 
@@ -98,7 +101,7 @@ event.on('print:internalError', function(errorParams){
 function reconnectPort0() {
   port0.open(function(err){
       if (err){
-        //logger.debug('Error connecting port 0:', FILE_NAME, err.message);
+        //logger.debug({message: 'Error connecting port 0:', location: FILE_NAME, value: err.message});
       }
   });
 }
@@ -106,7 +109,7 @@ function reconnectPort0() {
 function reconnectPort1() {
   port1.open(function(err){
       if (err){
-        //logger.debug('Error connecting port 1:', FILE_NAME, err.message);
+        //logger.debug({message: 'Error connecting port 1:', location: FILE_NAME, value: err.message});
       }
   });
 }

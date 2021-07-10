@@ -9,6 +9,7 @@
 #include <pigpio.h>
 #include <string.h>
 #include "./named-pipe.h"
+#include "./lcd-i2c.h"
 
 #define CYCLE_TIMER 100 //miliseconds`
 
@@ -138,15 +139,20 @@ int charToInt(char c){
 int main(int argc, char *argv[]){
   //  Start named-pipe ipc
   mypipe.startPipe();
+
   //  Init gpio
   if(!initGPIO()){
     std::cout << "init gpio error" << std::endl;
   }
+
   //  Reset buttons
   resetButtonTick();
 
   // Reset light
   resetLight();
+
+  // Init lcd
+  lcdInit(1, 0x27);
 
   int lineCount = 1;
 
@@ -160,29 +166,50 @@ int main(int argc, char *argv[]){
       else lineCount ++;
     }
 
-    //  Check if pipe has new data
+    /**
+     * Check if pipe has new command from nodejs side
+     * Light command:   'light:<light bitmap>:<side>'
+     * Lcd command:     'lcd:<message>'
+     */
     if(mypipe.readAvailable()){
       char arr[30];
       mypipe.readPipe(arr);
       char delim[] = ":";
       char *command = strtok(arr, delim);
-      char *s_bitmap = strtok(NULL, delim);
-      char *s_side = strtok(NULL, delim);
-      std::cout << "read from pipe" << arr << "|" << s_bitmap << "|" << s_side << std::endl;
-      //  arr: "light:344:front"  "error:2:front"
-      uint32_t bitmap = atoi(s_bitmap);
-      char s_front[] = "front";
-      char s_back[] = "back";
-      if(strncmp(s_side, s_front, 5)){
-        lightSys.frontLightGenerate(bitmap);
-        std::cout << "front bitmap:" << lightSys.getBackLightBitmap() << std::endl;
-        lightSys.frontLightApply();
+      char s_light[] = "light";
+      char s_lcd[] = "lcd";
+
+      std::cout << "read from pipe: " << arr << std::endl;
+
+      // Check command mode
+      if(strncmp(command, s_light, 5)){
+        // Enter light mode
+        char *s_bitmap = strtok(NULL, delim);
+        char *s_side = strtok(NULL, delim);
+        //  arr: "light:344:front"  "error:2:front"
+        uint32_t bitmap = atoi(s_bitmap);
+        char s_front[] = "front";
+        char s_back[] = "back";
+
+        if(strncmp(s_side, s_front, 5)){
+          lightSys.frontLightGenerate(bitmap);
+          lightSys.frontLightApply();
+          std::cout << "applied front bitmap:" << lightSys.getBackLightBitmap() << std::endl;
+        }else if(strncmp(s_side, s_back, 4)){
+          lightSys.backLightGenerate(bitmap);
+          lightSys.backLightApply();
+          std::cout << "applied back bitmap:" << lightSys.getBackLightBitmap() << std::endl;
+        }
+      }else if(strncmp(command, s_lcd, 3)){
+        // Enter lcd mode
+        char *s_message = strtok(NULL, delim);
+        for(unsigned int i = 0; i < sizeof(s_message); i ++){
+          lcdWriteByte(0b10000000, COMMAND_MODE);
+          lcdWriteByte(demoText[i], DATA_MODE);
+          std::cout << "wrote message to lcd: " << s_message << std::endl;
+        }
       }
-      else if(strncmp(s_side, s_back, 4)){
-        lightSys.backLightGenerate(bitmap);
-        std::cout << "back bitmap:" << lightSys.getBackLightBitmap() << std::endl;
-        lightSys.backLightApply();
-      }
+      
     }
   }
 

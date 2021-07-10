@@ -6,10 +6,11 @@ const fs              = require('fs');
 const { spawn, fork } = require('child_process');
 const event = require('./event');
 const logger = require('./logger/logger');
+const FILE_NAME = 'gpio-ipc.js';
 
 const message = require('./message');
 
-let {accessWallByName, accessWallByPosition} = require('./wallApi');
+let {accessWallByName, accessWallByLocation} = require('./wallApi');
 
 let gpioBitmap = require('./gpioMap');
 
@@ -18,16 +19,16 @@ const read_pipe_path = './pipe/pipe_button_callback';
 let readfifo = spawn('mkfifo', [read_pipe_path]);
 
 readfifo.on('exit', function(status) {
-    logger.debug('Created read named-pipe from GPIO');
+    logger.debug({message: 'Created read named-pipe from GPIO', location: FILE_NAME});
 
     const fd   = fs.openSync(read_pipe_path, 'r+');
     let fifoRs = fs.createReadStream(null, { fd });
     let fifoWs = fs.createWriteStream(write_pipe_path);
 
-    logger.debug('Created write named-pipe to GPIO');
+    logger.debug({message: 'Created write named-pipe to GPIO', location: FILE_NAME});
 
     fifoRs.on('data', mess => {
-        logger.debug('Message from pipe', String(mess));
+        logger.debug({message: 'message from pipe', value: String(mess), location: FILE_NAME});
         const messarr = String(mess).split(':');
         const buttonCoor = messarr[1];
         if(buttonCoor.split('.')[0] == 'W'){
@@ -44,7 +45,7 @@ readfifo.on('exit', function(status) {
     });
 
     fifoWs.on('error', function(err){
-        logger.debug('error at writing pipe', err);
+        logger.debug({message: 'error at writing pipe', location: FILE_NAME, value: err});
     });
     
     
@@ -54,7 +55,7 @@ readfifo.on('exit', function(status) {
      * Turn on light with input params
      */
      event.on('light:on', function(lightParams){
-        logger.debug('light on event', lightParams);
+        logger.debug({message: 'light:on event', location: FILE_NAME, value: lightParams});
         const wallPosition = lightParams.wall;
         const wallSide = lightParams.side;
         emitLightToPipe(wallPosition, wallSide, 'on');
@@ -67,7 +68,7 @@ readfifo.on('exit', function(status) {
      * Turn off light with input params
      */
     event.on('light:off', function(lightParams){
-        logger.debug('light off event', lightParams);
+        logger.debug({message: `'light:off' event`, location: FILE_NAME, value: lightParams});
         const wallPosition = lightParams.wall;
         const wallSide = lightParams.side;
         emitLightToPipe(wallPosition, wallSide, 'off');
@@ -75,7 +76,7 @@ readfifo.on('exit', function(status) {
 
     event.on('light:reload', function(lightParams){
         const wallSide = lightParams.side;
-        logger.debug('light:set event');
+        logger.debug({message: `'light:reload' event`, location: FILE_NAME});
         const lightBitmap = gpioBitmap.getBitmap(wallSide);
         //  generate message
         const mess = `light:${lightBitmap}:${wallSide}`;
@@ -84,7 +85,7 @@ readfifo.on('exit', function(status) {
     });
 
     event.on('light:set', function(lightParams){
-        logger.debug('light init event', lightParams);
+        logger.debug({message: `'light:set' event`, location: FILE_NAME, value: lightParams});
         const lightBitmap = lightParams.bitmap;
         const wallSide = lightParams.side;
         //  Emit message to named-pipe
@@ -97,34 +98,55 @@ readfifo.on('exit', function(status) {
      * emitted in index.js
      * Turn on all the lights on wall
      */
-    event.on('light:test', function(wallSide){
+    event.on('light:test', function(lightParams){
+        logger.debug({message: `'light:test' event`, location: FILE_NAME, value: lightParams});
+        const wallSide = lightParams.side;
         gpioBitmap.bitmapSet(2**32-1, wallSide);
         const mess = `light:${gpioBitmap.getBitmap(wallSide)}:${wallSide}`;
         fifoWs.write(mess);
     });
 
+    /**
+     * lightParams{
+     *  status: _status,
+     *  side: _side
+     * }
+     * 
+     * _status: 'error'|'warning'|'normal'
+     * _side: 'front'|'back'
+     */
     event.on('light:error', function(lightParams){
-        const errorLightIndex = lightParams.status;
+        logger.debug({message: `'light:error' event`, location: FILE_NAME, value: lightParams});
+        const errorLightStatus = lightParams.status;
         const wallSide = lightParams.side;
         let greenLight = false, redLight = false;
-        switch(status){
+        switch(errorLightStatus){
             case 'error':
+                /**
+                 * Turn off green light and turn on red light
+                 */
                 greenLight = false;
                 redLight = true;
                 emitErrorToPipe(greenLight, redLight, wallSide);
                 break;
             case 'warning':
+                /**
+                 * Turn on red light but ignore green light
+                 */
                 greenLight = 'ignore';
                 redLight = true;
                 emitErrorToPipe(greenLight, redLight, wallSide);
                 break;
-            case 'ok':
+            case 'normal':
+                /**
+                 * Turn on green light and turn off red light
+                 */
                 greenLight = true;
                 redLight = false;
                 emitErrorToPipe(greenLight, redLight, wallSide);
                 break;
             default:
-                //
+                logger.waring({message: `bad params for 'light:error' event`, location: FILE_NAME, value: lightParams});
         }
     });
     
@@ -134,10 +156,7 @@ readfifo.on('exit', function(status) {
      * @param {String} wallSide 'front'|'back'
      */
     function emitLightToPipe(wallPosition, wallSide, lightState){
-        //logger.debug('generating', wallPosition, wallSide, lightState);
-        //logger.debug('get wall', accessWallByPosition(wallPosition).getName());
-        const lightIndex = accessWallByPosition(wallPosition).getIndex();
-        //logger.debug('light index', lightIndex)
+        const lightIndex = accessWallByLocation(wallPosition).getIndex();
         //  generate light bitmap of wall
         gpioBitmap.bitmapGenerate(lightIndex, wallSide, lightState);
         //  get light bitmap of wall
@@ -146,7 +165,7 @@ readfifo.on('exit', function(status) {
         const mess = `light:${lightBitmap}:${wallSide}`;
         //  write message to named-pipe
         fifoWs.write(mess);
-        logger.debug('emit message to pipe:', mess, lightBitmap.toString(2));
+        logger.debug({message: 'emit message to pipe:', location: FILE_NAME, value: mess});
     }
 
     function emitErrorToPipe(greenLight, redLight, wallSide){
@@ -167,6 +186,6 @@ readfifo.on('exit', function(status) {
         //  generate message
         const mess = `light:${gpioBitmap.getBitmap(wallSide)}:${wallSide}`;
         fifoWs.write(mess);
-        logger.debug('emit message to pipe:', mess, lightBitmap.toString(2));
+        logger.debug({message: 'emit message to pipe:', location: FILE_NAME, value: mess});
     }
 });

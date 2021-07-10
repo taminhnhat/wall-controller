@@ -1,5 +1,5 @@
-var MongoClient = require('mongodb').MongoClient;
-var url = "mongodb://localhost:27017/";
+let MongoClient = require('mongodb').MongoClient;
+let url = "mongodb://localhost:27017/";
 
 const mongoClient = new MongoClient(url, { useUnifiedTopology: true })
 
@@ -54,7 +54,7 @@ console.log(wallMapping)
 
 mongoClient.connect(function(err, client) {
   if (err) console.error(err);
-  var db = client.db("Wall");
+  let db = client.db("Wall");
 
   async function updateWallName(wall){
     const collection = db.collection("backup");

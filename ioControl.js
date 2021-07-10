@@ -2,15 +2,15 @@
  * GPIO controll
  * Access GPIO with pigpio
  */
-var frontLightPort = 0 << 7;
-var backLightPort = 0 << 7;
+let frontLightPort = 0 << 7;
+let backLightPort = 0 << 7;
 
 const event = require('./event');
 const api = require('./api');
-var Gpio = require('pigpio').Gpio; //include pigpio to interact with the GPIO
+let Gpio = require('pigpio').Gpio; //include pigpio to interact with the GPIO
 
 // require wall objects
-var wall = require('./wallApi');
+let wall = require('./wallApi');
 
 let ArraySensor = function(){
     let temp = {};
@@ -20,52 +20,52 @@ let ArraySensor = function(){
     return temp;
 }
 
-var array1 = new ArraySensor;
-var array2 = new ArraySensor;
-var tempArray1 = 0;
-var tempArray2 = 0;
+let array1 = new ArraySensor;
+let array2 = new ArraySensor;
+let tempArray1 = 0;
+let tempArray2 = 0;
 
 
 
 //  Output io
-// var dsPin1 = new Gpio(21, {mode: Gpio.OUTPUT});   //create bit state
-// var dsPin2 = new Gpio(12, {mode: Gpio.OUTPUT});   //create bit state
-// var shcpPin1 = new Gpio(16, {mode: Gpio.OUTPUT});    //Write bit to shift register
-// var shcpPin2 = new Gpio(1, {mode: Gpio.OUTPUT});    //Write bit to shift register
-// var stcpPin = new Gpio(20, {mode: Gpio.OUTPUT});   //trigger - shift to storage register
+// let dsPin1 = new Gpio(21, {mode: Gpio.OUTPUT});   //create bit state
+// let dsPin2 = new Gpio(12, {mode: Gpio.OUTPUT});   //create bit state
+// let shcpPin1 = new Gpio(16, {mode: Gpio.OUTPUT});    //Write bit to shift register
+// let shcpPin2 = new Gpio(1, {mode: Gpio.OUTPUT});    //Write bit to shift register
+// let stcpPin = new Gpio(20, {mode: Gpio.OUTPUT});   //trigger - shift to storage register
 //
-var pin1 = new Gpio(24, {mode: Gpio.OUTPUT});
-var pin2 = new Gpio(25, {mode: Gpio.OUTPUT});
-var pin3 = new Gpio(8, {mode: Gpio.OUTPUT});
-var pin4 = new Gpio(7, {mode: Gpio.OUTPUT});
-var pin5 = new Gpio(12, {mode: Gpio.OUTPUT});
-var pin6 = new Gpio(16, {mode: Gpio.OUTPUT});
-var pin7 = new Gpio(20, {mode: Gpio.OUTPUT});
-var pin8 = new Gpio(21, {mode: Gpio.OUTPUT});
+let pin1 = new Gpio(24, {mode: Gpio.OUTPUT});
+let pin2 = new Gpio(25, {mode: Gpio.OUTPUT});
+let pin3 = new Gpio(8, {mode: Gpio.OUTPUT});
+let pin4 = new Gpio(7, {mode: Gpio.OUTPUT});
+let pin5 = new Gpio(12, {mode: Gpio.OUTPUT});
+let pin6 = new Gpio(16, {mode: Gpio.OUTPUT});
+let pin7 = new Gpio(20, {mode: Gpio.OUTPUT});
+let pin8 = new Gpio(21, {mode: Gpio.OUTPUT});
 //  Input io
 //button1 = new Gpio(11, {mode: Gpio.INPUT, pullUpDown: Gpio.PUD_UP, edge: Gpio.FALLING_EDGE});
-var button1 = new Gpio(17, {mode: Gpio.INPUT, pullUpDown: Gpio.PUD_UP, alert: true});
-var button2 = new Gpio(27, {mode: Gpio.INPUT, pullUpDown: Gpio.PUD_UP, alert: true});
-var button3 = new Gpio(22, {mode: Gpio.INPUT, pullUpDown: Gpio.PUD_UP, alert: true});
-var button4 = new Gpio(5, {mode: Gpio.INPUT, pullUpDown: Gpio.PUD_UP, alert: true});
-var button5 = new Gpio(6, {mode: Gpio.INPUT, pullUpDown: Gpio.PUD_UP, alert: true});
-var button6 = new Gpio(13, {mode: Gpio.INPUT, pullUpDown: Gpio.PUD_UP, alert: true});
-var button7 = new Gpio(19, {mode: Gpio.INPUT, pullUpDown: Gpio.PUD_UP, alert: true});
-var button8 = new Gpio(26, {mode: Gpio.INPUT, pullUpDown: Gpio.PUD_UP, alert: true});
+let button1 = new Gpio(17, {mode: Gpio.INPUT, pullUpDown: Gpio.PUD_UP, alert: true});
+let button2 = new Gpio(27, {mode: Gpio.INPUT, pullUpDown: Gpio.PUD_UP, alert: true});
+let button3 = new Gpio(22, {mode: Gpio.INPUT, pullUpDown: Gpio.PUD_UP, alert: true});
+let button4 = new Gpio(5, {mode: Gpio.INPUT, pullUpDown: Gpio.PUD_UP, alert: true});
+let button5 = new Gpio(6, {mode: Gpio.INPUT, pullUpDown: Gpio.PUD_UP, alert: true});
+let button6 = new Gpio(13, {mode: Gpio.INPUT, pullUpDown: Gpio.PUD_UP, alert: true});
+let button7 = new Gpio(19, {mode: Gpio.INPUT, pullUpDown: Gpio.PUD_UP, alert: true});
+let button8 = new Gpio(26, {mode: Gpio.INPUT, pullUpDown: Gpio.PUD_UP, alert: true});
 // Sensor input
-var sensor1 = new Gpio(14, {mode: Gpio.INPUT, pullUpDown: Gpio.PUD_UP, alert: true});
-var sensor2 = new Gpio(15, {mode: Gpio.INPUT, pullUpDown: Gpio.PUD_DOWN, alert: true});
-var sensor3 = new Gpio(18, {mode: Gpio.INPUT, pullUpDown: Gpio.PUD_DOWN, alert: true});
-var sensor4 = new Gpio(23, {mode: Gpio.INPUT, pullUpDown: Gpio.PUD_DOWN, alert: true});
+let sensor1 = new Gpio(14, {mode: Gpio.INPUT, pullUpDown: Gpio.PUD_UP, alert: true});
+let sensor2 = new Gpio(15, {mode: Gpio.INPUT, pullUpDown: Gpio.PUD_DOWN, alert: true});
+let sensor3 = new Gpio(18, {mode: Gpio.INPUT, pullUpDown: Gpio.PUD_DOWN, alert: true});
+let sensor4 = new Gpio(23, {mode: Gpio.INPUT, pullUpDown: Gpio.PUD_DOWN, alert: true});
 //
-// var button1 = new Gpio(14, {mode: Gpio.INPUT, pullUpDown: Gpio.PUD_DOWN, alert: true});
-// var button2 = new Gpio(15, {mode: Gpio.INPUT, pullUpDown: Gpio.PUD_DOWN, alert: true});
-// var button3 = new Gpio(18, {mode: Gpio.INPUT, pullUpDown: Gpio.PUD_DOWN, alert: true});
-// var button4 = new Gpio(23, {mode: Gpio.INPUT, pullUpDown: Gpio.PUD_DOWN, alert: true});
-// var button5 = new Gpio(24, {mode: Gpio.INPUT, pullUpDown: Gpio.PUD_DOWN, alert: true});
-// var button6 = new Gpio(25, {mode: Gpio.INPUT, pullUpDown: Gpio.PUD_DOWN, alert: true});
-// var button7 = new Gpio(8, {mode: Gpio.INPUT, pullUpDown: Gpio.PUD_DOWN, alert: true});
-// var button8 = new Gpio(7, {mode: Gpio.INPUT, pullUpDown: Gpio.PUD_DOWN, alert: true});
+// let button1 = new Gpio(14, {mode: Gpio.INPUT, pullUpDown: Gpio.PUD_DOWN, alert: true});
+// let button2 = new Gpio(15, {mode: Gpio.INPUT, pullUpDown: Gpio.PUD_DOWN, alert: true});
+// let button3 = new Gpio(18, {mode: Gpio.INPUT, pullUpDown: Gpio.PUD_DOWN, alert: true});
+// let button4 = new Gpio(23, {mode: Gpio.INPUT, pullUpDown: Gpio.PUD_DOWN, alert: true});
+// let button5 = new Gpio(24, {mode: Gpio.INPUT, pullUpDown: Gpio.PUD_DOWN, alert: true});
+// let button6 = new Gpio(25, {mode: Gpio.INPUT, pullUpDown: Gpio.PUD_DOWN, alert: true});
+// let button7 = new Gpio(8, {mode: Gpio.INPUT, pullUpDown: Gpio.PUD_DOWN, alert: true});
+// let button8 = new Gpio(7, {mode: Gpio.INPUT, pullUpDown: Gpio.PUD_DOWN, alert: true});
 //
 const buttonStableTime = 50000;
 button1.glitchFilter(buttonStableTime);

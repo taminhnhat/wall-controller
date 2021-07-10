@@ -1,6 +1,6 @@
 class wallState{
     name
-    position
+    location
     col
     row
     lightIndex
@@ -10,10 +10,10 @@ class wallState{
     exportTote
     frozen
     lastLog
-    constructor(position, name){
-        this.position = position;
+    constructor(location, name){
+        this.location = location;
         this.name = name;
-        const temp = position.split('.');
+        const temp = location.split('.');
         this.col = temp[1];
         this.row = temp[2];
         this.lightIndex = Number(this.col) + 1 + Number(this.row - 1)*6;

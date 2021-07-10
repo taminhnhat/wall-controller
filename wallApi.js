@@ -171,7 +171,7 @@ class wallState{
         return this.#name;
     }
 
-    getCoordinate(){
+    getLocation(){
         return this.#map;
     }
 
@@ -193,55 +193,56 @@ class wallState{
         return this.#bitIndex;
     }
 
-    setname(wallName){
+    setName(wallName){
         this.#name = wallName;
     }
 }
 
 //
 let M11 = new wallState('W.1.1', 'M-1-1');
-let M12 = new wallState('W.1.2', 'M-1-7');
-let M13 = new wallState('W.1.3', 'M-1-13');
-let M14 = new wallState('W.1.4', 'M-1-19');
-let M15 = new wallState('W.1.5', 'M-1-25');
-//
 let M21 = new wallState('W.2.1', 'M-1-2');
-let M22 = new wallState('W.2.2', 'M-1-8');
-let M23 = new wallState('W.2.3', 'M-1-14');
-let M24 = new wallState('W.2.4', 'M-1-20');
-let M25 = new wallState('W.2.5', 'M-1-26');
-//
 let M31 = new wallState('W.3.1', 'M-1-3');
-let M32 = new wallState('W.3.2', 'M-1-9');
-let M33 = new wallState('W.3.3', 'M-1-15');
-let M34 = new wallState('W.3.4', 'M-1-21');
-let M35 = new wallState('W.3.5', 'M-1-27');
-//
 let M41 = new wallState('W.4.1', 'M-1-4');
-let M42 = new wallState('W.4.2', 'M-1-10');
-let M43 = new wallState('W.4.3', 'M-1-16');
-let M44 = new wallState('W.4.4', 'M-1-22');
-let M45 = new wallState('W.4.5', 'M-1-28');
-//
 let M51 = new wallState('W.5.1', 'M-1-5');
-let M52 = new wallState('W.5.2', 'M-1-11');
-let M53 = new wallState('W.5.3', 'M-1-17');
-let M54 = new wallState('W.5.4', 'M-1-23');
-let M55 = new wallState('W.5.5', 'M-1-29');
-//
 let M61 = new wallState('W.6.1', 'M-1-6');
+//
+let M12 = new wallState('W.1.2', 'M-1-7');
+let M22 = new wallState('W.2.2', 'M-1-8');
+let M32 = new wallState('W.3.2', 'M-1-9');
+let M42 = new wallState('W.4.2', 'M-1-10');
+let M52 = new wallState('W.5.2', 'M-1-11');
 let M62 = new wallState('W.6.2', 'M-1-12');
+//
+let M13 = new wallState('W.1.3', 'M-1-13');
+let M23 = new wallState('W.2.3', 'M-1-14');
+let M33 = new wallState('W.3.3', 'M-1-15');
+let M43 = new wallState('W.4.3', 'M-1-16');
+let M53 = new wallState('W.5.3', 'M-1-17');
 let M63 = new wallState('W.6.3', 'M-1-18');
+//
+let M14 = new wallState('W.1.4', 'M-1-19');
+let M24 = new wallState('W.2.4', 'M-1-20');
+let M34 = new wallState('W.3.4', 'M-1-21');
+let M44 = new wallState('W.4.4', 'M-1-22');
+let M54 = new wallState('W.5.4', 'M-1-23');
 let M64 = new wallState('W.6.4', 'M-1-24');
+//
+let M15 = new wallState('W.1.5', 'M-1-25');
+let M25 = new wallState('W.2.5', 'M-1-26');
+let M35 = new wallState('W.3.5', 'M-1-27');
+let M45 = new wallState('W.4.5', 'M-1-28');
+let M55 = new wallState('W.5.5', 'M-1-29');
 let M65 = new wallState('W.6.5', 'M-1-30');
 //
 
-const M = [M11, M12, M13, M14, M15,
-                M21, M22, M23, M24, M25,
-                M31, M32, M33, M34, M35,
-                M41, M42, M43, M44, M45,
-                M51, M52, M53, M54, M55,
-                M61, M62, M63, M64, M65]
+const M = [
+    M11, M12, M13, M14, M15,
+    M21, M22, M23, M24, M25,
+    M31, M32, M33, M34, M35,
+    M41, M42, M43, M44, M45,
+    M51, M52, M53, M54, M55,
+    M61, M62, M63, M64, M65
+]
 
 /**
  * 
@@ -255,11 +256,11 @@ function accessWallByName(name){
     return 'invalid wall name';
 }
 
-function accessWallByPosition(coordinate){
+function accessWallByLocation(coordinate){
     for(let i = 0; i < M.length; i ++){
-        if(M[i].getCoordinate() == coordinate) return M[i];
+        if(M[i].getLocation() == coordinate) return M[i];
     }
     return 'invalid wall position';
 }
 
-module.exports = {accessWallByName, accessWallByPosition};
+module.exports = {accessWallByName, accessWallByLocation};

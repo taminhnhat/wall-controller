@@ -29,7 +29,7 @@ class gpioMap{
                 this.#frontBitmap &= bitmask;
                 this.#frontBitmap >>>= 0;
             }
-            console.log(`generate index ${lightIndex}, bitmask ${bitmask.toString(2)}, bitmap ${this.#frontBitmap.toString(2)}`);
+            //console.log(`generate index ${lightIndex}, bitmask ${bitmask.toString(2)}, bitmap ${this.#frontBitmap.toString(2)}`);
         }
         else if(wallSide == 'back'){
             if(lightState == 'on'){
@@ -42,7 +42,7 @@ class gpioMap{
                 this.#backBitmap &= bitmask;
                 this.#backBitmap >>>= 0;
             }
-            console.log(bitmask, this.#backBitmap);
+            //console.log(bitmask, this.#backBitmap);
         }
     }
 
