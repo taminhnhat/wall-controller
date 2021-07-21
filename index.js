@@ -133,7 +133,7 @@ function restoreFromBackupDb(){
             //  Check light state of wall
             for(idx in backupState){
                 let wallState = backupState[idx];
-                logger.info({message: 'wall status', value: wallState});
+                //logger.info({message: 'wall status', value: wallState});
                 const wallName = wallState.name;    
                 //
                 accessWallByLocation(wallState.location).setName(wallName);

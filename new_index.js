@@ -131,47 +131,48 @@ const db = client.db(WALL_DB);
 
 //  RESTORE WALL STATUS FROM BACKUP____________________________________________________________________________________________________
 
-function restoreFromBackupDb(){
+async function restoreFromBackupDb(){
     logger.debug({message: 'Restore from backup database', location: FILE_NAME});
-    let backupState = {};
 
-    db.collection(BACKUP_COLLECTION).find({}, { 
+    const backupState = await db.collection(BACKUP_COLLECTION).find({},{
         projection: { _id: 0, name: 1, location: 1,
             frontLight: 1, backLight: 1,
             importTote: 1, exportTote: 1 }
-        }).toArray(function(err, res){
-        if (err) logger.error({message: error});
-        backupState = res;
-        let frontBitmap = 0;
-        let backBitmap = 0;
+    }).toArray();
+    if (err) logger.error({message: error});
+    const backupState = res;
+    let frontBitmap = 0;
+    let backBitmap = 0;
 
-        //  Check light state of wall
-        for(idx in backupState){
-            let wallState = backupState[idx];
-            logger.info({message: 'wall status', value: wallState});
-            const wallName = wallState.name;    
-            //
-            accessWallByLocation(wallState.location).setName(wallName);
-            
-            //  Emit light event
-            if(wallState.frontLight == true){
-                frontBitmap |= (1 << accessWallByName(wallName).getIndex() >>> 0);
-                frontBitmap >>> 0;
-            }
-            if(wallState.backLight == true){
-                backBitmap |= (1 << accessWallByName(wallName).getIndex() >>> 0);
-                backBitmap >>> 0;
-            }
+    //  Check light state of wall
+    for(idx in backupState){
+        let wallState = backupState[idx];
+        logger.info({message: 'wall status', value: {name: wallState.name, location: wallState.location}});
+        const wallName = wallState.name;    
+        //
+        console.log(accessWallByLocation(wallState.location).getName());
+        accessWallByLocation(wallState.location).setName(wallName);
+        console.log(accessWallByLocation(wallState.location).getName());
+        
+        //  Emit light event
+        if(wallState.frontLight == true){
+            frontBitmap |= (1 << accessWallByName(wallName).getIndex() >>> 0);
+            frontBitmap >>> 0;
         }
-        event.emit('light:set', {bitmap: frontBitmap, side: 'front'});
-        setTimeout(function(){
-            event.emit('light:set', {bitmap: backBitmap, side: 'back'});
-        });
+        if(wallState.backLight == true){
+            backBitmap |= (1 << accessWallByName(wallName).getIndex() >>> 0);
+            backBitmap >>> 0;
+        }
+    }
+    event.emit('light:set', {bitmap: frontBitmap, side: 'front'});
+    setTimeout(function(){
+        event.emit('light:set', {bitmap: backBitmap, side: 'back'});
     });
 }
 
 logger.debug({message: 'Main process started', location: FILE_NAME});
-restoreFromBackupDb();
+await restoreFromBackupDb();
+logger.info({message: "wall state", value: accessWallByName('M-1-1').getInfo()});
 
 //  HANDLE EVENTS FROM EVENT EMITTER_______________________________________________________________________________________
 

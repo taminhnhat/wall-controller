@@ -256,9 +256,9 @@ function accessWallByName(name){
     return 'invalid wall name';
 }
 
-function accessWallByLocation(coordinate){
+function accessWallByLocation(location){
     for(let i = 0; i < M.length; i ++){
-        if(M[i].getLocation() == coordinate) return M[i];
+        if(M[i].getLocation() == location) return M[i];
     }
     return 'invalid wall position';
 }
