@@ -2,6 +2,8 @@
  * Read from "../pipe/fifo1"
  * Write to "../pipe/fifo2"
  */
+
+require('dotenv').config({path: './CONFIGURATIONS.env'});
 const fs              = require('fs');
 const { spawn, fork } = require('child_process');
 const event = require('./event');
@@ -14,8 +16,8 @@ let {accessWallByName, accessWallByLocation} = require('./wallApi');
 
 let gpioBitmap = require('./gpioMap');
 
-const write_pipe_path = './pipe/pipe_emit_light';
-const read_pipe_path = './pipe/pipe_button_callback';
+const write_pipe_path = process.env.EMIT_GPIO_NAMED_PIPE_PATH;
+const read_pipe_path = process.env.GPIO_CALLBACK_NAMED_PIPE_PATH;
 let readfifo = spawn('mkfifo', [read_pipe_path]);
 
 readfifo.on('exit', function(status) {
@@ -30,16 +32,16 @@ readfifo.on('exit', function(status) {
     fifoRs.on('data', mess => {
         logger.debug({message: 'message from pipe', value: String(mess), location: FILE_NAME});
         const messarr = String(mess).split(':');
-        const buttonCoor = messarr[1];
-        if(buttonCoor.split('.')[0] == 'W'){
+        const buttonLocation = messarr[1];
+        if(buttonLocation.split('.')[0] == 'W'){
             const wallSide = messarr[2].trim();
             const buttonEventName = `button:${wallSide}`;
-            const tempParams = message.generateButtonParams(buttonCoor);
+            const tempParams = message.generateButtonParams(buttonLocation);
             event.emit(buttonEventName, tempParams);
         }
-        else if(buttonCoor.split('.')[0] == 'U'){
+        else if(buttonLocation.split('.')[0] == 'U'){
             const buttonEventName = 'button:user';
-            const tempParams = message.generateButtonParams(buttonCoor);
+            const tempParams = message.generateButtonParams(buttonLocation);
             event.emit(buttonEventName, tempParams);
         }
     });
@@ -77,6 +79,7 @@ readfifo.on('exit', function(status) {
     event.on('light:reload', function(lightParams){
         const wallSide = lightParams.side;
         logger.debug({message: `'light:reload' event`, location: FILE_NAME});
+        //  get light bitmap 
         const lightBitmap = gpioBitmap.getBitmap(wallSide);
         //  generate message
         const mess = `light:${lightBitmap}:${wallSide}`;
@@ -115,7 +118,7 @@ readfifo.on('exit', function(status) {
      * _status: 'error'|'warning'|'normal'
      * _side: 'front'|'back'
      */
-    event.on('light:error', function(lightParams){
+    event.on('towerlight:set', function(lightParams){
         logger.debug({message: `'light:error' event`, location: FILE_NAME, value: lightParams});
         const errorLightStatus = lightParams.status;
         const wallSide = lightParams.side;
@@ -146,7 +149,7 @@ readfifo.on('exit', function(status) {
                 emitErrorToPipe(greenLight, redLight, wallSide);
                 break;
             default:
-                logger.waring({message: `bad params for 'light:error' event`, location: FILE_NAME, value: lightParams});
+                logger.waring({message: `bad params for 'towerlight:set' event`, location: FILE_NAME, value: lightParams});
         }
     });
     

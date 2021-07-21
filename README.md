@@ -1,5 +1,12 @@
+### REQUIREMENTS
+pc: raspberry pi 3/4
+os: ubuntu server 20.04
+mongodb
+nodejs 24 or above
+C++
 
-1. RUN PROJECT
+### OPERATING
+## 1. RUN PROJECT
 
 # before run, find and kill pigoiod pid if exist
 >cat /var/run/pigpio.pid
@@ -8,15 +15,12 @@
 !!! Do not run 'sudo pigpiod'
 
 # Run on Raspberry pi
->sudo node index.js
-
-# Run test on PC
->node index.js
+>sudo node index.js > system.log
 
 
 
 
-2. RUN TEST BY TERMINAL
+## 2. RUN TEST BY TERMINAL
 
 # Start a socket client
 >node
@@ -34,7 +38,7 @@
 
 
 
-3. PI
+## 3. PI
 
 # Shutdown
 >sudo shutdown -h now
@@ -53,13 +57,13 @@
 \[\e]0;\u@\h: \w\a\]${debian_chroot:+($debian_chroot)}\[\033[01;32m\]Wall-M3 \u@\h\[\033[00m\]:\[\033[01;34m\]\w\[\033[00m\]\$
 
 
-4. TRANSFER FILE TO PI
+## 4. TRANSFER FILE TO PI
 
 >scp index.js pi@172.16.0.89:~/wallController
 
 
 
-5. KILL ALL PROCESS
+## 5. KILL ALL PROCESS
 
 # Replace pi with username
 >killall -u pi
@@ -67,7 +71,7 @@
 
 
 
-5. SET STATIC USB PATH FOR SCANNER AND LCD
+## 5. SET STATIC USB PATH FOR SCANNER AND LCD
 
 # Get usb port infor
 >udevadm info --name=/dev/ttyACM0 --attribute-walk
@@ -110,7 +114,7 @@ KERNEL=="ttyUSB[0-9]*", SUBSYSTEM=="tty",ATTRS{idVendor}=="067b",ATTRS{idProduct
 
 
 
-6. STARTUP SCRIPT IN PI
+## 6. STARTUP SCRIPT IN PI
 
 # Create a new servive
 >sudo touch /etc/systemd/system/minhnhat.service
@@ -154,7 +158,7 @@ sudo node /home/ubuntu/startup/startup.js
 
 
 
-7. WORKING WITH SERVICE
+## 7. WORKING WITH SERVICE
 
 # Start
 systemctl start minhnhat.service
@@ -171,7 +175,7 @@ systemctl status minhnhat.service
 
 
 
-8. Lock editting files
+## 8. Lock editting files
 
 # Give the owner rx permissions, but not w 
 chmod u=rx file
@@ -188,7 +192,7 @@ chmod a+x file1 file2
 # OK to combine like this with a comma
 chmod g+rx,o+x file  
 
-9. View service log
+## 9. View service log
 
 journalctl -u minhnhat.service
 

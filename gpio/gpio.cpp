@@ -36,11 +36,17 @@
 #define READ_PIN_5 9    //read button 5 on column 5
 #define READ_PIN_6 10    //read button 6 on column 6
 
-#define DS_PIN_1 21
-#define DS_PIN_2 12
+// #define DS_PIN_1 21
+// #define DS_PIN_2 12
 
-#define SHCP_PIN_1 16
-#define SHCP_PIN_2 1
+// #define SHCP_PIN_1 16
+// #define SHCP_PIN_2 1
+
+#define DS_PIN_1 12
+#define DS_PIN_2 21
+
+#define SHCP_PIN_1 1
+#define SHCP_PIN_2 16
 
 #define STCP_PIN 20
 
@@ -59,8 +65,10 @@ const int buttonCountToEmit = 40;         //minimum number of times that button 
 int tempTimerTick = 0;
 
 //  PIPE_____________________________________________________________________________________________________________________
-char readpipe_path[] = "../pipe/pipe_emit_light";
-char writepipe_path[] = "../pipe/pipe_button_callback";
+//   read pipe from node side
+char readpipe_path[] = "../pipe/emit_gpio";
+//  
+char writepipe_path[] = "../pipe/gpio_callback";
 
 char arr1[100], arr2[100];
 uint32_t timerCount = 0;
@@ -174,40 +182,94 @@ int main(int argc, char *argv[]){
     if(mypipe.readAvailable()){
       char arr[30];
       mypipe.readPipe(arr);
-      char delim[] = ":";
-      char *command = strtok(arr, delim);
-      char s_light[] = "light";
-      char s_lcd[] = "lcd";
-
       std::cout << "read from pipe: " << arr << std::endl;
 
-      // Check command mode
-      if(strncmp(command, s_light, 5)){
-        // Enter light mode
-        char *s_bitmap = strtok(NULL, delim);
-        char *s_side = strtok(NULL, delim);
-        //  arr: "light:344:front"  "error:2:front"
-        uint32_t bitmap = atoi(s_bitmap);
-        char s_front[] = "front";
-        char s_back[] = "back";
+      char delimiters[] = ":\n";
+      char *command = strtok(arr, delimiters);
+      const char s_light[] = "light";
+      const char s_lcd[] = "lcd";
 
-        if(strncmp(s_side, s_front, 5)){
-          lightSys.frontLightGenerate(bitmap);
-          lightSys.frontLightApply();
-          std::cout << "applied front bitmap:" << lightSys.getBackLightBitmap() << std::endl;
-        }else if(strncmp(s_side, s_back, 4)){
-          lightSys.backLightGenerate(bitmap);
-          lightSys.backLightApply();
-          std::cout << "applied back bitmap:" << lightSys.getBackLightBitmap() << std::endl;
+      // Check command mode
+      if(!strncmp(command, s_light, 5)){
+        // Enter light mode
+        char *s_bitmap = strtok(NULL, delimiters);
+        char *s_side = strtok(NULL, delimiters);
+        //  arr: "light:344:front"  "error:2:front"
+
+        if(s_bitmap != NULL && s_side != NULL){
+          uint32_t bitmap = atoi(s_bitmap);
+          const char s_front[] = "front";
+          const char s_back[] = "back";
+
+          if(!strncmp(s_side, s_front, 5)){
+            lightSys.frontLightGenerate(bitmap);
+            lightSys.frontLightApply();
+            std::cout << "applied front bitmap:" << lightSys.getFrontLightBitmap() << std::endl;
+          }else if(!strncmp(s_side, s_back, 4)){
+            lightSys.backLightGenerate(bitmap);
+            lightSys.backLightApply();
+            std::cout << "applied back bitmap:" << lightSys.getBackLightBitmap() << std::endl;
+          }else{
+            std::cout << "error:not a valid \'side\' token!";
+          }
+        }else{
+          std::cout << "error:light command is missing tokens!" << std::endl;
         }
-      }else if(strncmp(command, s_lcd, 3)){
+      }else if(!strncmp(command, s_lcd, 3)){
         // Enter lcd mode
-        char *s_message = strtok(NULL, delim);
-        for(unsigned int i = 0; i < sizeof(s_message); i ++){
-          lcdWriteByte(0b10000000, COMMAND_MODE);
-          lcdWriteByte(demoText[i], DATA_MODE);
-          std::cout << "wrote message to lcd: " << s_message << std::endl;
+        char *messageLine_1st = strtok(NULL, delimiters);
+        char *messageLine_2nd = strtok(NULL, delimiters);
+        char *messageLine_3rd = strtok(NULL, delimiters);
+        char *messageLine_4th = strtok(NULL, delimiters);
+
+        //  clear data on lcd
+        lcdClear();
+
+        //  print 1st line to lcd
+        if(messageLine_1st != NULL){
+          int idx = 0;
+          lcdSetCursor(LCD_LINE1_INDEX);
+          while(messageLine_1st[idx] != 0x00 && messageLine_1st[idx] != 0x0A){
+            lcdWriteByte(messageLine_1st[idx], DATA_MODE);
+            // std::cout << std::hex << (int)messageLine_1st[idx] << std::endl;
+            idx ++;
+          }
         }
+
+        //  print 2nd line to lcd
+        if(messageLine_2nd != NULL){
+          int idx = 0;
+          lcdSetCursor(LCD_LINE2_INDEX);
+          while(messageLine_2nd[idx] != 0x00 && messageLine_2nd[idx] != 0x0A){
+            lcdWriteByte(messageLine_2nd[idx], DATA_MODE);
+            idx ++;
+          }
+        }
+
+        //  print 3rd line to lcd
+        if(messageLine_3rd != NULL){
+          int idx = 0;
+          lcdSetCursor(LCD_LINE3_INDEX);
+          while(messageLine_3rd[idx] != 0x00 && messageLine_3rd[idx] != 0x0A){
+            lcdWriteByte(messageLine_3rd[idx], DATA_MODE);
+            idx ++;
+          }
+        }
+
+        //  print 4th line to lcd
+        if(messageLine_4th != NULL){
+          int idx = 0;
+          lcdSetCursor(LCD_LINE4_INDEX);
+          while(messageLine_4th[idx] != 0x00 && messageLine_4th[idx] != 0x0A){
+            lcdWriteByte(messageLine_4th[idx], DATA_MODE);
+            idx ++;
+          }
+        }
+
+        std::cout << "wrote message to lcd: \n" << messageLine_1st << "\n" << messageLine_2nd << "\n" << messageLine_3rd << "\n" << messageLine_4th << std::endl;
+      }else{
+        //  
+        std::cout << "error:not a valid command!" << std::endl;
       }
       
     }

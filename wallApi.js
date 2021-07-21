@@ -1,6 +1,6 @@
 /**
  * Create wall object
- * 
+ * Require this to access wall info using name or location
  */
 class wallState{
     #name;

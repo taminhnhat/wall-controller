@@ -51,3 +51,8 @@ void lcdInit(int i2cBus, uint8_t i2cAddress){
     lcdWriteByte(0x01, COMMAND_MODE); // Clear display
     gpioDelay(500);
 }
+
+void lcdClear(){
+  lcdWriteByte(0x01, COMMAND_MODE);
+  gpioDelay(2000);
+}

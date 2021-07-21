@@ -1,3 +1,9 @@
+/*************
+ * This file used to interact serial device on USB port
+ * Scanners are configured
+ */
+
+require('dotenv').config({path: './CONFIGURATIONS.env'});
 const SerialPort = require('serialport');
 const event = require('./event');
 const message = require('./message');
@@ -17,17 +23,14 @@ const connectPort1 = setInterval(reconnectPort1, 5000);
 
 //  NEED TO CONFIG SERIAL PORT FIRST, READ 'README.md'
 
-// const port0 = new SerialPort('/dev/frontScanner', {
+// const port0 = new SerialPort(process.env.FRONT_SCANNER_PATH, {
 //   baudRate: 9600
 // });
-const port0 = new SerialPort('/dev/tty.usbmodem143401', {
+const port0 = new SerialPort('/dev/tty.usbmodem143301', {
   baudRate: 9600
 });
-const port1 = new SerialPort('/dev/backScanner', {
+const port1 = new SerialPort(process.env.BACK_SCANNER_PATH, {
   baudRate: 9600
-});
-const usb = new SerialPort('/dev/lcdScreen', {
-  baudRate: 115200
 });
 
 port1.open(function (err) {
@@ -53,16 +56,28 @@ port0.on('open', function(){
 // Switches the port into "flowing mode"
 port0.on('data', function (data) {
   let scanString = String(data).trim();
-  logger.debug({message: 'Front scanner:', location: FILE_NAME, value: scanString});
+  logger.debug({
+    message: 'Front scanner:',
+    location: FILE_NAME,
+    value: scanString
+  });
   
-  event.emit('scanner:front', {value: scanString});
+  event.emit('scanner:front', {
+    value: scanString
+  });
 });
 
 port1.on('data', function (data) {
   let scanString = String(data).trim();
-  logger.debug({message: 'Back scanner:', location: FILE_NAME, value: scanString});
+  logger.debug({
+    message: 'Back scanner:',
+    location: FILE_NAME,
+    value: scanString
+  });
   
-  event.emit('scanner:back', {value: scanString});
+  event.emit('scanner:back', {
+    value: scanString
+  });
 });
 
 port0.on('close', function(){
@@ -75,28 +90,28 @@ port1.on('close', function(){
   connectPort = setInterval(reconnectPort1, 5000);
 });
 
-event.on('lcd:print:action', function(printParams){
-  try{
-    usb.write(printParams.message + '\r');
-  }
-  catch(err){
-    logger.error({message: 'Cannot write to usb', location: FILE_NAME, value: err});
-  }
-});
+// event.on('lcd:print:action', function(printParams){
+//   try{
+//     usb.write(printParams.message + '\r');
+//   }
+//   catch(err){
+//     logger.error({message: 'Cannot write to usb', location: FILE_NAME, value: err});
+//   }
+// });
 
-event.on('lcd:print:error', function(errorParams){
-  try{
-    const message = `${errorParams.code}|${errorParams.message}`;
-    usb.write(`${message}\r`);
-  }
-  catch(err){
-    logger.error({message: 'Cannot write to usb', location: FILE_NAME, value: err});
-  }
-});
+// event.on('lcd:print:error', function(errorParams){
+//   try{
+//     const message = `${errorParams.code}|${errorParams.message}`;
+//     usb.write(`${message}\r`);
+//   }
+//   catch(err){
+//     logger.error({message: 'Cannot write to usb', location: FILE_NAME, value: err});
+//   }
+// });
 
 
 /**
- * Reconnecting to serial port after loss connection
+ * Reconnecting to serial port every 5 seconds after loosing connection
  */
 function reconnectPort0() {
   port0.open(function(err){

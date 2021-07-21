@@ -5,11 +5,13 @@
  */
 
 //  CONFIGURATION_________________________________________________________________________
+
+require('dotenv').config({path: './CONFIGURATIONS.env'});
 //
-const WALL_ID = 'wall-controller-M-1';
-const BOOKSTORE_ID = 67;
+const WALL_ID = process.env.WALL_ID;
+const BOOKSTORE_ID = process.env.BOOKSTORE_ID;
 //  db and collections name
-const WALL_DB = 'Wall_M1';
+const WALL_DB = process.env.DB_NAME;
 //
 const BACKUP_COLLECTION = 'backup';
 const HISTORY_COLLECTION = 'history';
@@ -33,25 +35,6 @@ const socket = io.connect('ws://192.168.50.2:3000');
 //const socket = io.connect('http://192.168.1.157:3001');
 //const socket = io.connect('ws://192.168.1.20:3000');
 
-
-// if(process.platform == 'linux'){
-//     let ioControl = require('./ioControl');
-// }
-// else if(process.platform == 'win32'){
-//     //
-// }
-
-//  UNIX SOCKET_________________________________________________________________________
-
-// const ipc=require('node-ipc');
-
-// ipc.config.id = 'gpio';
-// ipc.config.retry= 1500;
-
-// ipc.connectTo('gpio', function(){
-//     logger.debug({message: 'Unix socket started'});
-// });
-
 //  MONGODB_______________________________________________________________________________
 
 const mongoClient = require('mongodb').MongoClient;
@@ -60,14 +43,11 @@ const url = "mongodb://localhost:27017/";
 
 //  SERIAL PORT________________________________________________________________________________
 
-// read scan through serial port
-if(process.platform == 'linux'){
-}
-const {port0, port1} = require('./serial');
+require('./serial');
 
 //  NAMED PIPE____________________________________________________________________________
 
-// IPC using named pipe, easy to communicate with python
+// IPC using named pipe, communicate between c++ side and nodejs side
 const platformOS = process.platform;
 if(platformOS == 'linux' || platformOS == 'darwin'){
     require('./gpio-ipc');
@@ -80,14 +60,10 @@ else if(platformOS == 'win32'){
 
 const event = require('./event');
 
-//  Emulator events for scanners, buttons when they are not available
-//const eventsEmulator = require('./events_emulator/eventsEmulator')
-
 //  FILES__________________________________________________________________________________
 
 const fs = require('fs');
 const path = require('path');
-console.log(__dirname);
 
 
 //  LOGGER__________________________________________________________________________
@@ -126,10 +102,19 @@ let exportToteNow = null;
 let importToteNow = null;
 
 //  Temporary key for every API send to sockert server
-let wallKeyNow = null;
+let frontScanKey = generateKey(6);
+let backScanKey = generateKey(6);
+
+function generateKey(size){
+    let val = '';
+    for(let i = 0; i < size; i ++){
+        val += Math.floor(Math.random()*10);
+    }
+    return Date.now() + val;
+}
 
 
-//  RESTORE FROM BACKUP____________________________________________________________________________________________________
+//  RESTORE WALL STATUS FROM BACKUP____________________________________________________________________________________________________
 
 function restoreFromBackupDb(){
     logger.debug({message: 'Restore from backup database', location: FILE_NAME});
@@ -149,7 +134,7 @@ function restoreFromBackupDb(){
             for(idx in backupState){
                 let wallState = backupState[idx];
                 logger.info({message: 'wall status', value: wallState});
-                const wallName = wallState.name;
+                const wallName = wallState.name;    
                 //
                 accessWallByLocation(wallState.location).setName(wallName);
                 
@@ -198,7 +183,7 @@ event.on('button:front', function(buttonParams){
     if(importToteNow != null){
         event.emit('lcd:print', `Hang len:\n   Khay ${importToteNow}\nNhap vao\n   Tuong ${wallName}`);
         buttonParams.tote = importToteNow;
-        let tempApi = message.generateApi('pressButton', WALL_ID, BOOKSTORE_ID, {wall: wallName});
+        let tempApi = message.generateApi('pressButton', {wall: wallName}, frontScanKey);
     
         logger.debug({message: `Tote ${buttonParams.tote} push to wall ${wallName}, key: ${tempApi.key}`, location: FILE_NAME});
         
@@ -241,12 +226,13 @@ event.on('button:back', function(buttonParams){
     event.emit('print', str);
     event.emit('print:action', `Hang xuong:\n   Tuong ${wallName}\nNhap vao\n   Khay ${exportToteNow}`);
     if(exportToteNow != null){
-        let lightParams = {};
-        lightParams.wall = buttonLocation;
-        lightParams.side = 'back';
-        buttonParams.tote = exportToteNow;
+        let lightParams = {
+            wall: buttonLocation,
+            side: 'back',
+            tote: exportToteNow
+        };
 
-        let tempApi = message.generateApi('pressButton', WALL_ID, BOOKSTORE_ID, buttonParams);
+        let tempApi = message.generateApi('pressButton', buttonParams, backScanKey);
         logger.debug({message: `Wall ${wallName} pick to tote ${buttonParams.tote}, key: ${tempApi.key}`, location: FILE_NAME});
         socket.emit('pickToLight', tempApi);
         
@@ -380,18 +366,9 @@ event.on('button:user', function(buttonParams){
 event.on('scanner:front', function(scanParams){
     //logger.debug({message: 'New front scan', location: FILE_NAME, value: scanParams});
 
-    function generateKey(size){
-        let val = '';
-        for(let i = 0; i < size; i ++){
-            val += Math.floor(Math.random()*10);
-        }
-        return Date.now() + val;
-    }
-    const frontScanKey = generateKey(6);
+    frontScanKey = generateKey(6);
 
-    wallKeyNow = frontScanKey;
-
-    let scanApi = message.generateApi('newScan', WALL_ID, BOOKSTORE_ID, scanParams, frontScanKey);
+    let scanApi = message.generateApi('newScan', scanParams, frontScanKey);
     let scanArray = scanParams.value.split('-');
     let firstElementScan = scanArray[0];
     let sizeOfScan = scanParams.value.split('-').length;
@@ -450,7 +427,9 @@ event.on('scanner:front', function(scanParams){
 event.on('scanner:back', function(scanParams){
     const query = { name: scanParams.wall };
 
-    let scanApi = message.generateApi('newScan', WALL_ID, BOOKSTORE_ID, scanParams);
+    backScanKey = generateKey(6);
+
+    let scanApi = message.generateApi('newScan', scanParams, backScanKey);
     let scanArray = scanParams.value.split('-');
     let firstElementScan = scanArray[0];
     let sizeOfScan = scanParams.value.split('-').length;
@@ -568,10 +547,7 @@ socket.on('lightOn', function(lightApi){
 
     const wallName = lightApi.params.wall;
     const wallSide = lightApi.params.side;
-    const wallKey = lightApi.key;
-    const queryByName = { name: wallName };
-    
-    let newBackupValues = "";
+    const tempKey = lightApi.key;
 
     //  Emit light:on event to execute in ioControl.js
     event.emit('light:on', {
@@ -579,14 +555,14 @@ socket.on('lightOn', function(lightApi){
         side: wallSide
     });
 
-    //ipc.of.gpio.emit('light:on', lightApi.params);
-
-    socket.emit('lightOnConfirm', message.generateApi('lightOnConfirm', WALL_ID, BOOKSTORE_ID, {wall: wallName}, wallKey));
+    socket.emit('lightOnConfirm', message.generateApi('lightOnConfirm', {wall: wallName}, tempKey));
 
 
     mongoClient.connect(url, { useUnifiedTopology: true }, function(err, client) {
         if (err) logger.error({message: error});
         const db = client.db(WALL_DB);
+        const queryByName = { name: wallName };
+        let newBackupValues = "";
 
         const updateBackupDb = function(db, callback) {
 
@@ -634,7 +610,8 @@ socket.on('lightOff', function(lightApi){
 
     const wallName = lightApi.params.wall;
     const wallSide = lightApi.params.side;
-    const wallKey = lightApi.key;
+    const tempKey = lightApi.key;
+
     const queryByName = { name: wallName };
     let newBackupValues = "";
     //  Emit light:on event to execute in ioControl.js
@@ -644,7 +621,7 @@ socket.on('lightOff', function(lightApi){
     event.emit('light:off', lightParams);
 
     //wallStorage[lightApi.params.row - 1].backLightEnable = false;
-    socket.emit('lightOffConfirm', message.generateApi('lightOffConfirm', WALL_ID, BOOKSTORE_ID, {wall: wallName}, wallKey));
+    socket.emit('lightOffConfirm', message.generateApi('lightOffConfirm', {wall: wallName}, tempKey));
     
     if(mongoEnable){
         mongoClient.connect(url, { useUnifiedTopology: true }, function(err, client) {
@@ -713,13 +690,13 @@ socket.on('wallError', function(errApi){
         else str += arr[i];
     }
     // emit light:error event to handle in gpio-ipc
-    event.emit('light:error', {status: 'warning', side: 'front'});
+    event.emit('towerlight:set', {status: 'warning', side: 'front'});
     setTimeout(function(){
         event.emit('light:error', {status: 'warning', side: 'back'});
     }, 500);
 
     //  emit event to print error message on screen
-    event.emit('lcd:print:error', {
+    event.emit('lcd:print', {
         code: 101,
         message: errApi.params.message
     });

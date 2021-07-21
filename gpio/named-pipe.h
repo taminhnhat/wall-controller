@@ -9,15 +9,16 @@
 #include <sys/types.h>
 #include <unistd.h>
 
-
+#define BUFFER_SIZE 100
+#define MAX_PIPE_PATH 50
 /*Init pipes
 */
 class mypipe {
 private:
-    char readPipe_path[50];
-    char writePipe_path[50];
+    char readPipe_path[MAX_PIPE_PATH];
+    char writePipe_path[MAX_PIPE_PATH];
     int rpipe, wpipe;
-    char readBuffer[100];
+    char readBuffer[BUFFER_SIZE];
     bool log;
     bool started;
 public:
@@ -73,7 +74,8 @@ int mypipe::readPipe(char* dest){
 }
 
 int mypipe::readAvailable(){
-    char arr[100];
+    char arr[BUFFER_SIZE];
+    memset(arr, 0x00, BUFFER_SIZE);
     int rlen = read(this->rpipe, arr, sizeof(arr));
     if(rlen > 0){
         strcpy(this->readBuffer, arr);
