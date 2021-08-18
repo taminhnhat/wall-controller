@@ -253,14 +253,14 @@ function accessWallByName(name){
     for(let i = 0; i < M.length; i ++){
         if(M[i].getName() == name) return M[i];
     }
-    return 'invalid wall name';
+    throw 'invalid wall name';
 }
 
 function accessWallByLocation(location){
     for(let i = 0; i < M.length; i ++){
         if(M[i].getLocation() == location) return M[i];
     }
-    return 'invalid wall position';
+    throw 'invalid wall position';
 }
 
 module.exports = {accessWallByName, accessWallByLocation};

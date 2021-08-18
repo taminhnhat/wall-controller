@@ -1,11 +1,11 @@
-const PRODUCTION_MODE = false;
+require('dotenv').config({path: './CONFIGURATIONS.env'});
 
 class Logger{
     constructor(){
         //
     }
     #createLog(message, location, level, value){
-        if(!PRODUCTION_MODE){
+        if(process.env.LOG_MODE == 'console'){
             console.log(message);
             if(value != null) console.log(value);
         }

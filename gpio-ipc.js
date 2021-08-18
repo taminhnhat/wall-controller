@@ -1,4 +1,5 @@
 /**
+ * Using named-pipe to communicate with gpio process
  * Read from "../pipe/fifo1"
  * Write to "../pipe/fifo2"
  */
@@ -31,25 +32,39 @@ readfifo.on('exit', function(status) {
 
     fifoRs.on('data', mess => {
         logger.debug({message: 'message from pipe', value: String(mess), location: FILE_NAME});
-        const messarr = String(mess).split(':');
+        //  button:W.1.1 | button:U.1.1
+        const messarr = String(mess).trim().split(':');
         const buttonLocation = messarr[1];
-        if(buttonLocation.split('.')[0] == 'W'){
-            const wallSide = messarr[2].trim();
-            const buttonEventName = `button:${wallSide}`;
-            const tempParams = message.generateButtonParams(buttonLocation);
-            event.emit(buttonEventName, tempParams);
+
+        const fistDigitOfLocation = buttonLocation.split('.')[0];
+
+        try{
+            if(fistDigitOfLocation == 'W'){
+                const raw_wallSide = messarr[2];
+                const isWallSideValid = raw_wallSide !== 'front' && raw_wallSide !== 'back';
+                if(isWallSideValid) throw {error: 'Not a valid message from pipe!', describe: `missing wall side`};
+                const wallSide = raw_wallSide;
+                const buttonEventName = `button:${wallSide}`;
+                const tempParams = message.generateButtonParams(buttonLocation, wallSide);
+                event.emit(buttonEventName, tempParams);
+            }
+            else if(fistDigitOfLocation == 'U'){
+                const buttonEventName = 'button:user';
+                const tempParams = message.generateButtonParams(buttonLocation, wallSide);
+                event.emit(buttonEventName, tempParams);
+            }
+            else{
+                throw {error: 'Not a valid message from pipe!', describe: `at "${buttonLocation}"`};
+            }
         }
-        else if(buttonLocation.split('.')[0] == 'U'){
-            const buttonEventName = 'button:user';
-            const tempParams = message.generateButtonParams(buttonLocation);
-            event.emit(buttonEventName, tempParams);
+        catch(err){
+            logger.error({message: 'Error reading from pipe', location: FILE_NAME, value: err});
         }
     });
 
     fifoWs.on('error', function(err){
         logger.debug({message: 'error at writing pipe', location: FILE_NAME, value: err});
     });
-    
     
     /**
      * Handle 'light:on' event
@@ -91,6 +106,8 @@ readfifo.on('exit', function(status) {
         logger.debug({message: `'light:set' event`, location: FILE_NAME, value: lightParams});
         const lightBitmap = lightParams.bitmap;
         const wallSide = lightParams.side;
+        //  Set bimap
+        gpioBitmap.bitmapSet(lightBitmap, wallSide);
         //  Emit message to named-pipe
         const mess = `light:${lightBitmap}:${wallSide}`;
         fifoWs.write(mess);
@@ -119,7 +136,7 @@ readfifo.on('exit', function(status) {
      * _side: 'front'|'back'
      */
     event.on('towerlight:set', function(lightParams){
-        logger.debug({message: `'light:error' event`, location: FILE_NAME, value: lightParams});
+        logger.debug({message: `'towerlight:set' event`, location: FILE_NAME, value: lightParams});
         const errorLightStatus = lightParams.status;
         const wallSide = lightParams.side;
         let greenLight = false, redLight = false;
@@ -152,6 +169,11 @@ readfifo.on('exit', function(status) {
                 logger.waring({message: `bad params for 'towerlight:set' event`, location: FILE_NAME, value: lightParams});
         }
     });
+
+    event.on('lcd:print', function(data){
+        logger.debug({message: `'lcd:print' event`, location: FILE_NAME, value: data});
+        emitLcdPrintToPipe(data.message);
+    });
     
     /**
      * Emit a light message to C++ process via named-pipe
@@ -164,9 +186,16 @@ readfifo.on('exit', function(status) {
         gpioBitmap.bitmapGenerate(lightIndex, wallSide, lightState);
         //  get light bitmap of wall
         const lightBitmap = gpioBitmap.getBitmap(wallSide);
-        //  generate message
+        //  create message
         const mess = `light:${lightBitmap}:${wallSide}`;
         //  write message to named-pipe
+        fifoWs.write(mess);
+        logger.debug({message: 'emit message to pipe:', location: FILE_NAME, value: mess});
+    }
+
+    function emitLcdPrintToPipe(data){
+        //  create message
+        const mess = `lcd:${data}`;
         fifoWs.write(mess);
         logger.debug({message: 'emit message to pipe:', location: FILE_NAME, value: mess});
     }

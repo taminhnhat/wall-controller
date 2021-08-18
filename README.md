@@ -7,14 +7,21 @@
 - [pigpio](https://abyz.me.uk/rpi/pigpio/index.html)
 
 # OVERVIEW
-### Step
+## Explained
+This project has 2 processes:
+- C++ process: control gpio on rasberry pi board to turn on/off lights and read buttons
+- Node.js process: main process that communicate with server using websocket
+Two processes communicate to each other using ipc (named-pipe)
+
+## Step
 - Install all requirements
 - Set static dhcp
 - Set static usb port path for scanner
 - Create database
 - Build c++ process
 - Run test in console
-- Create and start service 
+- Create and start service
+
 
 # OPERATING
 ## 1. RUN PROJECT FOR TESTING
@@ -99,7 +106,7 @@ $ sudo nano minhnhat.rules
 ```
 Use idVendor, idProduct, devpath with path found above
 >KERNEL=="ttyACM[0-9]*",SUBSYSTEM=="tty",ATTRS{idVendor}=="065a",ATTRS{idProduct}=="a002",ATTRS{devpath}=="1.1", SYMLINK="frontScanner"  
->KERNEL=="ttyACM[0-9]*",SUBSYSTEM=="tty",ATTRS{idVendor}=="065a",ATTRS{idProduct}=="a002",ATTRS{devpath}=="1.2",SYMLINK="backScanner"
+>KERNEL=="ttyACM[0-9]*",SUBSYSTEM=="tty",ATTRS{idVendor}=="065a",ATTRS{idProduct}=="a002",ATTRS{devpath}=="1.2",SYMLINK="backScanner"  
 >KERNEL=="ttyUSB[0-9]*",SUBSYSTEM=="tty",ATTRS{idVendor}=="067b",ATTRS{idProduct}=="2303",ATTRS{devpath}=="1.4",SYMLINK="lcdScreen"
 
 ```sh
@@ -144,6 +151,12 @@ $ cat /root/report.txt
 # Reboot
 $ sudo reboot
 ```
+
+## 7. Error
+
+Sometimes c++ process cannot run, this line printed on the console eternally
+> gpioTick: pigpio uninitialised, call gpioInitialise()
+
 
 ## 7. WORKING WITH SERVICE
 

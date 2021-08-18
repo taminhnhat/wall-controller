@@ -1,4 +1,3 @@
-const wall = require('./wallApi');
 const full32bits = 2**32 - 1;
 
 class gpioMap{

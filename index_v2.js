@@ -5,7 +5,6 @@
  */
 
 //  CONFIGURATION_________________________________________________________________________
-
 require('dotenv').config({path: './CONFIGURATIONS.env'});
 //
 const WALL_ID = process.env.WALL_ID;
@@ -22,11 +21,10 @@ const SEND_MESSAGE = 'sent_messages';
 const SCANNER_COLLECTION = 'scanner';
 const FRONT_BUTTON_COLLECTION = 'front_button';
 const BACK_BUTTON_COLLECTION = 'back_button';
-
 const FILE_NAME = 'index.js   '
 
-//  WEB SOCKET____________________________________________________________________________
 
+//  WEB SOCKET____________________________________________________________________________
 const io = require('socket.io-client');
 //const socket = io.connect('http://app3.fahasa.com:1300/');
 //const socket = io.connect('ws://localhost:3000');
@@ -36,25 +34,13 @@ const socket = io.connect('ws://192.168.50.2:3000');
 //const socket = io.connect('ws://192.168.1.20:3000');
 
 
-//  UNIX SOCKET_________________________________________________________________________
-
-// const ipc=require('node-ipc');
-
-// ipc.config.id = 'gpio';
-// ipc.config.retry= 1500;
-
-// ipc.connectTo('gpio', function(){
-//     logger.debug({message: 'Unix socket started'});
-// });
-
 //  MONGODB_______________________________________________________________________________
-
 const mongoClient = require('mongodb').MongoClient;
 
 const url = "mongodb://localhost:27017/";
 
-//  SERIAL PORT________________________________________________________________________________
 
+//  SERIAL PORT________________________________________________________________________________
 require('./serial');
 
 //  NAMED PIPE____________________________________________________________________________
@@ -72,18 +58,15 @@ if(platformOS == 'linux' || platformOS == 'darwin'){
 const event = require('./event');
 
 //  FILES__________________________________________________________________________________
-
 const fs = require('fs');
 const path = require('path');
 
 
 //  LOGGER__________________________________________________________________________
-
 const logger = require('./logger/logger');
 
 
 //  WALL CLASS_____________________________________________________________________________
-
 // require wall objects
 const {accessWallByName, accessWallByLocation} = require('./wallApi');
 
@@ -113,46 +96,117 @@ let exportToteNow = null;
 let importToteNow = null;
 
 //  Temporary key for every API send to sockert server
-let frontScanKey = generateKey(6);
-let backScanKey = generateKey(6);
-
-function generateKey(size){
-    let val = '';
-    for(let i = 0; i < size; i ++){
-        val += Math.floor(Math.random()*10);
-    }
-    return Date.now() + val;
-}
+const generateKey = require('./keyGenarate');
+let frontScanKey = generateKey(3);
+let backScanKey = generateKey(3);
 
 
 mongoClient.connect(url, { useUnifiedTopology: true }, function(err, client) {
-if(err) logger.error({message: error});
-const db = client.db(WALL_DB);
+/**
+ * -----------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ * -----------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ * START MAIN SCOPE
+ * -----------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ * -----------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ */
+    if(err) logger.error({message: error, location: FILE_NAME});
+    const db = client.db(WALL_DB);
 
-//  RESTORE WALL STATUS FROM BACKUP____________________________________________________________________________________________________
+    //  RESTORE WALL STATUS FROM BACKUP____________________________________________________________________________________________________
+    let isRestoredWallDone = false;
 
-async function restoreFromBackupDb(){
-    logger.debug({message: 'Restore from backup database', location: FILE_NAME});
+    logger.debug({message: 'Main process started', location: FILE_NAME});
+    //  Run main process
 
-    const backupState = await db.collection(BACKUP_COLLECTION).find({},{
+    const projection = {
         projection: { _id: 0, name: 1, location: 1,
-            frontLight: 1, backLight: 1,
-            importTote: 1, exportTote: 1 }
-    }).toArray();
-    if (err) logger.error({message: error});
-    const backupState = res;
+        frontLight: 1, backLight: 1,
+        importTote: 1, exportTote: 1 }
+    };
+
+    /**
+     * Find all wall status in database
+     *  https://docs.mongodb.com/realm/mongodb/actions/collection.find/
+     */
+    db.collection(BACKUP_COLLECTION).find({}, projection)
+    .sort({location: 1})
+    .toArray()
+    .then(result => {
+        restoreFromBackupDb(result);
+        return new Promise((resolve, reject) => {
+            if(isRestoredWallDone) resolve('Restore from backup completed');
+            else reject('Fail to restore from backup!');
+        });
+    })
+    .then(result => {
+        logger.debug({message: result, location: FILE_NAME});
+        //  Handle internal event
+        event.on('button:front', handleFrontButtonFromGPIO);
+
+        event.on('button:back', handleBackButtonFromGPIO);
+
+        event.on('button:user', handleUserButtonFromGPIO);
+
+        event.on('scanner:front', handleFrontScannerFromSerialPort);
+
+        event.on('scanner:back', handleBackScannerFromSerialPort);
+
+        event.on('wall:completeOne', handleCompleteEvent);
+
+        //  Handle event from websocket
+        socket.on('confirmWall', handleConfirmFromServer);
+
+        socket.on('lightOn', handleLightOnFromServer);
+
+        socket.on('lightOff', handleLightOffFromServer);
+        
+        socket.on('lightTest', handleLightTestFromServer);
+        
+        socket.on('getWallStatus', handleGetWallStatusFromServer);
+        
+        socket.on('wallError', handleErrorFromServer);
+        
+        socket.on('connect', handleSocketConnection);
+        
+        socket.on('disconnect', handleSocketDisconnection);
+        
+        socket.on('error', handleSocketError);
+    })
+    .catch(error => logger.error({message: error, location: FILE_NAME}));
+/**
+ * -----------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ * -----------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ * END MAIN SCOPE
+ * -----------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ * -----------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ */
+
+
+/**
+ * -----------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ * -----------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ * FUNCTIONS DEFINITION
+ * -----------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ * -----------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ */
+
+/**
+ * 
+ * @param {Array} backupState 
+ */
+function restoreFromBackupDb(backupState){
     let frontBitmap = 0;
     let backBitmap = 0;
-
     //  Check light state of wall
     for(idx in backupState){
         let wallState = backupState[idx];
-        logger.info({message: 'wall status', value: {name: wallState.name, location: wallState.location}});
-        const wallName = wallState.name;    
+        //logger.info({message: 'wall status', value: {name: wallState.name, location: wallState.location}});
+        const wallName = wallState.name;
         //
-        console.log(accessWallByLocation(wallState.location).getName());
-        accessWallByLocation(wallState.location).setName(wallName);
-        console.log(accessWallByLocation(wallState.location).getName());
+        const thisWallState = accessWallByLocation(wallState.location);
+        if(thisWallState == undefined) throw {error: 'Backup data was broken, cannot be restored!'};
+        thisWallState.setName(wallName);
+        console.log(thisWallState.getName());
         
         //  Emit light event
         if(wallState.frontLight == true){
@@ -164,37 +218,29 @@ async function restoreFromBackupDb(){
             backBitmap >>> 0;
         }
     }
+    isRestoredWallDone = true;
     event.emit('light:set', {bitmap: frontBitmap, side: 'front'});
     setTimeout(function(){
         event.emit('light:set', {bitmap: backBitmap, side: 'back'});
     });
 }
 
-logger.debug({message: 'Main process started', location: FILE_NAME});
-await restoreFromBackupDb();
-logger.info({message: "wall state", value: accessWallByName('M-1-1').getInfo()});
-
-//  HANDLE EVENTS FROM EVENT EMITTER_______________________________________________________________________________________
-
-//  Listenning event from event emitter
-event.on('start', function(){
-    logger.debug({message: 'Start listenning events!', location: FILE_NAME});
-});
 
 /**
  * Handle 'button:front' event from gpio
+ * Emitted in 'gpio-ipc.js'
  */
-event.on('button:front', function(buttonParams){
+function handleFrontButtonFromGPIO(buttonParams){
     logger.debug({message: 'button:front event from gpio-ipc', location: FILE_NAME, value: buttonParams});
 
     const buttonLocation = buttonParams.button;
-    // create query by wall name to access database
+    // create query by wall location to access database
     const queryByLocation = { location: buttonLocation };
     let newValues = { $set: {frontLight: false} };
 
     const wallName = accessWallByLocation(buttonLocation).getName();
 
-    
+    //  Check if there is a tote scanned
     if(importToteNow != null){
         event.emit('lcd:print', `Hang len:\n   Khay ${importToteNow}\nNhap vao\n   Tuong ${wallName}`);
         buttonParams.tote = importToteNow;
@@ -209,16 +255,20 @@ event.on('button:front', function(buttonParams){
     }
     importToteNow = null;
 
+
     db.collection(BACKUP_COLLECTION).updateOne(queryByLocation, newValues, function(err, res){
         if (err) logger.error({message: error});
         logger.debug({message: 'change light state in database', location: FILE_NAME, value: res.result});
 
         event.emit('light:off', {wall: buttonLocation, side: 'front'});
     });
-});
+};
 
-//  'button:back' emitted in 'ioControl.js' when a button pressed
-event.on('button:back', function(buttonParams){
+/**
+ * Handle 'button:back' event from gpio
+ * Emitted in 'gpio-ipc.js'
+ */
+function handleBackButtonFromGPIO(buttonParams){
     logger.debug({message: 'button:back event', location:  FILE_NAME, value: buttonParams});
 
     const buttonLocation = buttonParams.button;
@@ -242,63 +292,36 @@ event.on('button:back', function(buttonParams){
         let tempApi = message.generateApi('pressButton', buttonParams, backScanKey);
         logger.debug({message: `Wall ${wallName} pick to tote ${buttonParams.tote}, key: ${tempApi.key}`, location: FILE_NAME});
         socket.emit('pickToLight', tempApi);
-        
-        // Insert new event to database
 
-            // function update 'backup' collection with new tote scanned, set 'backlight' to false and 'complete' to true
-            const updateBackupDb = function(db, callback) {
-                // Get the documents collection
-                const collection = db.collection(BACKUP_COLLECTION);
-                // Update document where a is 2, set b equal to 1
-                collection.updateOne(queryByLocation, newBackupValues, function(err, result) {
-                    callback(result);
-                });
-            };
+        const collection = db.collection(BACKUP_COLLECTION);
+        // Update document where a is 2, set b equal to 1
+        collection.updateOne(queryByLocation, newBackupValues)
+        .then(result => {
+            logger.debug({message: 'update to backup result', location: FILE_NAME, value: result});
+            return collection.findOne(queryByLocation);
+        })
+        .then(result => {
+            newHistoryValues = createDbSchema.historySchema(result.importTote, result.exportTote, result.name, result.key);
+            return collection.insertOne(newHistoryValues);
+        })
+        .then(result => {
+            logger.debug({message: 'insert to history result', location: FILE_NAME, value: result});
 
-            // function ind all proberties of this wall in 'backup' collection
-            const findBackupDb = function(db, callback) {
-                // Get the documents collection
-                const collection = db.collection(BACKUP_COLLECTION);
-                // Update document where a is 2, set b equal to 1
-                collection.findOne(queryByLocation, function(err, result) {
-                    callback(result);
-                });
-            };
-
-            // function create a new complete action on this wall then insert to 'history' collection
-            const insertHistoryDb = function(db, callback) {
-                // Get the documents collection
-                const collection = db.collection(HISTORY_COLLECTION);
-                // Update document where a is 2, set b equal to 1
-                collection.insertOne(newHistoryValues, function(err, result) {
-                    callback(result);
-                });
-            };
-
-            //  Update 'backup' collection, then insert new event to history db, do this step by step
-            updateBackupDb(db, function(updateResult){
-                logger.debug({message: 'update to backup result', location: FILE_NAME, value: updateResult.result});
-                exportToteNow = null;
-                findBackupDb(db, function(findResult){
-                    //logger.debug({message: 'find from backup result', findResult});
-
-                    newHistoryValues = createDbSchema.historySchema(findResult.importTote, findResult.exportTote, findResult.name, findResult.key);
-
-                    insertHistoryDb(db, function(insertResult){
-                        logger.debug({message: 'insert to history result', location: FILE_NAME, value: insertResult.result});
-
-                        event.emit('light:off', {wall: buttonLocation, side: 'back'});
-                        event.emit('wall:completeOne',wallName);
-                    });
-                });
-            });
+            event.emit('light:off', {wall: buttonLocation, side: 'back'});
+            event.emit('wall:completeOne',wallName);
+        });
 
     }else{
         logger.debug({message: 'Back button pressed, scan container first!!!', location: FILE_NAME});
+        event.emit('light:off', {wall: buttonLocation, side: 'back'});
     }
-});
+};
 
-event.on('button:user', function(buttonParams){
+/**
+ * Handle 'button:user' event from gpio
+ * Emitted in 'gpio-ipc.js'
+ */
+function handleUserButtonFromGPIO(buttonParams){
     logger.debug({message: 'button:user event', location: FILE_NAME, value: buttonParams});
     switch(buttonParams.button){
         case 'U.1.1':
@@ -360,12 +383,16 @@ event.on('button:user', function(buttonParams){
             event.emit('light:set', {bitmap: 0, side: 'back'});
         }, 6000);
     }
-});
+};
 
-event.on('scanner:front', function(scanParams){
+/**
+ * Handle 'scanner:front' event from gpio
+ * Emitted in 'gpio-ipc.js'
+ */
+function handleFrontScannerFromSerialPort(scanParams){
     //logger.debug({message: 'New front scan', location: FILE_NAME, value: scanParams});
 
-    frontScanKey = generateKey(6);
+    frontScanKey = generateKey(3);
 
     let scanApi = message.generateApi('newScan', scanParams, frontScanKey);
     let scanArray = scanParams.value.split('-');
@@ -408,7 +435,7 @@ event.on('scanner:front', function(scanParams){
     //  If scanned tote not a valid value
     else{
         logger.waring({message: `Scan unknown tote: ${scanParams.val}. Please scan again!`});
-        socket.emit('scanner:unknown', scanApi);
+        //socket.emit('scanner:unknown', scanApi);
         const warningMess = `unknown front scan:${scanParams.val}`;
         const warningObj = message.generateWarning('wall-controller', warningMess);
         const collection = db.collection(WARNING_COLECTION);
@@ -416,13 +443,16 @@ event.on('scanner:front', function(scanParams){
             if(err) logger.error({message: error});
         });
     }
-});
+};
 
-
-event.on('scanner:back', function(scanParams){
+/**
+ * Handle 'scanner:front' event from gpio
+ * Emitted in 'gpio-ipc.js'
+ */
+function handleBackScannerFromSerialPort(scanParams){
     const query = { name: scanParams.wall };
 
-    backScanKey = generateKey(6);
+    backScanKey = generateKey(3);
 
     let scanApi = message.generateApi('newScan', scanParams, backScanKey);
     let scanArray = scanParams.value.split('-');
@@ -444,10 +474,14 @@ event.on('scanner:back', function(scanParams){
         db.collection("scanner").insertOne(temp, function(err, res){
             if (err) logger.error({message: error});
         });
-});
+};
 
 
-event.on('wall:completeOne', function(wallCoor){
+/**
+ * Handle 'wall:completeOne' event from gpio
+ * Emitted in 'index.js'
+ */
+function handleCompleteEvent(wallCoor){
     // create query by wall name to access database
     logger.debug({message: 'wall complete!!!', location: FILE_NAME})
     const queryByLocation = { coordinate: wallCoor}
@@ -458,8 +492,8 @@ event.on('wall:completeOne', function(wallCoor){
         // Get the documents collection
         const collection = db.collection(BACKUP_COLLECTION);
         // Update document where a is 2, set b equal to 1
-        collection.updateOne(queryByLocation, {$set: newBackupValues}, function(err, result) {
-            callback(result);
+        collection.updateOne(queryByLocation, {$set: newBackupValues}, function(err, res) {
+            callback(res.result);
         });
     };
 
@@ -468,7 +502,7 @@ event.on('wall:completeOne', function(wallCoor){
     })
 
 
-})
+};
 
 /**
  * handle internal error
@@ -480,22 +514,18 @@ event.on('error:internal', function(errorParams){
     event.emit('light:error', {status: 'warning', side: wallSide});
     //  emit 'print:internalError' event, it will be handled in 'serial.js'
     event.emit('print:internalError', {})
-})
+});
 
 /**
  * handle error from server
  */
 event.on('error:fromserver', function(errorParams){
     //
-})
+});
 
 
-//  HANDLE EVENTS FROM UNIX SOCKET_______________________________________________________________________________________________________
 
-//  HANDLE EVENTS FROM WEB SOCKET_________________________________________________________________________________________________________
-
-//  handle scanner:confirm from server
-socket.on('confirmWall', function(confirmApi){
+function handleConfirmFromServer(confirmApi){
     const confirmKey = confirmApi.key;
     const confirmDate = confirmApi.date;
     logger.debug({message: 'Confirm from server', location: FILE_NAME, value: {key: confirmKey}});
@@ -509,72 +539,73 @@ socket.on('confirmWall', function(confirmApi){
     }
     const queryByKey = { key: confirmKey, date: confirmDate};
     const updateFrontScanValue = {$set: {confirm: true}};
-        //  Find and remove message match the key in database
-        db.collection("frontScan").updateOne(queryByKey, updateFrontScanValue, function(err, res){
-            if (err) logger.error({message: error});
-            logger.debug({message: `Delete pending api with key:${confirmKey} from Db`, location: FILE_NAME, value: res.result});
-        });
-});
 
-//  Handle lightOn event from server
-socket.on('lightOn', function(lightApi){
+    //  Find and remove message match the key in database
+    db.collection("frontScan").updateOne(queryByKey, updateFrontScanValue, function(err, res){
+        if (err) logger.error({message: error});
+        logger.debug({message: `Delete pending api with key:${confirmKey} from Db`, location: FILE_NAME, value: res.result});
+    });
+};
+
+function handleLightOnFromServer(lightApi){
     logger.debug({message: `'lightOn' MESSAGE FROM SERVER`, location: FILE_NAME, value: lightApi});
 
     const wallName = lightApi.params.wall;
     const wallSide = lightApi.params.side;
     const tempKey = lightApi.key;
 
-    //  Emit light:on event to execute in ioControl.js
-    event.emit('light:on', {
-        wall: accessWallByName(wallName).getLocation(),
-        side: wallSide
+    //  Get thisWall object
+    const thisWall = accessWallByName(wallName);
+
+    //  Insert message to database
+    db.collection(RECEIVE_MESSAGE).insertOne(lightApi, (err, res) => {
+        if(err) logger.error({message: error, location: FILE_NAME});
+        logger.debug({message: 'insert lightOn event to \'received_messages\' collection', location: FILE_NAME, value: res.result});
     });
 
-    socket.emit('lightOnConfirm', message.generateApi('lightOnConfirm', {wall: wallName}, tempKey));
+    const isWallNameValid = thisWall != undefined;
+    const isWallSideValid = (wallSide === 'front' || wallSide === 'back');
 
-    const db = client.db(WALL_DB);
-    const queryByName = { name: wallName };
-    let newBackupValues = "";
+    //  Check if wallName is valid
+    if(!isWallNameValid){
+        //  Emit error message to server
+        socket.emit('wallError', message.generateApi('wallError', {wall: wallName, message: 'Invalid wall'}, tempKey));
+        //  Log error
+        logger.error({message: 'Not a valid message from server', value: {key: tempKey}});
+    }else if(!isWallSideValid){
+        //  Emit error message to server
+        socket.emit('wallError', message.generateApi('wallError', {wall: wallName, message: 'Invalid side'}, tempKey));
+        //  Log error
+        logger.error({message: 'Not a valid message from server', value: {key: tempKey}});
+    }else{
+        //  Emit light:on event to execute in ioControl.js
+        event.emit('light:on', {
+            wall: accessWallByName(wallName).getLocation(),
+            side: wallSide
+        });
+    
+        //  Emit confirm message to server
+        socket.emit('lightOnConfirm', message.generateApi('lightOnConfirm', {wall: wallName}, tempKey));
+    
+        //  Update states to database
+        const db = client.db(WALL_DB);
+        const queryByName = { name: wallName };
+        let newBackupValues = "";
 
-    const updateBackupDb = function(db, callback) {
-
-        const collection = db.collection(BACKUP_COLLECTION);
-
-        if(wallSide == 'front'){
+        if(wallSide === 'front'){
             newBackupValues = { $set: {frontLight: true}, $push: {importTote: importToteNow} };
-        }
-        else if(wallSide == 'back'){
+        }else if(wallSide === 'back'){
             newBackupValues = { $set: {backLight: true}};
         }
-        else{}
-        
-        collection.updateOne(queryByName, newBackupValues, function(err, res) {
-            callback(res.result);
-        });
-    };
 
-    const insertLightDb = function(db, callback){
-
-        const collection = db.collection(RECEIVE_MESSAGE);
-
-        collection.insertOne(lightApi , function(err, res){
-            if (err) logger.error({message: error});
-            callback(res.result);
+        db.collection(BACKUP_COLLECTION).updateOne(queryByName, newBackupValues, (err, res) => {
+            if(err) logger.error({message: error, location: FILE_NAME});
+            logger.debug({message: 'update light state to \'backup\' collection', location: FILE_NAME, value: res.result});
         });
     }
+};
 
-    insertLightDb(db, function(res){
-        logger.debug({message: 'insert lightOn event to \'received_messages\' collection', location: FILE_NAME, value: res});
-        
-        updateBackupDb(db, function(res){
-            logger.debug({message: 'update light state to \'backup\' collection', location: FILE_NAME, value: res});
-        });
-        
-    })
-});
-
-//  Handle lightOff event from server
-socket.on('lightOff', function(lightApi){
+function handleLightOffFromServer(lightApi){
     logger.debug({message: `'lightOff' MESSAGE FROM SERVER`, value: lightApi});
 
     const wallName = lightApi.params.wall;
@@ -585,7 +616,7 @@ socket.on('lightOff', function(lightApi){
     let newBackupValues = "";
     //  Emit light:on event to execute in ioControl.js
     let lightParams = {};
-    lightParams.wall = accessWallByName(wallName).getCoordinate();
+    lightParams.wall = accessWallByName(wallName).getLocation();
     lightParams.side = wallSide;
     event.emit('light:off', lightParams);
 
@@ -593,54 +624,19 @@ socket.on('lightOff', function(lightApi){
     socket.emit('lightOffConfirm', message.generateApi('lightOffConfirm', {wall: wallName}, tempKey));
     
     const db = client.db(WALL_DB);
+};
 
-    const updateBackupDb = function(db, callback) {
-
-        const collection = db.collection(BACKUP_COLLECTION);
-
-        if(wallSide == 'front'){
-            newBackupValues = { $set: {frontLight: false} };
-        }
-        else if(wallSide == 'back'){
-            newBackupValues = { $set: {backLight: false} };
-        }
-        
-        collection.updateOne(queryByName, newBackupValues, function(err, res) {
-            callback(res.result);
-        });
-    };
-
-    const insertLightDb = function(db, callback){
-
-        const collection = db.collection(RECEIVE_MESSAGE);
-
-        collection.insertOne(lightApi , function(err, res){
-            if (err) logger.error({message: err});
-            callback(res.result);
-        });
-    }
-    
-    updateBackupDb(db, function(result){
-        logger.debug({message: 'update light state to backup collection', location: FILE_NAME, value: result});
-        insertLightDb(db, function(result){
-            logger.debug({message: 'insert lightOn event to \'received_messages\' collection', location: FILE_NAME, value: result});
-        });
-    });
-});
-
-socket.on('lightTest', function(lightApi){
+function handleLightTestFromServer(lightApi){
     logger.debug({message: `'LightTest' MESSAGE FROM SERVER`, location: FILE_NAME, value: lightApi});
     event.emit('light:test', {side: lightApi.params.side});
-});
+};
 
-//  Handle getWallState event from server
-socket.on('getWallState', function(d){
+function handleGetWallStatusFromServer(d){
     logger.debug({message: 'request wall status FROM SERVER', value: d});
     return;
-});
+};
 
-//  Handle 'wallError' event from server
-socket.on('wallError', function(errApi){
+function handleErrorFromServer(errApi){
     logger.debug({message: `'wallError' MESSAGE FROM SERVER`, location: FILE_NAME, value: errApi});
     let str = '';
     let arr = errApi.params.message.split(' ');
@@ -662,10 +658,9 @@ socket.on('wallError', function(errApi){
         code: 101,
         message: errApi.params.message
     });
-});
+};
 
-//  handle connection event from server
-socket.on('connect', function(){
+function handleSocketConnection(){
     logger.debug({message: 'Connected to web socket Server!', location: FILE_NAME});
 
     // emit light:error event to handle in gpio-ipc
@@ -679,10 +674,9 @@ socket.on('connect', function(){
         code: 201,
         message: 'Da ket noi SERVER!'
     });
-});
+};
 
-//  handle disconnect event
-socket.on('disconnect', function(){
+function handleSocketDisconnection(){
     logger.fatal({message: 'disconnected from socketServer!'});
 
     // emit light:error event to handle in gpio-ipc
@@ -696,10 +690,9 @@ socket.on('disconnect', function(){
         code: 202,
         message: 'Mat ket noi SERVER'
     });
-});
+};
 
-//
-socket.on('error', function(){
+function handleSocketError(){
     logger.error({message: error});
 
     // emit light:error event to handle in gpio-ipc
@@ -713,6 +706,6 @@ socket.on('error', function(){
         code: 203,
         message: 'Loi ket noi SERVER'
     });
-});
+};
 
 });
