@@ -265,3 +265,18 @@ $ sudo nano ~/.bash_profile
 $ source ~/.bash_profile
 ```
 
+# API
+## Incoming message
+### 1.Turn light on or off
+
+### 2.Error alert
+
+## Outcoming message
+### 1.New tote scaned
+
+### 2.Tote put to wall
+
+### 3.Tote pick to light
+
+### 4.Error alert
+
