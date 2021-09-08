@@ -8,11 +8,11 @@ let url = "mongodb://localhost:27017/";
 
 const mongoClient = new MongoClient(url, { useUnifiedTopology: true })
 
-const WALL_TO_INIT = require('./wallM1');
+const WALL_TO_INIT = require('./wallM4');
 
 mongoClient.connect(function(err, db) {
   if (err) console.error(err);
-  let dbo = db.db("Wall_M1", );
+  let dbo = db.db("Wall_M4", );
 
   // dbo.collection("history").drop(function(err, delOK) {
   //   if (err) throw err;
@@ -27,8 +27,8 @@ mongoClient.connect(function(err, db) {
   // });
 
   dbo.collection("backup").insertMany(WALL_TO_INIT, function(err, res){
-    if (err) throw err;
-    console.log('Add pressButton event to Db', res.result);
+    if (err) console.log(err);
+    console.log('Successful', res);
     mongoClient.close();
   });
 });

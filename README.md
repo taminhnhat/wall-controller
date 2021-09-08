@@ -79,13 +79,26 @@ $ sudo udevadm trigger
 ```
 Sometimes there's something wrong with devpath, just restart the pi
 ## Create database
-
+```sh
+$ cd ~/wall-controller
+$ node ./initDatabase/createWallDb.js
+```
+Check database
+```sh
+# Access mongo shell
+$ mongo
+$ show dbs
+# Check if database created, then check collections
+$ use Wall_M1
+$ show collections
+```
+The right 
 ## Get and build project
 ### 1. Clone frome github
 ```sh
 cd ~/
 git clone https://github.com/taminhnhat/wall-controller.git
-npm install mongodb serialport
+npm install mongodb serialport socket.io-client dotenv
 ```
 
 ### 2. Build cpp
