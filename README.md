@@ -47,7 +47,7 @@ cd ~/wall-controller/gpio
 make
 ```
 After running "make", a executable file named "main"
-### Named pipe
+### 3. Named pipe
 ```sh
 cd ~/wall-controller/pipe
 mkfifo emit_gpio
