@@ -35,7 +35,7 @@ const socket = io.connect('ws://192.168.50.2:3000');
 
 //  MONGODB_______________________________________________________________________________
 const mongoClient = require('mongodb').MongoClient;
-const url = "mongodb://localhost:27017/";
+const url = process.env.MONGO_DB_URL;
 
 
 //  SERIAL PORT________________________________________________________________________________
