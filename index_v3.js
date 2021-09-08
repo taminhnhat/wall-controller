@@ -41,8 +41,8 @@ const url = process.env.MONGO_DB_URL;
 //  SERIAL PORT________________________________________________________________________________
 require('./serial');
 
-//  NAMED PIPE____________________________________________________________________________
 
+//  NAMED PIPE____________________________________________________________________________
 // IPC using named pipe, communicate between c++ side and nodejs side
 const platformOS = process.platform;
 if(platformOS == 'linux' || platformOS == 'darwin'){
@@ -51,9 +51,10 @@ if(platformOS == 'linux' || platformOS == 'darwin'){
     require('../events_emulator/eventsEmulator');
 }
 
-//  EVENT EMITTER__________________________________________________________________________
 
+//  EVENT EMITTER__________________________________________________________________________
 const event = require('./event');
+
 
 //  FILES__________________________________________________________________________________
 const fs = require('fs');
@@ -67,14 +68,9 @@ const logger = require('./logger/logger');
 //  WALL CLASS_____________________________________________________________________________
 // require wall objects
 const {accessWallByName, accessWallByLocation} = require('./wallApi');
-
 const createDbSchema = require('./schema');
-
 //  Import API generator send to web socket server
 const message = require('./message');
-
-//
-let wall = require('./wallApi');
 
 
 //  VARIABLES______________________________________________________________________________
