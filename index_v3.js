@@ -6,12 +6,11 @@
 
 //  CONFIGURATION_________________________________________________________________________
 require('dotenv').config({path: './CONFIGURATIONS.env'});
-//
+//  System id
 const WALL_ID = process.env.WALL_ID;
 const BOOKSTORE_ID = process.env.BOOKSTORE_ID;
 //  db and collections name
 const WALL_DB = process.env.DB_NAME;
-//
 const BACKUP_COLLECTION = 'backup';
 const HISTORY_COLLECTION = 'history';
 const ERROR_COLLECTION = 'error';
@@ -36,7 +35,6 @@ const socket = io.connect('ws://192.168.50.2:3000');
 
 //  MONGODB_______________________________________________________________________________
 const mongoClient = require('mongodb').MongoClient;
-
 const url = "mongodb://localhost:27017/";
 
 
