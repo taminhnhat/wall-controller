@@ -30,7 +30,54 @@ Two processes communicate to each other using ipc (named-pipe).
 ## Set static dhcp
 
 ## Set static usb port
+Plug in the usb port, then get usb port infor
+```sh
+$ udevadm info --name=/dev/ttyACM0 --attribute-walk
+```
 
+Rasberry pi usb port path
+
+|Rasberry pi 3 B+|Rasberry pi 4|
+| ------ | ------ |
+|[image]()|[image]()|
+
+Raspberry pi 3
+-------------devpath-------------  
+|||||||||||||||||||||||||||||||||  
+||         ||  1.1.2 ||  1.3   ||  
+||   RJ45  ||________||________||  
+||         ||  1.1.3 ||  1.2   ||  
+||||\   /||||________||________||  
+|||||||||||||||||||||||||||||||||  
+---------------------------------
+
+Rasberry pi 4
+-------------devpath-------------
+|||||||||||||||||||||||||||||||||
+||   1.3  ||  1.1   ||         ||
+||________||________||   RJ45  ||
+||   1.4  ||  1.2   ||         ||
+||________||________||||\   /||||
+|||||||||||||||||||||||||||||||||
+---------------------------------
+
+```sh
+$ cd /etc/udev/rules.d/
+$ sudo touch minhnhat.rules
+$ sudo nano minhnhat.rules
+```
+Use idVendor, idProduct, devpath with path found above
+```
+KERNEL=="ttyACM[0-9]*",SUBSYSTEM=="tty",ATTRS{idVendor}=="065a",ATTRS{idProduct}=="a002",ATTRS{devpath}=="1.1", SYMLINK="frontScanner"  
+KERNEL=="ttyACM[0-9]*",SUBSYSTEM=="tty",ATTRS{idVendor}=="065a",ATTRS{idProduct}=="a002",ATTRS{devpath}=="1.2",SYMLINK="backScanner"  
+KERNEL=="ttyUSB[0-9]*",SUBSYSTEM=="tty",ATTRS{idVendor}=="067b",ATTRS{idProduct}=="2303",ATTRS{devpath}=="1.4",SYMLINK="lcdScreen"
+```
+
+```sh
+$ sudo udevadm control --reload-rules
+$ sudo udevadm trigger
+```
+Sometimes there's something wrong with devpath, just restart the pi
 ## Create database
 
 ## Get and build project
@@ -96,63 +143,6 @@ socket.emit('user:command', 'lightTest.M.1.1.front');
 
 ## Create and start service
 
-
-## 1. RUN PROJECT FOR TESTING
-
-
-
-
-
-## 6. SET STATIC USB PATH FOR SCANNER AND LCD
-
-
-Plug in the usb port, then get usb port infor
-```sh
-$ udevadm info --name=/dev/ttyACM0 --attribute-walk
-```
-
-Rasberry pi usb port path
-
-|Rasberry pi 3 B+|Rasberry pi 4|
-| ------ | ------ |
-|[image]()|[image]()|
-
--------------devpath-------------  
-|||||||||||||||||||||||||||||||||  
-||         ||  1.1.2 ||  1.3   ||  
-||   RJ45  ||________||________||  
-||         ||  1.1.3 ||  1.2   ||  
-||||\   /||||________||________||  
-|||||||||||||||||||||||||||||||||  
----------------------------------
-
-Rasberry pi 4
--------------devpath-------------
-|||||||||||||||||||||||||||||||||
-||   1.3  ||  1.1   ||         ||
-||________||________||   RJ45  ||
-||   1.4  ||  1.2   ||         ||
-||________||________||||\   /||||
-|||||||||||||||||||||||||||||||||
----------------------------------
-
-```sh
-$ cd /etc/udev/rules.d/
-$ sudo touch minhnhat.rules
-$ sudo nano minhnhat.rules
-```
-Use idVendor, idProduct, devpath with path found above
-```
-KERNEL=="ttyACM[0-9]*",SUBSYSTEM=="tty",ATTRS{idVendor}=="065a",ATTRS{idProduct}=="a002",ATTRS{devpath}=="1.1", SYMLINK="frontScanner"  
-KERNEL=="ttyACM[0-9]*",SUBSYSTEM=="tty",ATTRS{idVendor}=="065a",ATTRS{idProduct}=="a002",ATTRS{devpath}=="1.2",SYMLINK="backScanner"  
-KERNEL=="ttyUSB[0-9]*",SUBSYSTEM=="tty",ATTRS{idVendor}=="067b",ATTRS{idProduct}=="2303",ATTRS{devpath}=="1.4",SYMLINK="lcdScreen"
-```
-
-```sh
-$ sudo udevadm control --reload-rules
-$ sudo udevadm trigger
-```
-Sometimes there's something wrong with devpath, just restart the pi
 
 ## STARTUP SCRIPT IN PI
 
