@@ -1,40 +1,72 @@
-# REQUIREMENTS
-- Platform: raspberry pi 3 B+/4  
-- Os: ubuntu server 20.04 (without desktop)  
-- [Mongodb](https://developer.mongodb.com/how-to/mongodb-on-raspberry-pi/)
-- [Node.js](https://github.com/nodesource/distributions/blob/master/README.md) 14 or above
-- C++
-- [pigpio](https://abyz.me.uk/rpi/pigpio/index.html)
-
-# OVERVIEW
-## Explained
+# DESCRIPTION
 This project has 2 processes:
 - C++ process: control gpio on rasberry pi board to turn on/off lights and read buttons
-- Node.js process: main process that communicate with server using websocket
-Two processes communicate to each other using ipc (named-pipe)
+- Node.js process: main process that communicate with server using websocket  
 
-## Step
-- Install all requirements
-- Set static dhcp
-- Set static usb port path for scanner
-- Create database
-- Build c++ process
-- Run test in console
-- Create and start service
+Two processes communicate to each other using ipc (named-pipe).
 
+# REQUIREMENTS
+- Platform: raspberry pi 3 B+/4  
+- Os: ubuntu server 20.04 LTS (without desktop)  
+- Mongodb server for raspberry pi using this [guide](https://developer.mongodb.com/how-to/mongodb-on-raspberry-pi/)
+- [Node.js](https://github.com/nodesource/distributions/blob/master/README.md) 14 or above
+- gcc, g++, make - to build c++
+- [pigpio](https://abyz.me.uk/rpi/pigpio/index.html) - an gpio library for c++
+
+# INSTALLATION
+- Install all [requirements](#requirements)
+- [Set static dhcp](#set-static-dhcp)
+- [Set static usb port path for scanner](#set-static-usb-port)
+- [Create database](#Create-database)
+- [Clone and build source from github](#get-and-build-project)
 
 # OPERATING
-## 1. RUN PROJECT FOR TESTING
+- Do [THIS](#prepare-to-run) first!
+- [Run test in console](#test)
+- [Create and start service](#create-and-start-service)
+
+
+
+## Set static dhcp
+
+## Set static usb port
+
+## Create database
+
+## Get and build project
+### 1. Clone frome github
+```sh
+cd ~/
+git clone https://github.com/taminhnhat/wall-controller.git
+npm install mongodb serialport
+```
+
+### 2. Build cpp
+```sh
+cd ~/wall-controller/gpio
+make
+```
+After running "make", a executable file named "main"
+### Named pipe
+```sh
+cd ~/wall-controller/pipe
+mkfifo emit_gpio
+mkfifo button_callback
+```
+
+## Prepare to run
+After installed all the requirements
 
 Before run, find and kill pigoiod pid if exist
 ```sh
 $ cat /var/run/pigpio.pid
 $ sudo kill -9 <pid>
 ```
-
 !!! Do not run 'sudo pigpiod'
 
 Go to project directory to run to process  
+
+## Test
 Nodejs side that communicate with server
 ```sh
 $ sudo node index.js > system.log
@@ -42,13 +74,9 @@ $ sudo node index.js > system.log
 
 C++ side that control gpio on rasberry pi
 ```sh
-$ cd gpio
-$ make
+$ cd ~/wall-controller/gpio
 $ sudo ./main
 ```
-
-
-
 
 ## 2. RUN TEST
 
@@ -65,6 +93,15 @@ socket.emit('user:command', 'lightOn.M.1.1.front');
 socket.emit('user:command', 'lightOff.M.2.1.back');
 socket.emit('user:command', 'lightTest.M.1.1.front');
 ```
+
+## Create and start service
+
+
+## 1. RUN PROJECT FOR TESTING
+
+
+
+
 
 ## 6. SET STATIC USB PATH FOR SCANNER AND LCD
 
@@ -105,9 +142,11 @@ $ sudo touch minhnhat.rules
 $ sudo nano minhnhat.rules
 ```
 Use idVendor, idProduct, devpath with path found above
->KERNEL=="ttyACM[0-9]*",SUBSYSTEM=="tty",ATTRS{idVendor}=="065a",ATTRS{idProduct}=="a002",ATTRS{devpath}=="1.1", SYMLINK="frontScanner"  
->KERNEL=="ttyACM[0-9]*",SUBSYSTEM=="tty",ATTRS{idVendor}=="065a",ATTRS{idProduct}=="a002",ATTRS{devpath}=="1.2",SYMLINK="backScanner"  
->KERNEL=="ttyUSB[0-9]*",SUBSYSTEM=="tty",ATTRS{idVendor}=="067b",ATTRS{idProduct}=="2303",ATTRS{devpath}=="1.4",SYMLINK="lcdScreen"
+```
+KERNEL=="ttyACM[0-9]*",SUBSYSTEM=="tty",ATTRS{idVendor}=="065a",ATTRS{idProduct}=="a002",ATTRS{devpath}=="1.1", SYMLINK="frontScanner"  
+KERNEL=="ttyACM[0-9]*",SUBSYSTEM=="tty",ATTRS{idVendor}=="065a",ATTRS{idProduct}=="a002",ATTRS{devpath}=="1.2",SYMLINK="backScanner"  
+KERNEL=="ttyUSB[0-9]*",SUBSYSTEM=="tty",ATTRS{idVendor}=="067b",ATTRS{idProduct}=="2303",ATTRS{devpath}=="1.4",SYMLINK="lcdScreen"
+```
 
 ```sh
 $ sudo udevadm control --reload-rules
@@ -115,7 +154,7 @@ $ sudo udevadm trigger
 ```
 Sometimes there's something wrong with devpath, just restart the pi
 
-## 7. STARTUP SCRIPT IN PI
+## STARTUP SCRIPT IN PI
 
 Create a new servive
 ```sh
