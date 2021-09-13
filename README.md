@@ -25,6 +25,53 @@ Two processes communicate to each other using ipc (named-pipe).
 - [Run test in console](#test)
 - [Create and start service](#create-and-start-service)
 
+# API
+## Interface
+Websockets
+## Events
+- To turn on or off light on wall
+```
+"LightOn": {
+
+}
+```
+
+New tote scaned
+```
+"scanTotePushToWall": {
+    name: "newScan",
+    clientId: clientId,
+    bookstoreId: bookstoreId,
+    version: version,
+    params: {
+        value: scanString
+    },
+    date: Date,
+    key: key
+}
+```
+|Property name|Type|Description|  
+|---|---|---|
+|name|String|name of api|
+|clientId|String|ID of wall|
+|bookstoreId|String|ID of bookstore|
+|version|String|api version|
+|value|String|name of the tote scanned|
+|key|String|stand for a complete action on the wall used on client side, just ignore it|
+Example:
+```
+"scanTotePushToWall": {
+    name: "newScan",
+    clientId: "wall-controller-M-1",
+    bookstoreId: "67",
+    version: "1.0.0",
+    params: {
+        value: "L-10"
+    },
+    date: Date,
+    key: key
+}
+```
 
 
 ## Set static dhcp
