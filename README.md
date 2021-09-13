@@ -44,7 +44,7 @@ Websockets
 |bookstoreId|String|ID of bookstore|
 |version|String|api version|
 |value|String|name of the tote scanned|
-|key|String|stand for a complete action on the wall used on client side, just ignore it|
+|key|String|stand for a complete action on the wall used on client side, just ignore it|  
 Example:
 ```
 "scanTotePushToWall": {
