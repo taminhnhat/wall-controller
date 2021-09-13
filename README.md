@@ -29,27 +29,14 @@ Two processes communicate to each other using ipc (named-pipe).
 ## Interface
 Websockets
 ## Events
-- To turn on or off light on wall
+### To turn on or off light on wall
 ```
 "LightOn": {
 
 }
 ```
 
-New tote scaned
-```
-"scanTotePushToWall": {
-    name: "newScan",
-    clientId: clientId,
-    bookstoreId: bookstoreId,
-    version: version,
-    params: {
-        value: scanString
-    },
-    date: Date,
-    key: key
-}
-```
+### New tote scaned
 |Property name|Type|Description|  
 |---|---|---|
 |name|String|name of api|
@@ -61,15 +48,15 @@ New tote scaned
 Example:
 ```
 "scanTotePushToWall": {
-    name: "newScan",
+    name: "scanTotePushToWall",
     clientId: "wall-controller-M-1",
     bookstoreId: "67",
     version: "1.0.0",
     params: {
         value: "L-10"
     },
-    date: Date,
-    key: key
+    date: "Mon Sep 13 2021 14:46:46 GMT+0700 (Indochina Time)",
+    key: "1631519378148-q2i3o9"
 }
 ```
 
