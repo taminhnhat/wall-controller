@@ -30,7 +30,7 @@ Two processes communicate to each other using ipc (named-pipe).
 Websockets
 ## Events
 ### To turn on or off light on wall
-```
+```json
 "LightOn": {
 
 }
@@ -44,9 +44,9 @@ Websockets
 |bookstoreId|String|ID of bookstore|
 |version|String|api version|
 |value|String|name of the tote scanned|
-|key|String|stand for a complete action on the wall used on client side, just ignore it|  
+|key|String|stand for a complete action on the wall used on client side, just ignore it|
 Example:
-```
+```json
 "scanTotePushToWall": {
     name: "scanTotePushToWall",
     clientId: "wall-controller-M-1",
