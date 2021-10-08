@@ -26,18 +26,39 @@ Two processes communicate to each other using ipc (named-pipe).
 - [Create and start service](#create-and-start-service)
 
 # API
-## Interface
-Websockets
-## Events
-### To turn on or off light on wall
+## 1. Interface
+Websockets using socket.io  
+Wall-controller run as a client.
+## 2. Events
+### 2.1. To turn on or off light on wall
+|Property|Type|Description|  
+|---|---|---|
+|name|String: {"lightOn", "lightOff"}|name of api|
+|clientId|String|Server id|
+|bookstoreId|String|ID of bookstore|
+|wall|String|name of the bin on the wall|
+|side|String: {"front", "back"}|"front": stow package into wall; "back": take package from wall|
+|key|String|stand for a complete action on the wall used on client side, just ignore it|
+Example:
 ```json
 "LightOn": {
-
+    name: "lightOn",
+    clientId: "App1Fahasa",
+    bookstoreId: "67",
+    version: "1.0.0",
+    params: {
+        wall: "M-1-4",
+        side: "front"
+    },
+    date: "Mon Sep 13 2021 14:46:46 GMT+0700 (Indochina Time)",
+    key: "1631519378148-q2i3o9"
 }
 ```
+### 2.2. Send confirm
+
 
 ### New tote scaned
-|Property name|Type|Description|  
+|Property|Type|Description|  
 |---|---|---|
 |name|String|name of api|
 |clientId|String|ID of wall|
@@ -59,7 +80,21 @@ Example:
     key: "1631519378148-q2i3o9"
 }
 ```
-
+### Put tote to wall
+Example:
+```json
+"pushToWall": {
+    name: "pushToWall",
+    clientId: "wall-controller-M-1",
+    bookstoreId: "67",
+    version: "1.0.0",
+    params: {
+        value: "L-10"
+    },
+    date: "Mon Sep 13 2021 14:46:46 GMT+0700 (Indochina Time)",
+    key: "1631519378148-q2i3o9"
+} 
+```
 
 ## Set static dhcp
 

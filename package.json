@@ -1,0 +1,32 @@
+{
+  "name": "wall-controller",
+  "version": "1.0.0",
+  "description": "gateway",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/taminhnhat/wall-controller.git"
+  },
+  "keywords": [
+    "node.js",
+    "mongodb",
+    "serialport",
+    "pigpio",
+    "named-pipe"
+  ],
+  "author": "Ta Minh Nhat",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/taminhnhat/wall-controller/issues"
+  },
+  "homepage": "https://github.com/taminhnhat/wall-controller#readme",
+  "dependencies": {
+    "dotenv": "^10.0.0",
+    "mongodb": "^4.1.3",
+    "serialport": "^9.2.4",
+    "socket.io-client": "^4.2.0"
+  }
+}
