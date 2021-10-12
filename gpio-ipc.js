@@ -22,13 +22,14 @@ const read_pipe_path = process.env.GPIO_CALLBACK_NAMED_PIPE_PATH;
 let readfifo = spawn('mkfifo', [read_pipe_path]);
 
 readfifo.on('exit', function(status) {
-    logger.debug({message: 'Created read named-pipe from GPIO', location: FILE_NAME});
+    //logger.debug({message: 'Created read named-pipe from GPIO', location: FILE_NAME});
 
     const fd   = fs.openSync(read_pipe_path, 'r+');
     let fifoRs = fs.createReadStream(null, { fd });
     let fifoWs = fs.createWriteStream(write_pipe_path);
 
-    logger.debug({message: 'Created write named-pipe to GPIO', location: FILE_NAME});
+    //logger.debug({message: 'Created write named-pipe to GPIO', location: FILE_NAME});
+    logger.debug({message: 'Connected to GPIO process', location: FILE_NAME});
 
     fifoRs.on('data', mess => {
         logger.debug({message: 'message from pipe', value: String(mess), location: FILE_NAME});

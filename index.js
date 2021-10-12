@@ -28,7 +28,7 @@ const io = require('socket.io-client');
 //const socket = io.connect('http://app3.fahasa.com:1300/');
 //const socket = io.connect('ws://localhost:3000');
 //const socket = io.connect('ws://172.16.0.100:3000');
-const socket = io.connect('ws://192.168.50.2:3000');
+const socket = io.connect('ws://192.168.50.3:3000');
 //const socket = io.connect('http://192.168.1.157:3001');
 //const socket = io.connect('ws://192.168.1.20:3000');
 
@@ -48,13 +48,15 @@ const platformOS = process.platform;
 if(platformOS == 'linux' || platformOS == 'darwin'){
     require('./gpio-ipc');
 }else if(platformOS == 'win32'){
-    require('../events_emulator/eventsEmulator');
+    //require('../events_emulator/eventsEmulator');
 }
 
 
 //  EVENT EMITTER__________________________________________________________________________
 const event = require('./event');
-
+event.on('scanner:opened', (message) => {
+    console.log(message);
+});
 
 //  FILES__________________________________________________________________________________
 const fs = require('fs');
@@ -139,7 +141,7 @@ mongoClient.connect(url, { useUnifiedTopology: true }, function(err, client) {
     })
     .then(result => {
         logger.debug({message: result, location: FILE_NAME});
-        //  Handle internal event
+        
         event.on('button:front', handleFrontButtonFromGPIO);
 
         event.on('button:back', handleBackButtonFromGPIO);
@@ -149,6 +151,10 @@ mongoClient.connect(url, { useUnifiedTopology: true }, function(err, client) {
         event.on('scanner:front', handleFrontScannerFromSerialPort);
 
         event.on('scanner:back', handleBackScannerFromSerialPort);
+
+        event.on('scanner:opened', handleScannerOpenFromSerialPort);
+
+        event.on('scanner:closed', handleScannerCloseFromSerialPort);
 
         event.on('wall:completeOne', handleCompleteEvent);
 
@@ -473,6 +479,14 @@ function handleBackScannerFromSerialPort(scanParams){
     db.collection("scanner").insertOne(temp, function(err, res){
         if (err) logger.error({message: error});
     });
+};
+
+function handleScannerOpenFromSerialPort(message){
+    logger.debug('ervev', message);
+};
+
+function handleScannerCloseFromSerialPort(message){
+    logger.debug('rf', message);
 };
 
 

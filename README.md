@@ -16,7 +16,7 @@ Two processes communicate to each other using ipc (named-pipe).
 # INSTALLATION
 - Install all [requirements](#requirements)
 - [Set static dhcp](#set-static-dhcp)
-- [Set static usb port path for scanner](#set-static-usb-port)
+- [Set static usb port path for scanner](./static-dhcp/readme.md)
 - [Create database](#Create-database)
 - [Clone and build source from github](#get-and-build-project)
 
@@ -95,10 +95,65 @@ Example:
     key: "1631519378148-q2i3o9"
 } 
 ```
+# IPC
+Gateway process communicate with GPIO process via named-pipe located at /tmp/
+- To emit event send to GPIO process: write to /tmp/emit_gpio
+- To handle event from GPIO process: read from /tmp/gpio_callback
+## 1. Emit event to GPIO
+### Emit light
+Message structure:
+"light:bitmap:side\n"
+|Property|Type|Description|  
+|---|---|---|
+|light|Constant||
+|bitmap|Number|Light bitmap|
+|side|String|Wall side {"front", "back"}|
+Example:
+```
+light:512:front
+```
+### LCD print
+Message structure:
+"lcd:message\n"
+|Property|Type|Description|  
+|---|---|---|
+|lcd|Constant||
+|message|String|Message to print on lcd|
+Example:
+```
+lcd:wall start
+```
 
-## Set static dhcp
+## 2. Handle event from GPIO
+### Button on pin
+Message structure:
+"button:W.x.y\n"
+|Property|Type|Description|  
+|---|---|---|
+|button|Constant||
+|W|Constant||
+|x|Number|column of bin on wall|
+|y|Number|row of bin on wall|
+Example:
+```
+button:W.3.4
+```
+### Button on Electrical cabin
+Message structure:
+"button:U.x.y\n"
+|Property|Type|Description|  
+|---|---|---|
+|button|Constant||
+|W|Constant||
+|x|Number|column of bin on wall|
+|y|Number|row of bin on wall|
+Example:
+```
+button:W.3.4
+```
+# Set static dhcp
 
-## Set static usb port
+# Set static usb port
 Plug in the usb port, then get usb port infor
 ```sh
 $ udevadm info --name=/dev/ttyACM0 --attribute-walk
@@ -137,9 +192,9 @@ $ sudo nano minhnhat.rules
 ```
 Use idVendor, idProduct, devpath with path found above
 ```
-KERNEL=="ttyACM[0-9]*",SUBSYSTEM=="tty",ATTRS{idVendor}=="065a",ATTRS{idProduct}=="a002",ATTRS{devpath}=="1.1", SYMLINK="frontScanner"  
-KERNEL=="ttyACM[0-9]*",SUBSYSTEM=="tty",ATTRS{idVendor}=="065a",ATTRS{idProduct}=="a002",ATTRS{devpath}=="1.2",SYMLINK="backScanner"  
-KERNEL=="ttyUSB[0-9]*",SUBSYSTEM=="tty",ATTRS{idVendor}=="067b",ATTRS{idProduct}=="2303",ATTRS{devpath}=="1.4",SYMLINK="lcdScreen"
+KERNEL=="ttyACM[0-9]*",SUBSYSTEM=="tty",ATTRS{idVendor}=="065a",ATTRS{idProduct}=="a002",ATTRS{devpath}=="1.2.1", SYMLINK="frontScanner"  
+KERNEL=="ttyACM[0-9]*",SUBSYSTEM=="tty",ATTRS{idVendor}=="065a",ATTRS{idProduct}=="a002",ATTRS{devpath}=="1.2.3",SYMLINK="backScanner"  
+KERNEL=="ttyUSB[0-9]*",SUBSYSTEM=="tty",ATTRS{idVendor}=="067b",ATTRS{idProduct}=="2303",ATTRS{devpath}=="1.2.2",SYMLINK="lcdScreen"
 ```
 
 ```sh
@@ -165,22 +220,22 @@ The right
 ## Get and build project
 ### 1. Clone frome github
 ```sh
-cd ~/
-git clone https://github.com/taminhnhat/wall-controller.git
-npm install mongodb serialport socket.io-client dotenv
+$ cd ~/
+$ git clone https://github.com/taminhnhat/wall-controller.git
+$ npm install mongodb serialport socket.io-client dotenv
 ```
 
 ### 2. Build cpp
 ```sh
-cd ~/wall-controller/gpio
-make
+$ cd ~/wall-controller/gpio
+$ make all
 ```
 After running "make", a executable file named "main"
 ### 3. Named pipe
 ```sh
-cd ~/wall-controller/pipe
-mkfifo emit_gpio
-mkfifo button_callback
+$ cd ~/wall-controller/pipe
+$ mkfifo emit_gpio
+$ mkfifo button_callback
 ```
 
 ## Prepare to run

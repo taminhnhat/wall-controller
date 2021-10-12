@@ -26,31 +26,23 @@ const connectPort1 = setInterval(reconnectPort1, 5000);
 // const port0 = new SerialPort(process.env.FRONT_SCANNER_PATH, {
 //   baudRate: 9600
 // });
-const port0 = new SerialPort('/dev/tty.usbmodem143301', {
+// const port1 = new SerialPort(process.env.BACK_SCANNER_PATH, {
+//   baudRate: 9600
+// });
+const port0 = new SerialPort('/dev/ttyS3', {
   baudRate: 9600
 });
-const port1 = new SerialPort(process.env.BACK_SCANNER_PATH, {
+const port1 = new SerialPort('/dev/ttyS6', {
   baudRate: 9600
 });
 
-port1.open(function (err) {
-  if (err) {
-    return logger.debug({message: 'Error opening port: ', location: FILE_NAME, value: err.message})
-  }
-});
-port0.open(function (err) {
-  if (err) {
-    return logger.debug({message: 'Error opening port: ', location: FILE_NAME, value: err.message})
-  }
-});
-
-port1.on('open', function(){
-  clearInterval(connectPort1);
-  event.emit('scanner:opened', 'Back scanner opened');
-});
 port0.on('open', function(){
   clearInterval(connectPort0);
   event.emit('scanner:opened', 'Front scanner opened');
+});
+port1.on('open', function(){
+  clearInterval(connectPort1);
+  event.emit('scanner:opened', 'Back scanner opened');
 });
   
 // Switches the port into "flowing mode"
@@ -81,13 +73,13 @@ port1.on('data', function (data) {
 });
 
 port0.on('close', function(){
-  event.emit('scanner:closed', 'Serial port 0 closed');
-  connectPort = setInterval(reconnectPort0, 5000);
+  event.emit('scanner:closed', 'Front scanner closed');
+  connectPort0 = setInterval(reconnectPort0, 5000);
 });
 
 port1.on('close', function(){
-  event.emit('scanner:closed', 'Serial port 1 closed');
-  connectPort = setInterval(reconnectPort1, 5000);
+  event.emit('scanner:closed', 'Back scanner closed');
+  connectPort1 = setInterval(reconnectPort1, 5000);
 });
 
 // event.on('lcd:print:action', function(printParams){
@@ -116,7 +108,7 @@ port1.on('close', function(){
 function reconnectPort0() {
   port0.open(function(err){
       if (err){
-        //logger.debug({message: 'Error connecting port 0:', location: FILE_NAME, value: err.message});
+        logger.debug({message: 'Error connecting port 0:', location: FILE_NAME, value: err.message});
       }
   });
 }
@@ -124,7 +116,7 @@ function reconnectPort0() {
 function reconnectPort1() {
   port1.open(function(err){
       if (err){
-        //logger.debug({message: 'Error connecting port 1:', location: FILE_NAME, value: err.message});
+        logger.debug({message: 'Error connecting port 1:', location: FILE_NAME, value: err.message});
       }
   });
 }
