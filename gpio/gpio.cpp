@@ -66,9 +66,9 @@ int tempTimerTick = 0;
 
 //  PIPE_____________________________________________________________________________________________________________________
 //   read pipe from node side
-char readpipe_path[] = "../pipe/emit_gpio";
+char readpipe_path[] = "/tmp/emit_gpio";
 //  
-char writepipe_path[] = "../pipe/gpio_callback";
+char writepipe_path[] = "/tmp/gpio_callback";
 
 char arr1[100], arr2[100];
 uint32_t timerCount = 0;
