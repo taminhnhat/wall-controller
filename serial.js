@@ -108,7 +108,7 @@ port1.on('close', function(){
 function reconnectPort0() {
   port0.open(function(err){
       if (err){
-        logger.debug({message: 'Error connecting port 0:', location: FILE_NAME, value: err.message});
+        // logger.debug({message: 'Error connecting port 0:', location: FILE_NAME, value: err.message});
       }
   });
 }
@@ -116,7 +116,7 @@ function reconnectPort0() {
 function reconnectPort1() {
   port1.open(function(err){
       if (err){
-        logger.debug({message: 'Error connecting port 1:', location: FILE_NAME, value: err.message});
+        // logger.debug({message: 'Error connecting port 1:', location: FILE_NAME, value: err.message});
       }
   });
 }
