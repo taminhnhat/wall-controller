@@ -23,18 +23,18 @@ const connectPort1 = setInterval(reconnectPort1, 5000);
 
 //  NEED TO CONFIG SERIAL PORT FIRST, READ 'README.md'
 
-// const port0 = new SerialPort(process.env.FRONT_SCANNER_PATH, {
-//   baudRate: 9600
-// });
-// const port1 = new SerialPort(process.env.BACK_SCANNER_PATH, {
-//   baudRate: 9600
-// });
-const port0 = new SerialPort('/dev/ttyS3', {
+const port0 = new SerialPort(process.env.FRONT_SCANNER_PATH, {
   baudRate: 9600
 });
-const port1 = new SerialPort('/dev/ttyS6', {
+const port1 = new SerialPort(process.env.BACK_SCANNER_PATH, {
   baudRate: 9600
 });
+// const port0 = new SerialPort('/dev/ttyS3', {
+//   baudRate: 9600
+// });
+// const port1 = new SerialPort('/dev/ttyS6', {
+//   baudRate: 9600
+// });
 
 port0.on('open', function(){
   clearInterval(connectPort0);
