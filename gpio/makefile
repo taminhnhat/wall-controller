@@ -1,4 +1,4 @@
-all: lcd.o gpio.o
+all: lcd-i2c.o gpio.o
 	g++ -o main lcd-i2c.o gpio.o -Wall -pthread -lpigpio -lrt
 	rm gpio.o lcd-i2c.o
 gpio: gpio.cpp lcd-i2c.h

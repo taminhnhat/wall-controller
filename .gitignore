@@ -1,1 +1,4 @@
 node_modules/
+gpio/gpio.o
+gpio/lcd-i2c.o
+gpio/main
