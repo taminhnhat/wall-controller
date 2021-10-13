@@ -188,7 +188,7 @@ readfifo.on('exit', function(status) {
         //  get light bitmap of wall
         const lightBitmap = gpioBitmap.getBitmap(wallSide);
         //  create message
-        const mess = `light:${lightBitmap}:${wallSide}`;
+        const mess = `light:${lightBitmap}:${wallSide}\n`;
         //  write message to named-pipe
         fifoWs.write(mess);
         logger.debug({message: 'emit message to pipe:', location: FILE_NAME, value: mess});
@@ -196,7 +196,7 @@ readfifo.on('exit', function(status) {
 
     function emitLcdPrintToPipe(data){
         //  create message
-        const mess = `lcd:${data}`;
+        const mess = `lcd:${data}\n`;
         fifoWs.write(mess);
         logger.debug({message: 'emit message to pipe:', location: FILE_NAME, value: mess});
     }
@@ -217,7 +217,7 @@ readfifo.on('exit', function(status) {
         //  get light bitmap of wall
         const lightBitmap = gpioBitmap.getBitmap(wallSide);
         //  generate message
-        const mess = `light:${gpioBitmap.getBitmap(wallSide)}:${wallSide}`;
+        const mess = `light:${gpioBitmap.getBitmap(wallSide)}:${wallSide}\n`;
         fifoWs.write(mess);
         logger.debug({message: 'emit message to pipe:', location: FILE_NAME, value: mess});
     }

@@ -27,7 +27,7 @@ void lcdWriteByte(uint8_t bits, int mode)   {
   lcd_toggle_enable(bits_high);
 
   // Low bits
-    i2cWriteByte(handle, bits_low);
+  i2cWriteByte(handle, bits_low);
   lcd_toggle_enable(bits_low);
 }
 
