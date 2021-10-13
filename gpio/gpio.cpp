@@ -144,12 +144,14 @@ int charToInt(char c){
 
 //  MAIN______________________________________________________________________________________
 
-int main(int argc, char *argv[]){
+int main(int argc, char *argv[])
+{
   //  Start named-pipe ipc
   mypipe.startPipe();
 
   //  Init gpio
-  if(!initGPIO()){
+  if(!initGPIO())
+  {
     std::cout << "init gpio error" << std::endl;
   }
 
@@ -164,7 +166,8 @@ int main(int argc, char *argv[]){
 
   int lineCount = 1;
 
-  while(true){
+  while(true)
+  {
     // Check every 1 milisecond
     if(gpioTick()%1000 == 0){
       //std::cout << "read row" << lineCount <<std::endl;
@@ -190,7 +193,8 @@ int main(int argc, char *argv[]){
       const char s_lcd[] = "lcd";
 
       // Check command mode
-      if(!strncmp(command, s_light, 5)){
+      if(!strncmp(command, s_light, 5))
+      {
         // Enter light mode
         char *s_bitmap = strtok(NULL, delimiters);
         char *s_side = strtok(NULL, delimiters);
@@ -215,7 +219,9 @@ int main(int argc, char *argv[]){
         }else{
           std::cout << "error:light command is missing tokens!" << std::endl;
         }
-      }else if(!strncmp(command, s_lcd, 3)){
+      }
+      else if(!strncmp(command, s_lcd, 3))
+      {
         // Enter lcd mode
         char *messageLine_1st = strtok(NULL, delimiters);
         char *messageLine_2nd = strtok(NULL, delimiters);
@@ -267,7 +273,9 @@ int main(int argc, char *argv[]){
         }
 
         std::cout << "wrote message to lcd: \n" << messageLine_1st << "\n" << messageLine_2nd << "\n" << messageLine_3rd << "\n" << messageLine_4th << std::endl;
-      }else{
+      }
+      else
+      {
         //  
         std::cout << "error:not a valid command!" << std::endl;
       }
@@ -429,12 +437,16 @@ void readButtons(int line){
       }
       else if(line == 11){
         //  line 11 used for user buttons on the electric cabin
-        std::sprintf(arr, "button:U.%d.1", col + 1);
+        std::sprintf(arr, "button:U.%d.1\n", col + 1);
       }
       //  print out button address
       std::cout << arr;
       //  emit button via pipes
       mypipe.writePipe(arr, strlen(arr));
+      while(arr[idx] != 0x00 && arr[idx] != 0x0A){
+        lcdWriteByte(arr[idx], DATA_MODE);
+        idx ++;
+      }
       buttonTick[col-1][line-1] = timerCount;
     }
 
