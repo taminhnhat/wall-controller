@@ -51,7 +51,7 @@ readfifo.on('exit', function(status) {
             }
             else if(fistDigitOfLocation == 'U'){
                 const buttonEventName = 'button:user';
-                const tempParams = message.generateButtonParams(buttonLocation, wallSide);
+                const tempParams = message.generateButtonParams(buttonLocation, 'cabin');
                 event.emit(buttonEventName, tempParams);
             }
             else{
