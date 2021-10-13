@@ -186,12 +186,6 @@ int main(int argc, char *argv[])
       char arr[30];
       mypipe.readPipe(arr);
       std::cout << "read from pipe: " << arr << std::endl;
-      int idx = 0;
-      while(arr[idx] != 0x00 && arr[idx] != 0x0A){
-        lcdWriteByte(arr[idx], DATA_MODE);
-        // std::cout << std::hex << (int)messageLine_1st[idx] << std::endl;
-        idx ++;
-      }
 
       char delimiters[] = ":\n";
       char *command = strtok(arr, delimiters);
@@ -224,6 +218,15 @@ int main(int argc, char *argv[])
           }
         }else{
           std::cout << "error:light command is missing tokens!" << std::endl;
+        }
+
+        lcdClear();
+        lcdSetCursor(LCD_LINE1_INDEX);
+        int idx = 0;
+        while(arr[idx] != 0x00 && arr[idx] != 0x0A){
+          lcdWriteByte(arr[idx], DATA_MODE);
+          // std::cout << std::hex << (int)messageLine_1st[idx] << std::endl;
+          idx ++;
         }
       }
       else if(!strncmp(command, s_lcd, 3))
@@ -449,6 +452,8 @@ void readButtons(int line){
       std::cout << arr;
       //  emit button via pipes
       mypipe.writePipe(arr, strlen(arr));
+      lcdClear();
+      lcdSetCursor(LCD_LINE1_INDEX);
       int idx = 0;
       while(arr[idx] != 0x00 && arr[idx] != 0x0A){
         lcdWriteByte(arr[idx], DATA_MODE);
