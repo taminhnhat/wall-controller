@@ -186,6 +186,12 @@ int main(int argc, char *argv[])
       char arr[30];
       mypipe.readPipe(arr);
       std::cout << "read from pipe: " << arr << std::endl;
+      int idx = 0;
+      while(arr[idx] != 0x00 && arr[idx] != 0x0A){
+        lcdWriteByte(arr[idx], DATA_MODE);
+        // std::cout << std::hex << (int)messageLine_1st[idx] << std::endl;
+        idx ++;
+      }
 
       char delimiters[] = ":\n";
       char *command = strtok(arr, delimiters);
