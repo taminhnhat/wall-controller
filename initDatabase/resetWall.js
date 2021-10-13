@@ -3,18 +3,26 @@
  * Edit 'WALL_NAME_TO_RESET' constance before running
  */
 
-const WALL_NAME_TO_RESET = 'Wall_M1';
+const prompt = require('prompt');
+let WALL_NAME_TO_RESET = 'Wall_M1';
 
 let MongoClient = require('mongodb').MongoClient;
 let url = "mongodb://localhost:27017/";
-
 const mongoClient = new MongoClient(url, { useUnifiedTopology: true });
 
-mongoClient.connect(function(err, client) {
+prompt.start();
+console.log('Which Wall to reset: M1|M2|M3|M4 ?');
+prompt.get(['wall'], (err, res) => {
+    if(err) console.log(err);
+    //WALL_NAME_TO_RESET = res.wall;
+    mongoClient.connect(handleConnection);
+});
+
+function handleConnection(err, client) {
     if (err) console.error(err);
     let db = client.db(WALL_NAME_TO_RESET);
     const collection = db.collection("backup");
-
+    console.log(`Reset ${WALL_NAME_TO_RESET}`);
     async function resetWallState(){
         // const wallState = await collection.updateMany({}, {$set: {
         //     importTote: [],
@@ -28,7 +36,7 @@ mongoClient.connect(function(err, client) {
             exportTote: null,
             frontLight: false,
             backLight: false
-        }}, function(err, res){
+        }}, (err, res) => {
             if(err) console.log(err);
             console.log(res.result);
             client.close();
@@ -36,4 +44,4 @@ mongoClient.connect(function(err, client) {
     }
 
     resetWallState();
-});
+};

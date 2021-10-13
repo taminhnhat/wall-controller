@@ -16,9 +16,10 @@ There are 2 pipes:
     prw-rw-r-- 1 ubuntu ubuntu    0 May 19 08:36 pipe_emit_light
     prw-rw-r-- 1 ubuntu ubuntu    0 May 19 08:08 pipe_button_callback
 ---------------------------
-# makesure pipes were not created by root (user here is "ubuntu"), or you cannot access it in the future
-
+### makesure pipes were not created by root (user here is "ubuntu"), or you cannot access it in the future
 
 ### Compile c++
 >cd (...)/wall-controller/pipe
 >g++ -Wall gpio.cpp -o gpio -pthread -lpigpio -lrt
+
+[HOME](../README.md)
