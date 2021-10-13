@@ -187,13 +187,22 @@ int main(int argc, char *argv[])
       mypipe.readPipe(arr);
       std::cout << "read from pipe: " << arr << std::endl;
 
+      lcdClear();
+      lcdSetCursor(LCD_LINE1_INDEX);
+      int idx = 0;
+      while(arr[idx] != 0x00 && arr[idx] != 0x0A){
+        lcdWriteByte(arr[idx], DATA_MODE);
+        // std::cout << std::hex << (int)messageLine_1st[idx] << std::endl;
+        idx ++;
+      }
+
       char delimiters[] = ":\n";
-      char *command = strtok(arr, delimiters);
-      const char s_light[] = "light";
-      const char s_lcd[] = "lcd";
+      char *commandHeader = strtok(arr, delimiters);
+      const char LIGHT_CMD_HEADER[] = "light";
+      const char LCD_CMD_HEADER[] = "lcd";
 
       // Check command mode
-      if(!strncmp(command, s_light, 5))
+      if(!strncmp(commandHeader, LIGHT_CMD_HEADER, 5))
       {
         // Enter light mode
         char *s_bitmap = strtok(NULL, delimiters);
@@ -219,17 +228,8 @@ int main(int argc, char *argv[])
         }else{
           std::cout << "error:light command is missing tokens!" << std::endl;
         }
-
-        lcdClear();
-        lcdSetCursor(LCD_LINE1_INDEX);
-        int idx = 0;
-        while(arr[idx] != 0x00 && arr[idx] != 0x0A){
-          lcdWriteByte(arr[idx], DATA_MODE);
-          // std::cout << std::hex << (int)messageLine_1st[idx] << std::endl;
-          idx ++;
-        }
       }
-      else if(!strncmp(command, s_lcd, 3))
+      else if(!strncmp(commandHeader, LCD_CMD_HEADER, 3))
       {
         // Enter lcd mode
         char *messageLine_1st = strtok(NULL, delimiters);
