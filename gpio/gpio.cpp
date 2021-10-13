@@ -443,6 +443,7 @@ void readButtons(int line){
       std::cout << arr;
       //  emit button via pipes
       mypipe.writePipe(arr, strlen(arr));
+      int idx = 0;
       while(arr[idx] != 0x00 && arr[idx] != 0x0A){
         lcdWriteByte(arr[idx], DATA_MODE);
         idx ++;
