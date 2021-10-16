@@ -57,7 +57,7 @@ Example:
 ### 2.2. Send confirm
 
 
-### New tote scaned
+### 3.1. New tote scaned
 |Property|Type|Description|  
 |---|---|---|
 |name|String|name of api|
@@ -80,7 +80,15 @@ Example:
     key: "1631519378148-q2i3o9"
 }
 ```
-### Put tote to wall
+### 3.2. Put tote to wall
+|Property|Type|Description|  
+|---|---|---|
+|name|String|name of api|
+|clientId|String|ID of wall|
+|bookstoreId|String|ID of bookstore|
+|version|String|api version|
+|value|String|name of the tote push to wall|
+|key|String|stand for a complete action on the wall used on client side, just ignore it|
 Example:
 ```json
 "pushToWall": {
@@ -95,6 +103,7 @@ Example:
     key: "1631519378148-q2i3o9"
 } 
 ```
+### 3.3. 
 # IPC
 Gateway process communicate with GPIO process via named-pipe located at /tmp/
 - To emit event send to GPIO process: write to /tmp/emit_gpio
