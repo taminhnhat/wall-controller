@@ -29,7 +29,7 @@ Two processes communicate to each other using ipc (named-pipe).
 ## 1. Interface
 Websockets using socket.io  
 Wall-controller run as a client.
-## 2. Events
+## 2. Incoming events
 ### 2.1. To turn on or off light on wall
 |Property|Type|Description|  
 |---|---|---|
@@ -57,6 +57,7 @@ Example:
 ### 2.2. Send confirm
 
 
+## 3. Outgoing events
 ### 3.1. New tote scaned
 |Property|Type|Description|  
 |---|---|---|
@@ -70,7 +71,7 @@ Example:
 ```json
 "scanTotePushToWall": {
     name: "scanTotePushToWall",
-    clientId: "wall-controller-M-1",
+    clientId: "wall-controller_M-1",
     bookstoreId: "67",
     version: "1.0.0",
     params: {
@@ -87,13 +88,14 @@ Example:
 |clientId|String|ID of wall|
 |bookstoreId|String|ID of bookstore|
 |version|String|api version|
+<<<<<<< HEAD
 |value|String|name of the tote push to wall|
 |key|String|stand for a complete action on the wall used on client side, just ignore it|
 Example:
 ```json
 "pushToWall": {
     name: "pushToWall",
-    clientId: "wall-controller-M-1",
+    clientId: "wall-controller_M-1",
     bookstoreId: "67",
     version: "1.0.0",
     params: {
@@ -374,19 +376,4 @@ $ sudo nano ~/.bash_profile
 ```sh
 $ source ~/.bash_profile
 ```
-
-# API
-## Incoming message
-### 1.Turn light on or off
-
-### 2.Error alert
-
-## Outcoming message
-### 1.New tote scaned
-
-### 2.Tote put to wall
-
-### 3.Tote pick to light
-
-### 4.Error alert
 

@@ -1,7 +1,7 @@
 /**
  * Using named-pipe to communicate with gpio process
- * Read from "../pipe/fifo1"
- * Write to "../pipe/fifo2"
+ * Read from "/tmp/gpio_callback"
+ * Write to "/tmp/emit_gpio"
  */
 
 require('dotenv').config({path: './CONFIGURATIONS.env'});
