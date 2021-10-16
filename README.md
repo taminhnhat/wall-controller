@@ -105,7 +105,8 @@ Example:
     key: "1631519378148-q2i3o9"
 } 
 ```
-### 3.3. 
+### 3.3. Pick tote from wall
+
 # IPC
 Gateway process communicate with GPIO process via named-pipe located at /tmp/
 - To emit event send to GPIO process: write to /tmp/emit_gpio
