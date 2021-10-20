@@ -28,8 +28,8 @@ const io = require('socket.io-client');
 //const socket = io.connect('http://app3.fahasa.com:1300/');
 //const socket = io.connect('ws://localhost:3000');
 //const socket = io.connect('ws://172.16.0.100:3000');
-//const socket = io.connect('ws://192.168.50.3:3000');
-const socket = io.connect('ws://192.168.1.23:3000');
+const socket = io.connect('ws://192.168.50.3:3000');
+//const socket = io.connect('ws://192.168.1.23:3000');
 //const socket = io.connect('http://192.168.1.157:3001');
 //const socket = io.connect('ws://192.168.1.20:3000');
 
@@ -221,7 +221,7 @@ function restoreFromBackupDb(backupState){
     event.emit('light:set', {bitmap: frontBitmap, side: 'front'});
     setTimeout(function(){
         event.emit('light:set', {bitmap: backBitmap, side: 'back'});
-    });
+    }, 500);
 }
 
 

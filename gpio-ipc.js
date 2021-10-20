@@ -98,7 +98,7 @@ readfifo.on('exit', function(status) {
         //  get light bitmap 
         const lightBitmap = gpioBitmap.getBitmap(wallSide);
         //  generate message
-        const mess = `light:${lightBitmap}:${wallSide}`;
+        const mess = `light:${lightBitmap}:${wallSide}\n`;
         //  write message to named-pipe
         fifoWs.write(mess);
     });
@@ -110,7 +110,7 @@ readfifo.on('exit', function(status) {
         //  Set bimap
         gpioBitmap.bitmapSet(lightBitmap, wallSide);
         //  Emit message to named-pipe
-        const mess = `light:${lightBitmap}:${wallSide}`;
+        const mess = `light:${lightBitmap}:${wallSide}\n`;
         fifoWs.write(mess);
     });
     
@@ -123,7 +123,7 @@ readfifo.on('exit', function(status) {
         logger.debug({message: `'light:test' event`, location: FILE_NAME, value: lightParams});
         const wallSide = lightParams.side;
         gpioBitmap.bitmapSet(2**32-1, wallSide);
-        const mess = `light:${gpioBitmap.getBitmap(wallSide)}:${wallSide}`;
+        const mess = `light:${gpioBitmap.getBitmap(wallSide)}:${wallSide}\n`;
         fifoWs.write(mess);
     });
 
