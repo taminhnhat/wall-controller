@@ -3,7 +3,7 @@
  * Scanners are configured
  */
 
-require('dotenv').config({path: './CONFIGURATIONS.env'});
+require('dotenv').config({ path: './CONFIGURATIONS.env' });
 const SerialPort = require('serialport');
 const event = require('./event');
 const message = require('./message');
@@ -11,9 +11,6 @@ const message = require('./message');
 const logger = require('./logger/logger');
 
 const FILE_NAME = 'serial.js  ';
-
-const connectPort0 = setInterval(reconnectPort0, 5000);
-const connectPort1 = setInterval(reconnectPort1, 5000);
 
 // const port = new SerialPort('COM5', {
 //   baudRate: 9600,
@@ -23,63 +20,65 @@ const connectPort1 = setInterval(reconnectPort1, 5000);
 
 //  NEED TO CONFIG SERIAL PORT FIRST, READ 'README.md'
 
-const port0 = new SerialPort(process.env.FRONT_SCANNER_PATH, {
-  baudRate: 9600
-});
-const port1 = new SerialPort(process.env.BACK_SCANNER_PATH, {
-  baudRate: 9600
-});
-// const port0 = new SerialPort('/dev/ttyS3', {
+// const frontScanner = new SerialPort(process.env.FRONT_SCANNER_PATH, {
 //   baudRate: 9600
 // });
-// const port1 = new SerialPort('/dev/ttyS6', {
+// const backScanner = new SerialPort(process.env.BACK_SCANNER_PATH, {
 //   baudRate: 9600
 // });
+const frontScanner = new SerialPort('/dev/ttyS10', {
+  baudRate: 9600,
+  autoOpen: false
+});
+const backScanner = new SerialPort('/dev/ttyS4', {
+  baudRate: 9600,
+  autoOpen: false
+});
 
-port0.on('open', function(){
-  clearInterval(connectPort0);
+frontScanner.on('open', function () {
   event.emit('scanner:opened', 'Front scanner opened');
 });
-port1.on('open', function(){
-  clearInterval(connectPort1);
+backScanner.on('open', function () {
   event.emit('scanner:opened', 'Back scanner opened');
 });
-  
+
 // Switches the port into "flowing mode"
-port0.on('data', function (data) {
+frontScanner.on('data', function (data) {
   let scanString = String(data).trim();
-  logger.debug({
-    message: 'Front scanner:',
-    location: FILE_NAME,
-    value: scanString
-  });
-  
+  // logger.debug({
+  //   message: 'Front scanner:',
+  //   location: FILE_NAME,
+  //   value: scanString
+  // });
+
   event.emit('scanner:front', {
     value: scanString
   });
 });
 
-port1.on('data', function (data) {
+backScanner.on('data', function (data) {
   let scanString = String(data).trim();
-  logger.debug({
-    message: 'Back scanner:',
-    location: FILE_NAME,
-    value: scanString
-  });
-  
+  // logger.debug({
+  //   message: 'Back scanner:',
+  //   location: FILE_NAME,
+  //   value: scanString
+  // });
+
   event.emit('scanner:back', {
     value: scanString
   });
 });
 
-port0.on('close', function(){
+frontScanner.on('close', function () {
   event.emit('scanner:closed', 'Front scanner closed');
-  connectPort0 = setInterval(reconnectPort0, 5000);
 });
 
-port1.on('close', function(){
+backScanner.on('close', function () {
   event.emit('scanner:closed', 'Back scanner closed');
-  connectPort1 = setInterval(reconnectPort1, 5000);
+});
+
+frontScanner.on('error', function () {
+  event.emit('scanner:error', 'Front scanner error');
 });
 
 // event.on('lcd:print:action', function(printParams){
@@ -105,21 +104,23 @@ port1.on('close', function(){
 /**
  * Reconnecting to serial port every 5 seconds after loosing connection
  */
-function reconnectPort0() {
-  port0.open(function(err){
-      if (err){
-        // logger.debug({message: 'Error connecting port 0:', location: FILE_NAME, value: err.message});
-      }
+function frontScannerCheckHealth() {
+  frontScanner.open(function (err) {
+    if (err) {
+      if (err.message !== 'Port is already open')
+        logger.debug({ message: 'Error connecting front scanner:', location: FILE_NAME, value: err.message });
+    }
   });
 }
 
-function reconnectPort1() {
-  port1.open(function(err){
-      if (err){
-        // logger.debug({message: 'Error connecting port 1:', location: FILE_NAME, value: err.message});
-      }
+function backScannerCheckHealth() {
+  backScanner.open(function (err) {
+    if (err) {
+      if (err.message !== 'Port is already open')
+        logger.debug({ message: 'Error connecting back scanner:', location: FILE_NAME, value: err.message });
+    }
   });
 }
 
-module.exports = {port0, port1};
-
+setInterval(frontScannerCheckHealth, 5000);
+setInterval(backScannerCheckHealth, 5000);
