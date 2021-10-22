@@ -4,7 +4,7 @@
  * Write to "/tmp/emit_gpio"
  */
 
-require('dotenv').config({ path: './CONFIGURATIONS.env' });
+const GLOBAL = require('./CONFIGURATION');
 const fs = require('fs');
 const { spawn, fork } = require('child_process');
 const event = require('./event');
@@ -17,8 +17,8 @@ let { accessWallByName, accessWallByLocation } = require('./wallApi');
 
 let gpioBitmap = require('./gpioMap');
 
-const write_pipe_path = process.env.EMIT_GPIO_NAMED_PIPE_PATH;
-const read_pipe_path = process.env.GPIO_CALLBACK_NAMED_PIPE_PATH;
+const write_pipe_path = GLOBAL.EMIT_GPIO_NAMED_PIPE_PATH;
+const read_pipe_path = GLOBAL.GPIO_CALLBACK_NAMED_PIPE_PATH;
 let readfifo = spawn('mkfifo', [read_pipe_path]);
 
 readfifo.on('exit', function (status) {

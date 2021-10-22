@@ -3,34 +3,25 @@
  * Scanners are configured
  */
 
-require('dotenv').config({ path: './CONFIGURATIONS.env' });
+const GLOBAL = require('./CONFIGURATION');
 const SerialPort = require('serialport');
 const event = require('./event');
-const message = require('./message');
 
 const logger = require('./logger/logger');
 
 const FILE_NAME = 'serial.js  ';
 
-// const port = new SerialPort('COM5', {
-//   baudRate: 9600,
-//   autoOpen: false
-// });
-
+// const frontScannerPath = GLOBAL.FRONT_SCANNER_PATH;
+// const backScannerPath = GLOBAL.BACK_SCANNER_PATH;
+const frontScannerPath = '/dev/ttyS10';
+const backScannerPath = '/dev/ttyS4';
 
 //  NEED TO CONFIG SERIAL PORT FIRST, READ 'README.md'
-
-// const frontScanner = new SerialPort(process.env.FRONT_SCANNER_PATH, {
-//   baudRate: 9600
-// });
-// const backScanner = new SerialPort(process.env.BACK_SCANNER_PATH, {
-//   baudRate: 9600
-// });
-const frontScanner = new SerialPort('/dev/ttyS10', {
+const frontScanner = new SerialPort(frontScannerPath, {
   baudRate: 9600,
   autoOpen: false
 });
-const backScanner = new SerialPort('/dev/ttyS4', {
+const backScanner = new SerialPort(backScannerPath, {
   baudRate: 9600,
   autoOpen: false
 });
@@ -42,7 +33,6 @@ backScanner.on('open', function () {
   event.emit('scanner:opened', 'Back scanner opened');
 });
 
-// Switches the port into "flowing mode"
 frontScanner.on('data', function (data) {
   let scanString = String(data).trim();
   // logger.debug({
@@ -55,7 +45,6 @@ frontScanner.on('data', function (data) {
     value: scanString
   });
 });
-
 backScanner.on('data', function (data) {
   let scanString = String(data).trim();
   // logger.debug({
@@ -69,16 +58,18 @@ backScanner.on('data', function (data) {
   });
 });
 
-frontScanner.on('close', function () {
+frontScanner.on('close', () => {
   event.emit('scanner:closed', 'Front scanner closed');
 });
-
-backScanner.on('close', function () {
+backScanner.on('close', () => {
   event.emit('scanner:closed', 'Back scanner closed');
 });
 
-frontScanner.on('error', function () {
-  event.emit('scanner:error', 'Front scanner error');
+frontScanner.on('error', (err) => {
+  event.emit('scanner:error', err.message);
+});
+backScanner.on('error', (err) => {
+  event.emit('scanner:error', err.message);
 });
 
 // event.on('lcd:print:action', function(printParams){
@@ -105,19 +96,19 @@ frontScanner.on('error', function () {
  * Reconnecting to serial port every 5 seconds after loosing connection
  */
 function frontScannerCheckHealth() {
-  frontScanner.open(function (err) {
+  frontScanner.open((err) => {
     if (err) {
       if (err.message !== 'Port is already open')
-        logger.debug({ message: 'Error connecting front scanner:', location: FILE_NAME, value: err.message });
+        event.emit('scanner:error', err.message);
     }
   });
 }
 
 function backScannerCheckHealth() {
-  backScanner.open(function (err) {
+  backScanner.open((err) => {
     if (err) {
       if (err.message !== 'Port is already open')
-        logger.debug({ message: 'Error connecting back scanner:', location: FILE_NAME, value: err.message });
+        event.emit('scanner:error', err.message);
     }
   });
 }

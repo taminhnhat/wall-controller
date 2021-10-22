@@ -5,12 +5,14 @@
  */
 
 //  CONFIGURATION_________________________________________________________________________
-require('dotenv').config({ path: './CONFIGURATIONS.env' });
+require('dotenv').config({ path: './.env' });
+const SERVER_URL = process.env.SERVER_URL;
+const GLOBAL = require('./CONFIGURATION');
 //  System id
-const WALL_ID = process.env.WALL_ID;
-const BOOKSTORE_ID = process.env.BOOKSTORE_ID;
+const WALL_ID = GLOBAL.WALL_ID;
+const BOOKSTORE_ID = GLOBAL.BOOKSTORE_ID;
 //  db and collections name
-const WALL_DB = process.env.DB_NAME;
+const WALL_DB = GLOBAL.DB_NAME;
 const BACKUP_COLLECTION = 'backup';
 const HISTORY_COLLECTION = 'history';
 const ERROR_COLLECTION = 'error';
@@ -25,18 +27,12 @@ const FILE_NAME = 'index.js   '
 
 //  WEB SOCKET____________________________________________________________________________
 const io = require('socket.io-client');
-//const socket = io.connect('http://app3.fahasa.com:1300/');
-//const socket = io.connect('ws://localhost:3000');
-//const socket = io.connect('ws://172.16.0.100:3000');
-const socket = io.connect('ws://192.168.50.3:3000');
-//const socket = io.connect('ws://192.168.1.23:3000');
-//const socket = io.connect('http://192.168.1.157:3001');
-//const socket = io.connect('ws://192.168.1.20:3000');
+const socket = io.connect(SERVER_URL);
 
 
 //  MONGODB_______________________________________________________________________________
 const mongoClient = require('mongodb').MongoClient;
-const url = process.env.MONGO_DB_URL;
+const url = GLOBAL.MONGO_DB_URL;
 
 
 //  SERIAL PORT________________________________________________________________________________
@@ -48,8 +44,8 @@ require('./serial');
 const platformOS = process.platform;
 if (platformOS == 'linux' || platformOS == 'darwin') {
     require('./gpio-ipc');
-} else if (platformOS == 'win32') {
-    //require('../events_emulator/eventsEmulator');
+} else {
+    console.log('Platform does not support gpio-ipc');
 }
 
 

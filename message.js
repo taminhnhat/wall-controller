@@ -2,11 +2,11 @@
  * 
  */
 
-require('dotenv').config({path: './CONFIGURATIONS.env'});
+const GLOBAL = require('./CONFIGURATION');
 
-const version = process.env.VERSION;
-const clientId = process.env.WALL_ID;
-const bookstoreId = process.env.BOOKSTORE_ID;
+const version = GLOBAL.VERSION;
+const clientId = GLOBAL.WALL_ID;
+const bookstoreId = GLOBAL.BOOKSTORE_ID;
 
 const message = {
     /**
@@ -16,7 +16,7 @@ const message = {
      * @param {*} params params of api
      * @returns an object
      */
-    generateApi: function(name, params, key){
+    generateApi: function (name, params, key) {
         return {
             name: name,
             clientId: clientId,
@@ -33,7 +33,7 @@ const message = {
      * @param {String} wall 
      * @returns object
      */
-    generateButtonParams: function(buttonLocation, buttonSide){
+    generateButtonParams: function (buttonLocation, buttonSide) {
         return {
             button: buttonLocation,
             side: buttonSide
@@ -46,14 +46,14 @@ const message = {
      * @param {*} val value from scanner
      * @returns object
      */
-    generateScannerParams: function(val){
+    generateScannerParams: function (val) {
         return {
             wall: 'M-1',
             value: val
         };
     },
 
-    generateWarning: function(auth, mess){
+    generateWarning: function (auth, mess) {
         return {
             createdBy: auth,
             message: mess,
