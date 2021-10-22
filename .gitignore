@@ -1,4 +1,5 @@
 node_modules/
+dev.env
 gpio/gpio.o
 gpio/lcd-i2c.o
 gpio/main
