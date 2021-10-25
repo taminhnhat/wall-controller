@@ -28,7 +28,7 @@ readfifo.on('exit', function (status) {
     let fifoWs = fs.createWriteStream(write_pipe_path, { flags: 'w' });
 
     //logger.debug({message: 'Connected to GPIO process', location: FILE_NAME});
-    logger.debug({ message: 'Connected to Pipe', location: FILE_NAME });
+    //logger.debug({ message: 'Connected to Pipe', location: FILE_NAME });
 
     // Handle Reading pipe event
     fifoRs.on('data', mess => {
@@ -36,23 +36,25 @@ readfifo.on('exit', function (status) {
         //  button:W.1.1 | button:U.1.1
         const messarr = String(mess).trim().split(':');
         const buttonLocation = messarr[1];
-
         const fistDigitOfLocation = buttonLocation.split('.')[0];
+        const tempParams = {
+            button: buttonLocation
+        }
 
         try {
             if (fistDigitOfLocation == 'W') {
                 const raw_wallSide = messarr[2];
-                const isWallSideValid = raw_wallSide !== 'front' && raw_wallSide !== 'back';
-                if (isWallSideValid) throw { error: 'Not a valid message from pipe!', describe: `missing wall side` };
-                const wallSide = raw_wallSide;
-                const buttonEventName = `button:${wallSide}`;
-                const tempParams = message.generateButtonParams(buttonLocation, wallSide);
-                event.emit(buttonEventName, tempParams);
+                if (raw_wallSide === 'front') {
+                    event.emit('button:front', tempParams);
+                } else if (raw_wallSide === 'back') {
+                    event.emit('button:back', tempParams);
+                } else {
+                    throw { error: 'Not a valid message from pipe!', describe: `missing wall side` };
+                }
+
             }
             else if (fistDigitOfLocation == 'U') {
-                const buttonEventName = 'button:user';
-                const tempParams = message.generateButtonParams(buttonLocation, 'cabin');
-                event.emit(buttonEventName, tempParams);
+                event.emit('button:user', tempParams);
             }
             else {
                 throw { error: 'Not a valid message from pipe!', describe: `at "${buttonLocation}"` };

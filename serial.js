@@ -14,7 +14,7 @@ const FILE_NAME = 'serial.js  ';
 // const frontScannerPath = GLOBAL.FRONT_SCANNER_PATH;
 // const backScannerPath = GLOBAL.BACK_SCANNER_PATH;
 const frontScannerPath = '/dev/ttyS10';
-const backScannerPath = '/dev/ttyS4';
+const backScannerPath = '/dev/ttyS6';
 
 //  NEED TO CONFIG SERIAL PORT FIRST, READ 'README.md'
 const frontScanner = new SerialPort(frontScannerPath, {

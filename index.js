@@ -254,7 +254,7 @@ mongoClient.connect(url, { useUnifiedTopology: true }, function (err, client) {
 
 
         db.collection(BACKUP_COLLECTION).updateOne(queryByLocation, newValues, function (err, res) {
-            if (err) logger.error({ message: error });
+            if (err) logger.error({ message: error, location: FILE_NAME });
             logger.debug({ message: 'change light state in database', location: FILE_NAME, value: res.result });
 
             event.emit('light:off', { wall: buttonLocation, side: 'front' });
@@ -267,46 +267,47 @@ mongoClient.connect(url, { useUnifiedTopology: true }, function (err, client) {
      */
     function handleBackButtonFromGPIO(buttonParams) {
         logger.debug({ message: 'button:back event', location: FILE_NAME, value: buttonParams });
-
         const buttonLocation = buttonParams.button;
+        const wallName = accessWallByLocation(buttonLocation).getName();
+        const queryByName = { name: wallName };
         // create query by wall name to access database
         const queryByLocation = { location: buttonLocation };
-        const newBackupValues = { $set: { exportTote: exportToteNow, complete: true, backLight: false } };
+        const newBackupValues = { $set: { exportTote: exportToteNow, completed: true, backLight: false } };
         let newHistoryValues = {};
 
-        const wallName = accessWallByLocation(buttonLocation).getName();
 
         let str = `${wallName} => ${exportToteNow}`;
         event.emit('print', str);
         event.emit('print:action', `Hang xuong:\n   Tuong ${wallName}\nNhap vao\n   Khay ${exportToteNow}`);
         if (exportToteNow != null) {
-            let lightParams = {
-                wall: buttonLocation,
-                side: 'back',
+            let params = {
+                wall: wallName,
                 tote: exportToteNow
             };
 
-            let tempApi = message.generateApi('pressButton', buttonParams, backScanKey);
-            logger.debug({ message: `Wall ${wallName} pick to tote ${buttonParams.tote}, key: ${tempApi.key}`, location: FILE_NAME });
+            let tempApi = message.generateApi('pickToLight', params, backScanKey);
+            logger.debug({ message: `Wall ${wallName} pick to tote ${exportToteNow}, key: ${tempApi.key}`, location: FILE_NAME });
             socket.emit('pickToLight', tempApi);
 
             const backupCollection = db.collection(BACKUP_COLLECTION);
             const historyColection = db.collection(HISTORY_COLLECTION);
-            // Update document where a is 2, set b equal to 1
-            backupCollection.updateOne(queryByLocation, newBackupValues)
+            backupCollection.updateOne(queryByName, newBackupValues)
+                // Update exportTote on wall to database
                 .then(result => {
                     logger.debug({ message: 'update to backup result', location: FILE_NAME, value: result });
-                    return backupCollection.findOne(queryByLocation);
+                    // Find wall on database
+                    return backupCollection.findOne(queryByName);
                 })
                 .then(result => {
-                    newHistoryValues = createDbSchema.historySchema(result.importTote, result.exportTote, result.name, result.key);
-
+                    console.log(result);
+                    newHistoryValues = createDbSchema.historySchema(result.importTote, result.exportTote, result.name);
+                    // Insert an history event(a complete merge on wall) to database
                     return historyColection.insertOne(newHistoryValues);
                 })
                 .then(result => {
                     logger.debug({ message: 'insert to history result', location: FILE_NAME, value: result });
-
                     event.emit('light:off', { wall: buttonLocation, side: 'back' });
+                    // All things done, emit an complete event
                     event.emit('wall:completeOne', wallName);
                 })
                 .catch(err => {
@@ -438,7 +439,7 @@ mongoClient.connect(url, { useUnifiedTopology: true }, function (err, client) {
             const warningObj = message.generateWarning('wall-controller', warningMess);
             const collection = db.collection(WARNING_COLECTION);
             collection.insertOne(warningObj, function (err, res) {
-                if (err) logger.error({ message: error });
+                if (err) logger.error({ message: error, location: FILE_NAME });
             });
         }
     };
@@ -448,29 +449,27 @@ mongoClient.connect(url, { useUnifiedTopology: true }, function (err, client) {
      * Emitted in 'gpio-ipc.js'
      */
     function handleBackScannerFromSerialPort(scanParams) {
-        const query = { name: scanParams.wall };
 
         backScanKey = generateKey(3);
 
-        let scanApi = message.generateApi('newScan', scanParams, backScanKey);
         let scanArray = scanParams.value.split('-');
         let firstElementScan = scanArray[0];
         let sizeOfScan = scanParams.value.split('-').length;
 
         if (sizeOfScan == 2 && (firstElementScan === "M" || firstElementScan === "L" || firstElementScan === "S")) {
-            exportToteNow = scanParams.val;
+            exportToteNow = scanParams.value;
         } else {
-            logger.debug({ message: `Scan unknown tote:${scanParams.val} Please scan again!`, location: FILE_NAME });
+            logger.debug({ message: `Scan unknown tote:${scanParams.value} Please scan again!`, location: FILE_NAME });
         }
         // Insert new event to database
         const db = client.db(WALL_DB);
         let temp = {};
-        temp.val = scanParams.val;
+        temp.val = scanParams.value;
         temp.side = 'back';
         temp.date = Date(Date.now());
 
         db.collection("scanner").insertOne(temp, function (err, res) {
-            if (err) logger.error({ message: error });
+            if (err) logger.error({ message: error, location: FILE_NAME });
         });
     };
 
@@ -487,21 +486,25 @@ mongoClient.connect(url, { useUnifiedTopology: true }, function (err, client) {
 
 
     /**
-     * Handle 'wall:completeOne' event from gpio
-     * Emitted in 'index.js'
+     * Handle 'wall:completeOne' event
+     * Emitted in 'index.js' when a merge completed on wall
      */
-    function handleCompleteEvent(wallLocation) {
+    function handleCompleteEvent(wallName) {
         // create query by wall name to access database
         logger.debug({ message: 'wall complete!!!', location: FILE_NAME })
-        const queryByLocation = { location: wallLocation }
-        const newBackupValues = createDbSchema.backupSchema([], "", wallLocation, null, false, false, false, false);
-        logger.debug({ message: 'reset shema', location: FILE_NAME, value: newBackupValues });
+        const queryByName = { name: wallName }
+        const newBackupValues = {
+            importTote: [],
+            exportTote: null,
+            completed: false
+        }
+        logger.debug({ message: `Empty wall ${wallName}`, location: FILE_NAME, value: newBackupValues });
 
         const collection = db.collection(BACKUP_COLLECTION);
         // Update document where a is 2, set b equal to 1
-        collection.updateOne(queryByLocation, { $set: newBackupValues }, function (err, res) {
+        collection.updateOne(queryByName, { $set: newBackupValues }, function (err, res) {
             if (err) logger.error({ message: 'Fail to update database', location: FILE_NAME });
-            logger.debug({ message: 'reset backup collection', location: FILE_NAME, value: res.result });
+            logger.debug({ message: 'reset backup collection', location: FILE_NAME, value: res });
         });
     };
 
@@ -532,7 +535,7 @@ mongoClient.connect(url, { useUnifiedTopology: true }, function (err, client) {
         const queryByKey = { key: confirmKey, date: confirmDate };
         const updateFrontScanValue = { $set: { confirm: true } };
         db.collection("frontScan").updateOne(queryByKey, updateFrontScanValue, function (err, res) {
-            if (err) logger.error({ message: error });
+            if (err) logger.error({ message: error, location: FILE_NAME });
             logger.debug({ message: `Delete pending api with key:${confirmKey} from Db`, location: FILE_NAME, value: res.result });
         });
     };
@@ -751,7 +754,7 @@ mongoClient.connect(url, { useUnifiedTopology: true }, function (err, client) {
     };
 
     function handleSocketError() {
-        logger.error({ message: error });
+        logger.error({ message: error, location: FILE_NAME });
 
 
         event.emit('towerlight:set', {

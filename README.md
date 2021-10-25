@@ -58,7 +58,7 @@ Example:
 
 
 ## 3. Outgoing events
-### 3.1. New tote scaned
+### 3.1. New tote scaned put to wall
 |Property|Type|Description|  
 |---|---|---|
 |name|String|name of api|
@@ -88,7 +88,6 @@ Example:
 |clientId|String|ID of wall|
 |bookstoreId|String|ID of bookstore|
 |version|String|api version|
-<<<<<<< HEAD
 |value|String|name of the tote push to wall|
 |key|String|stand for a complete action on the wall used on client side, just ignore it|
 Example:
@@ -106,7 +105,29 @@ Example:
 } 
 ```
 ### 3.3. Pick tote from wall
-
+|Property|Type|Description|  
+|---|---|---|
+|name|String|name of api|
+|clientId|String|ID of wall|
+|bookstoreId|String|ID of bookstore|
+|version|String|api version|
+|value|String|name of the tote pick from wall|
+|key|String|stand for a complete action on the wall used on client side, just ignore it|
+Example:
+```json
+"pickToLight": {
+    name: "pickToLight",
+    clientId: "wall-controller_M-1",
+    bookstoreId: "67",
+    version: "1.0.0",
+    params: {
+        value: "L-11",
+        wall: "M-2-3"
+    },
+    date: "Mon Sep 13 2021 14:46:46 GMT+0700 (Indochina Time)",
+    key: "1631519378148-q2i3o9"
+} 
+```
 # IPC
 Gateway process communicate with GPIO process via named-pipe located at /tmp/
 - To emit event send to GPIO process: write to /tmp/emit_gpio
@@ -153,7 +174,7 @@ button:W.3.4
 ### Button on Electrical cabin
 Message structure:
 "button:U.x.y\n"
-|Property|Type|Description|  
+|Property|Type|Description|
 |---|---|---|
 |button|Constant||
 |W|Constant||
@@ -227,9 +248,6 @@ socket.emit('user:command', 'lightTest.M.1.1.front');
 
 ## Create and start service
 
-
-## STARTUP SCRIPT IN PI
-
 Create a new servive
 ```sh
 $ sudo touch /etc/systemd/system/minhnhat.service
@@ -264,6 +282,18 @@ $ cat /root/report.txt
 # Reboot
 $ sudo reboot
 ```
+Working with service
+Start
+```sh
+# start
+$ systemctl start minhnhat.service
+# stop
+$ systemctl stop minhnhat.service
+# restart
+$ systemctl restart minhnhat.service
+# get status
+$ systemctl status minhnhat.service
+```
 
 ## 7. Error
 
@@ -271,110 +301,5 @@ Sometimes c++ process cannot run, this line printed on the console eternally
 > gpioTick: pigpio uninitialised, call gpioInitialise()
 
 
-## 7. WORKING WITH SERVICE
 
-Start
-```sh
-$ systemctl start minhnhat.service
-```
-
-Stop
-```sh
-$ systemctl stop minhnhat.service
-```
-
-Restart
-```sh
-$ systemctl restart minhnhat.service
-```
-
-Get status
-```sh
-$ systemctl status minhnhat.service
-```
-
-
-
-
-## 8. LOCK EDITTING FILES
-
-Give the owner rx permissions, but not w 
-```sh
-$ chmod u=rx file
-``` 
-Deny rwx permission for group and others  
-```sh
-$ chmod go-rwx file
-```
-Give write permission to the group
-```sh
-$ chmod g+w file
-```
-Give execute permission to everybody
-```sh
-$ chmod a+x file1 file2
-```
-
-OK to combine like this with a comma
-```sh
-$ chmod g+rx,o+x file  
-```
-
-## 9. View service log
-```sh
-# help
-$ journalctl -h
-# view log
-$ journalctl -u minhnhat.service
-```
-
-## 3. TIP AND TRICK
-
-### Shutdown
-```sh
-$ sudo shutdown -h now
-```
-
-### Reboot
-```sh
-$ sudo reboot
-```
-
-### Send file to rasberry pi
-```sh
-$ scp index.js ubuntu@172.16.0.89:~/wallController
-```
-
-### Replace pi with username
-```sh
-$ killall -u pi
-```
-
-### Change password for user ubuntu
-```sh
->sudo passwd ubuntu
-```
-
-### View hardware
-```sh
-$ hwinfo
-$ hwinfo --short
-```
-
-### View memmory
-```sh
-$ free
-```
-
-### Set PS1
-```sh
-// review PS1 variable
-$ echo $PS1
-// edit PS1
-$ sudo nano ~/.bash_profile
-```
->export PS1=\[\e]0;\u@\h: \w\a\]${debian_chroot:+($debian_chroot)}\[\033[01;32m\]Wall-M3 \u@\h\[\033[00m\]:\[\033[01;34m\]\w\[\033[00m\]\$
-```sh
-$ source ~/.bash_profile
-```
 
