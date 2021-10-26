@@ -22,7 +22,7 @@ const SEND_MESSAGE = 'sent_messages';
 const SCANNER_COLLECTION = 'scanner';
 const FRONT_BUTTON_COLLECTION = 'front_button';
 const BACK_BUTTON_COLLECTION = 'back_button';
-const FILE_NAME = 'index.js   '
+const FILE_NAME = 'index.js   ';
 
 
 //  WEB SOCKET____________________________________________________________________________
@@ -64,7 +64,6 @@ const logger = require('./logger/logger');
 //  WALL CLASS_____________________________________________________________________________
 // require wall objects
 const { accessWallByName, accessWallByLocation } = require('./wallApi');
-const createDbSchema = require('./schema');
 //  Import API generator send to web socket server
 const message = require('./message');
 
@@ -193,7 +192,7 @@ mongoClient.connect(url, { useUnifiedTopology: true }, function (err, client) {
      */
 
     /**
-     * 
+     * Read and load all light state in database
      * @param {Array} backupState 
      */
     function restoreFromBackupDb(backupState) {
@@ -205,12 +204,14 @@ mongoClient.connect(url, { useUnifiedTopology: true }, function (err, client) {
 
             //  Emit light event
             if (wallState.frontLight == true) {
-                frontBitmap |= (1 << wallState.lightIndex >>> 0);
-                frontBitmap >>> 0;
+                const bitmask = (1 << wallState.lightIndex >>> 0);
+                frontBitmap |= bitmask;
+                frontBitmap >>>= 0;
             }
             if (wallState.backLight == true) {
-                backBitmap |= (1 << wallState.lightIndex >>> 0);
-                backBitmap >>> 0;
+                const bitmask = (1 << wallState.lightIndex >>> 0);
+                backBitmap |= bitmask;
+                backBitmap >>>= 0;
             }
         }
         isRestoredWallDone = true;
@@ -220,44 +221,62 @@ mongoClient.connect(url, { useUnifiedTopology: true }, function (err, client) {
         }, 500);
     }
 
-
     /**
      * Handle 'button:front' event from gpio
      * Emitted in 'gpio-ipc.js'
      */
     function handleFrontButtonFromGPIO(buttonParams) {
         logger.debug({ message: 'button:front event from gpio-ipc', location: FILE_NAME, value: buttonParams });
-
         const buttonLocation = buttonParams.button;
+
         // create query by wall location to access database
         const queryByLocation = { location: buttonLocation };
-        let newValues = { $set: { frontLight: false } };
+        const backupCollection = db.collection(BACKUP_COLLECTION);
+        //  Get wall state from db
+        backupCollection.findOne(queryByLocation, (err, res) => {
+            if (err) console.log(err);
+            const wallState = res;
+            const wallName = wallState.name;
+            const frontLightState = wallState.frontLight;
 
-        const wallName = accessWallByLocation(buttonLocation).getName();
+            const isWallReadyToPut = frontLightState == true && importToteNow != null;
 
-        //  Check if there is a tote scanned
-        if (importToteNow != null) {
-            event.emit('lcd:print', {
-                message: `Hang len:Khay ${importToteNow}:Nhap vao:Tuong ${wallName}`
-            });
-            buttonParams.tote = importToteNow;
-            let tempApi = message.generateApi('pressButton', { wall: wallName }, frontScanKey);
+            console.log(wallState);
+            //  Check if wall is ready to put tote in (Light on wall is on and a tote was scanned)
+            if (isWallReadyToPut) {
+                event.emit('lcd:print', {
+                    message: `Hang len:Khay ${importToteNow}:Nhap vao:Tuong ${wallName}`
+                });
+                buttonParams.tote = importToteNow;
 
-            logger.debug({ message: `Tote ${buttonParams.tote} push to wall ${wallName}, key: ${tempApi.key}`, location: FILE_NAME });
+                const tempApi = message.generateApi('mergeWall:putToLight', { wall: wallName }, frontScanKey);
+                socket.emit('pushToWall', tempApi);
+                importToteNow = null;
 
-            socket.emit('pushToWall', tempApi);
-        }
-        else {
-            logger.debug({ message: 'Front button pressed, not valid button!!!', location: FILE_NAME });
-        }
-        importToteNow = null;
+                let newBackupValues = { $set: { frontLight: false } };
+                db.collection(BACKUP_COLLECTION).updateOne(queryByLocation, newBackupValues, function (err, res) {
+                    if (err) logger.error({ message: error, location: FILE_NAME });
+                    logger.debug({ message: 'change light state in database', location: FILE_NAME, value: res.result });
 
+                    event.emit('light:off', {
+                        wall: wallName,
+                        location: wallState.location,
+                        lightIndex: wallState.lightIndex,
+                        side: 'front'
+                    });
+                });
 
-        db.collection(BACKUP_COLLECTION).updateOne(queryByLocation, newValues, function (err, res) {
-            if (err) logger.error({ message: error, location: FILE_NAME });
-            logger.debug({ message: 'change light state in database', location: FILE_NAME, value: res.result });
-
-            event.emit('light:off', { wall: buttonLocation, side: 'front' });
+                logger.debug({ message: `Tote ${buttonParams.tote} push to wall ${wallName}, key: ${tempApi.key}`, location: FILE_NAME });
+            }
+            else {
+                logger.debug({ message: 'Front button pressed, not valid button!!!', location: FILE_NAME });
+                event.emit('light:off', {
+                    wall: wallName,
+                    location: wallState.location,
+                    lightIndex: wallState.lightIndex,
+                    side: 'front'
+                });    // This line just for local test run, disable this in production mode
+            }
         });
     };
 
@@ -268,61 +287,85 @@ mongoClient.connect(url, { useUnifiedTopology: true }, function (err, client) {
     function handleBackButtonFromGPIO(buttonParams) {
         logger.debug({ message: 'button:back event', location: FILE_NAME, value: buttonParams });
         const buttonLocation = buttonParams.button;
-        const wallName = accessWallByLocation(buttonLocation).getName();
-        const queryByName = { name: wallName };
-        // create query by wall name to access database
+
+        // create query by wall location to access database
         const queryByLocation = { location: buttonLocation };
-        const newBackupValues = { $set: { exportTote: exportToteNow, completed: true, backLight: false } };
-        let newHistoryValues = {};
+        const backupCollection = db.collection(BACKUP_COLLECTION);
+        const historyColection = db.collection(HISTORY_COLLECTION);
 
+        //  Get wall state from db
+        backupCollection.findOne(queryByLocation, (err, res) => {
+            if (err) console.log(err);
+            const wallState = res;
+            const wallName = wallState.name;
+            const backLightState = wallState.backLight;
 
-        let str = `${wallName} => ${exportToteNow}`;
-        event.emit('print', str);
-        event.emit('print:action', `Hang xuong:\n   Tuong ${wallName}\nNhap vao\n   Khay ${exportToteNow}`);
-        if (exportToteNow != null) {
-            let params = {
-                wall: wallName,
-                tote: exportToteNow
-            };
+            // let str = `${wallName} => ${exportToteNow}`;
+            // event.emit('print', str);
+            // event.emit('print:action', `Hang xuong:\n   Tuong ${wallName}\nNhap vao\n   Khay ${exportToteNow}`);
 
-            let tempApi = message.generateApi('pickToLight', params, backScanKey);
-            logger.debug({ message: `Wall ${wallName} pick to tote ${exportToteNow}, key: ${tempApi.key}`, location: FILE_NAME });
-            socket.emit('pickToLight', tempApi);
+            //  Check if wall is ready to pick tote (Light on wall is on and a tote was scanned)
+            const isWallReadyToPick = (backLightState == true) && (exportToteNow != null);
+            console.log(wallState);
 
-            const backupCollection = db.collection(BACKUP_COLLECTION);
-            const historyColection = db.collection(HISTORY_COLLECTION);
-            backupCollection.updateOne(queryByName, newBackupValues)
-                // Update exportTote on wall to database
-                .then(result => {
-                    logger.debug({ message: 'update to backup result', location: FILE_NAME, value: result });
-                    // Find wall on database
-                    return backupCollection.findOne(queryByName);
-                })
-                .then(result => {
-                    console.log(result);
-                    newHistoryValues = createDbSchema.historySchema(result.importTote, result.exportTote, result.name);
-                    // Insert an history event(a complete merge on wall) to database
-                    return historyColection.insertOne(newHistoryValues);
-                })
-                .then(result => {
-                    logger.debug({ message: 'insert to history result', location: FILE_NAME, value: result });
-                    event.emit('light:off', { wall: buttonLocation, side: 'back' });
-                    // All things done, emit an complete event
-                    event.emit('wall:completeOne', wallName);
-                })
-                .catch(err => {
-                    logger.error({ message: 'Fail to insert to database', location: FILE_NAME, value: err });
-                })
+            if (isWallReadyToPick) {
+                let params = {
+                    wall: wallName,
+                    importTote: wallState.importTote,
+                    exportTote: exportToteNow
+                };
 
-        } else {
-            logger.debug({ message: 'Back button pressed, scan container first!!!', location: FILE_NAME });
-            event.emit('light:off', { wall: buttonLocation, side: 'back' });
-        }
+                let tempApi = message.generateApi('mergeWall:pickToLight', params, backScanKey);
+                logger.debug({ message: `Wall ${wallName} pick to tote ${exportToteNow}, key: ${tempApi.key}`, location: FILE_NAME });
+                socket.emit('pickToLight', tempApi);
+
+                const newBackupValues = { $set: { exportTote: exportToteNow, completed: true, backLight: false } };
+                backupCollection.updateOne(queryByLocation, newBackupValues)
+                    // Update exportTote on wall to database
+                    .then(result => {
+                        logger.debug({ message: 'update to backup result', location: FILE_NAME, value: result });
+
+                        const newHistoryValues = {
+                            wall: wallState.name,
+                            importTotes: wallState.importTote,
+                            exportTote: exportToteNow,
+                            timeComplete: Date(Date.now())
+                        }
+                        // Insert an history event(a complete merge on wall) to database
+                        return historyColection.insertOne(newHistoryValues);
+                    })
+                    .then(result => {
+                        logger.debug({ message: 'insert to history result', location: FILE_NAME, value: result });
+                        event.emit('light:off', {
+                            wall: wallName,
+                            location: wallState.location,
+                            lightIndex: wallState.lightIndex,
+                            side: 'back'
+                        });
+                        // All things done, emit an complete event
+                        event.emit('wall:completeOne', wallName);
+                    })
+                    .catch(err => {
+                        logger.error({ message: 'Fail to insert to database', location: FILE_NAME, value: err });
+                    });
+
+            } else {
+                if (exportToteNow != null)
+                    logger.debug({ message: 'Back button pressed, scan container first!!!', location: FILE_NAME });
+                event.emit('light:off', {
+                    wall: wallName,
+                    location: wallState.location,
+                    lightIndex: wallState.lightIndex,
+                    side: 'back'
+                });    // This line just for local test run, disable this in production mode
+            }
+        });
     };
 
     /**
      * Handle 'button:user' event from gpio
      * Emitted in 'gpio-ipc.js'
+     * These buttons locate on elecrical cabin
      */
     function handleUserButtonFromGPIO(buttonParams) {
         logger.debug({ message: 'button:user event', location: FILE_NAME, value: buttonParams });
@@ -334,19 +377,30 @@ mongoClient.connect(url, { useUnifiedTopology: true }, function (err, client) {
                 //
                 break;
             case 'U.3.1':
-                //
-                break;
-            case 'U.4.1':
                 runningLight();
                 break;
+            case 'U.4.1':
+                cancelAction();
+                break;
             case 'U.5.1':
-                reloadGPIO();
+                restoreLightFromDatabase();
                 break;
             case 'U.6.1':
                 testLightProgram();
                 break;
             default:
                 logger.waring({ message: `Bad params for 'button:user' event`, location: FILE_NAME });
+        }
+
+        function restoreLightFromDatabase() {
+            db.collection(BACKUP_COLLECTION)
+                .find({}, projection)
+                .sort({ location: 1 })
+                .toArray()
+                .then(result => {
+                    restoreFromBackupDb(result);
+                })
+                .catch(error => logger.error({ message: 'Error restore GPIO', location: FILE_NAME, value: error }));
         }
 
         function runningLight() {
@@ -358,17 +412,28 @@ mongoClient.connect(url, { useUnifiedTopology: true }, function (err, client) {
                 count++;
                 if (count == 32) {
                     clearInterval(testLightInterval);
-                    reloadGPIO();
+                    reloadLightFromMemory();
                 }
             }, 500);
         }
 
-        function reloadGPIO() {
+        function reloadLightFromMemory() {
             // Reload light state
             event.emit('light:reload', { side: 'front' });
             setTimeout(function () {
                 event.emit('light:reload', { side: 'back' });
             }, 500);
+        }
+
+        function cancelAction() {
+            //  Clear data from scanners
+            importToteNow = null;
+            exportToteNow = null;
+            //  Reset front lights
+            db.collection(BACKUP_COLLECTION).updateMany({ frontLight: true }, { $set: { frontLight: false } }, (err, res) => {
+                if (err) logger.error({ message: 'Fail to update database', location: FILE_NAME, value: err });
+                else logger.debug({ message: 'Reset front light', location: FILE_NAME, value: res });
+            });
         }
 
         function testLightProgram() {
@@ -379,10 +444,27 @@ mongoClient.connect(url, { useUnifiedTopology: true }, function (err, client) {
                 event.emit('light:test', { bitmap: bitmap, side: 'back' });
             }, 500);
             setTimeout(() => {
-                reloadGPIO();
+                reloadLightFromMemory();
             }, 10000);
         }
     };
+
+    /**
+     * Check if scanned tote is valid
+     * @param {String} value Data from scanner
+     */
+    function isScannedToteValid(value) {
+        let scanArray = value.split('-');
+        let firstElementScan = scanArray[0];
+        let sizeOfScan = value.split('-').length;
+
+        //  Check if scanned tote a valid value
+        if (sizeOfScan == 2 && (firstElementScan === "M" || firstElementScan === "L" || firstElementScan === "S")) {
+            return true;
+        } else {
+            return false;
+        }
+    }
 
     /**
      * Handle 'scanner:front' event from gpio
@@ -393,13 +475,10 @@ mongoClient.connect(url, { useUnifiedTopology: true }, function (err, client) {
 
         frontScanKey = generateKey(3);
 
-        let scanApi = message.generateApi('newScan', scanParams, frontScanKey);
-        let scanArray = scanParams.value.split('-');
-        let firstElementScan = scanArray[0];
-        let sizeOfScan = scanParams.value.split('-').length;
+        let scanApi = message.generateApi('mergeWall:scanToteToWall', { tote: scanParams.value }, frontScanKey);
 
         //  Check if scanned tote a valid value
-        if (sizeOfScan == 2 && (firstElementScan === "M" || firstElementScan === "L" || firstElementScan === "S")) {
+        if (isScannedToteValid(scanParams.value)) {
             socket.emit('scanTotePushToWall', scanApi);
             logger.debug({ message: `Send 'scanTotePushToWall' message to server`, location: FILE_NAME, value: scanApi });
 
@@ -433,7 +512,7 @@ mongoClient.connect(url, { useUnifiedTopology: true }, function (err, client) {
         }
         //  If scanned tote not a valid value
         else {
-            logger.waring({ message: `Scan unknown tote: ${scanParams.val}. Please scan again!` });
+            logger.waring({ message: `Scan unknown tote to put on wall: ${scanParams.val}` });
             //socket.emit('scanner:unknown', scanApi);
             const warningMess = `unknown front scan:${scanParams.val}`;
             const warningObj = message.generateWarning('wall-controller', warningMess);
@@ -452,14 +531,10 @@ mongoClient.connect(url, { useUnifiedTopology: true }, function (err, client) {
 
         backScanKey = generateKey(3);
 
-        let scanArray = scanParams.value.split('-');
-        let firstElementScan = scanArray[0];
-        let sizeOfScan = scanParams.value.split('-').length;
-
-        if (sizeOfScan == 2 && (firstElementScan === "M" || firstElementScan === "L" || firstElementScan === "S")) {
+        if (isScannedToteValid(scanParams.value)) {
             exportToteNow = scanParams.value;
         } else {
-            logger.debug({ message: `Scan unknown tote:${scanParams.value} Please scan again!`, location: FILE_NAME });
+            logger.debug({ message: `Scan unknown tote to pick from wall:${scanParams.value}`, location: FILE_NAME });
         }
         // Insert new event to database
         const db = client.db(WALL_DB);
@@ -498,24 +573,14 @@ mongoClient.connect(url, { useUnifiedTopology: true }, function (err, client) {
             exportTote: null,
             completed: false
         }
-        logger.debug({ message: `Empty wall ${wallName}`, location: FILE_NAME, value: newBackupValues });
 
         const collection = db.collection(BACKUP_COLLECTION);
         // Update document where a is 2, set b equal to 1
         collection.updateOne(queryByName, { $set: newBackupValues }, function (err, res) {
             if (err) logger.error({ message: 'Fail to update database', location: FILE_NAME });
-            logger.debug({ message: 'reset backup collection', location: FILE_NAME, value: res });
+            logger.debug({ message: `Empty wall ${wallName}`, location: FILE_NAME, value: res });
         });
     };
-
-    /**
-     * handle error from server
-     */
-    event.on('error:fromserver', function (errorParams) {
-        //
-    });
-
-
 
     function handleConfirmFromServer(confirmApi) {
         const confirmKey = confirmApi.key;
@@ -549,38 +614,39 @@ mongoClient.connect(url, { useUnifiedTopology: true }, function (err, client) {
             logger.debug({ message: 'insert lightOn event to \'received_messages\' collection', location: FILE_NAME, value: res.result });
         });
 
-        //  Get thisWall object
+        //  Get wall state from db
         const wallName = lightApi.params.wall;
         const wallSide = lightApi.params.side;
         const tempKey = lightApi.key;
         const queryByName = { name: wallName };
         db.collection(BACKUP_COLLECTION).findOne(queryByName, (err, res) => {
             if (err) logger.error({ message: 'Fail to find wall in database', location: FILE_NAME, value: err });
-            const thisWall = res;
-            const isWallNameValid = thisWall != undefined;
+            const wallState = res;
+            const isWallNameValid = wallState != undefined;
             const isWallSideValid = wallSide === 'front' || wallSide === 'back';
 
             //  Check if wallName is valid
             if (!isWallNameValid) {
                 //  Emit error message to server
-                socket.emit('wallError', message.generateApi('wallError', { wall: wallName, message: 'Invalid wall' }, tempKey));
+                socket.emit('wallError', message.generateApi('mergeWall:error', { wall: wallName, message: 'Invalid wall' }, tempKey));
                 //  Log error
                 logger.error({ message: 'Not a valid message from server', value: { key: tempKey } });
             } else if (!isWallSideValid) {
                 //  Emit error message to server
-                socket.emit('wallError', message.generateApi('wallError', { wall: wallName, message: 'Invalid side' }, tempKey));
+                socket.emit('wallError', message.generateApi('mergeWall:error', { wall: wallName, message: 'Invalid side' }, tempKey));
                 //  Log error
                 logger.error({ message: 'Not a valid message from server', value: { key: tempKey } });
             } else {
                 //  Emit light:on event to execute in ioControl.js
                 event.emit('light:on', {
-                    wall: thisWall.location,
-                    index: thisWall.lightIndex,
+                    wall: wallState.name,
+                    location: wallState.location,
+                    lightIndex: wallState.lightIndex,
                     side: wallSide
                 });
 
                 //  Emit confirm message to server
-                socket.emit('lightOnConfirm', message.generateApi('lightOnConfirm', { wall: wallName }, tempKey));
+                socket.emit('lightOnConfirm', message.generateApi('mergeWall:lightOnConfirm', { wall: wallName }, tempKey));
 
                 //  Update states to database
                 const db = client.db(WALL_DB);
@@ -611,38 +677,39 @@ mongoClient.connect(url, { useUnifiedTopology: true }, function (err, client) {
             logger.debug({ message: 'insert lightOff event to \'received_messages\' collection', location: FILE_NAME, value: res.result });
         });
 
-        //  Get thisWall object
+        //  Get wall state from db
         const wallName = lightApi.params.wall;
         const wallSide = lightApi.params.side;
         const tempKey = lightApi.key;
         const queryByName = { name: wallName };
         db.collection(BACKUP_COLLECTION).findOne(queryByName, (err, res) => {
             if (err) logger.error({ message: 'Fail to find wall in database', location: FILE_NAME, value: err });
-            const thisWall = res;
-            const isWallNameValid = thisWall != undefined;
+            const wallState = res;
+            const isWallNameValid = wallState != undefined;
             const isWallSideValid = wallSide === 'front' || wallSide === 'back';
 
             //  Check if wallName is valid
             if (!isWallNameValid) {
                 //  Emit error message to server
-                socket.emit('wallError', message.generateApi('wallError', { wall: wallName, message: 'Invalid wall' }, tempKey));
+                socket.emit('wallError', message.generateApi('mergeWall:error', { wall: wallName, message: 'Invalid wall' }, tempKey));
                 //  Log error
                 logger.error({ message: 'Not a valid message from server', value: { key: tempKey } });
             } else if (!isWallSideValid) {
                 //  Emit error message to server
-                socket.emit('wallError', message.generateApi('wallError', { wall: wallName, message: 'Invalid side' }, tempKey));
+                socket.emit('wallError', message.generateApi('mergeWall:error', { wall: wallName, message: 'Invalid side' }, tempKey));
                 //  Log error
                 logger.error({ message: 'Not a valid message from server', value: { key: tempKey } });
             } else {
-                //  Emit light:on event to execute in ioControl.js
+                //  Emit light:off event to execute in ioControl.js
                 event.emit('light:off', {
-                    wall: thisWall.location,
-                    index: thisWall.lightIndex,
+                    wall: wallState.name,
+                    location: wallState.location,
+                    lightIndex: wallState.lightIndex,
                     side: wallSide
                 });
 
                 //  Emit confirm message to server
-                socket.emit('lightOffConfirm', message.generateApi('lightOnConfirm', { wall: wallName }, tempKey));
+                socket.emit('lightOffConfirm', message.generateApi('mergeWall:lightOnConfirm', { wall: wallName }, tempKey));
 
                 //  Update states to database
                 const db = client.db(WALL_DB);

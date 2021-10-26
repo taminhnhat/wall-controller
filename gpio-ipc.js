@@ -13,8 +13,6 @@ const FILE_NAME = 'gpio-ipc.js';
 
 const message = require('./message');
 
-let { accessWallByName, accessWallByLocation } = require('./wallApi');
-
 let gpioBitmap = require('./gpioMap');
 
 const write_pipe_path = GLOBAL.EMIT_GPIO_NAMED_PIPE_PATH;
@@ -101,9 +99,9 @@ readfifo.on('exit', function (status) {
      */
     event.on('light:on', function (lightParams) {
         logger.debug({ message: 'light:on event', location: FILE_NAME, value: lightParams });
-        const wallPosition = lightParams.wall;
+        const lightIndex = lightParams.lightIndex;
         const wallSide = lightParams.side;
-        emitLightToPipe(wallPosition, wallSide, 'on');
+        emitLightToPipe(lightIndex, wallSide, 'on');
     });
 
     /**
@@ -114,9 +112,9 @@ readfifo.on('exit', function (status) {
      */
     event.on('light:off', function (lightParams) {
         logger.debug({ message: `'light:off' event`, location: FILE_NAME, value: lightParams });
-        const wallPosition = lightParams.wall;
+        const lightIndex = lightParams.lightIndex;
         const wallSide = lightParams.side;
-        emitLightToPipe(wallPosition, wallSide, 'off');
+        emitLightToPipe(lightIndex, wallSide, 'off');
     });
 
     event.on('light:reload', function (lightParams) {
@@ -205,11 +203,10 @@ readfifo.on('exit', function (status) {
 
     /**
      * Emit a light message to C++ process via named-pipe
-     * @param {String} wallPosition eg: 'W.1.1'
+     * @param {String} wallName eg: 'W.1.1'
      * @param {String} wallSide 'front'|'back'
      */
-    function emitLightToPipe(wallPosition, wallSide, lightState) {
-        const lightIndex = accessWallByLocation(wallPosition).getIndex();
+    function emitLightToPipe(lightIndex, wallSide, lightState) {
         //  generate light bitmap of wall
         gpioBitmap.bitmapGenerate(lightIndex, wallSide, lightState);
         //  get light bitmap of wall
@@ -234,17 +231,17 @@ readfifo.on('exit', function (status) {
             let greenLightState;
             if (greenLight) greenLightState = 'on';
             else greenLightState = 'off';
-            gpioBitmap.bitmapGenerate(30, wallSide, greenLightState);
+            // gpioBitmap.bitmapGenerate(30, wallSide, greenLightState);
         }
         //  generate red light status
         let redLightState;
         if (redLight) redLightState = 'on';
         else redLightState = 'off';
-        gpioBitmap.bitmapGenerate(31, wallSide, redLightState);
+        // gpioBitmap.bitmapGenerate(31, wallSide, redLightState);
         //  get light bitmap of wall
         const lightBitmap = gpioBitmap.getBitmap(wallSide);
         //  generate message
-        const mess = `light:${gpioBitmap.getBitmap(wallSide)}:${wallSide}\n`;
+        const mess = `light:${lightBitmap}:${wallSide}\n`;
         fifoWs.write(mess);
         logger.debug({ message: 'emit message to pipe:', location: FILE_NAME, value: mess });
     }
