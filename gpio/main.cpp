@@ -2,14 +2,12 @@
  * GPIO controll
  * Using pigpio
  * Compile:
- * g++ -Wall gpio.cpp -o gpio -pthread -lpigpio -lrt
+ * g++ -Wall gpio.cpp -o gpio -pthread -lrt
  */
 #include <iostream>
 #include <thread>
-#include <pigpio.h>
 #include <string.h>
 #include "./named-pipe.h"
-#include "./lcd-i2c.h"
 
 #define CYCLE_TIMER 100 // miliseconds`
 
@@ -106,26 +104,10 @@ public:
     }
     void frontLightApply()
     {
-        for (int idx = 0; idx < 32; idx++)
-        {
-            int bitVal = (this->frontLightBitmap >> idx) & 1;
-            gpioWrite(DS_PIN_1, bitVal);
-            gpioTrigger(SHCP_PIN_1, 1, 1);
-            gpioDelay(1);
-        }
-        gpioTrigger(STCP_PIN, 1, 1);
         std::cout << "front light apply:" << this->getFrontLightBitmap() << std::endl;
     }
     void backLightApply()
     {
-        for (int idx = 31; idx >= 0; idx--)
-        {
-            int bitVal = (this->backLightBitmap >> idx) & 1;
-            gpioWrite(DS_PIN_2, bitVal);
-            gpioTrigger(SHCP_PIN_2, 1, 1);
-            gpioDelay(1);
-        }
-        gpioTrigger(STCP_PIN, 1, 1);
         std::cout << "back light apply:" << this->getBackLightBitmap() << std::endl;
     }
     uint32_t getFrontLightBitmap()
@@ -158,55 +140,17 @@ int main(int argc, char *argv[])
     //  Start named-pipe ipc
     mypipe.startPipe();
 
-    //  Init gpio
-    if (!initGPIO())
-    {
-        std::cout << "init gpio error" << std::endl;
-    }
-
-    //  Reset buttons
-    resetButtonTick();
-
-    // Reset light
-    resetLight();
-
-    // Init lcd
-    lcdInit(1, 0x27);
-
-    int lineCount = 1;
-
     while (true)
     {
-        // Check every 1 milisecond
-        if (gpioTick() % 1000 == 0)
-        {
-            // std::cout << "read row" << lineCount <<std::endl;
-            //   Read buttons on a line
-            readButtons(lineCount);
-            if (lineCount >= 11)
-                lineCount = 1;
-            else
-                lineCount++;
-        }
-
-        /**
-         * Check if pipe has new command from nodejs side
-         * Light command:   'light:<light bitmap>:<side>'
-         * Lcd command:     'lcd:<message>'
-         */
         if (mypipe.readAvailable())
         {
             char arr[30];
             mypipe.readPipe(arr);
             std::cout << "read from pipe: " << arr << std::endl;
 
-            lcdClear();
-            lcdSetCursor(LCD_LINE1_INDEX);
             int idx = 0;
             while (arr[idx] != 0x00 && arr[idx] != 0x0A)
             {
-                lcdWriteByte(arr[idx], DATA_MODE);
-                // std::cout << std::hex << (int)messageLine_1st[idx] << std::endl;
                 idx++;
             }
 
@@ -259,58 +203,6 @@ int main(int argc, char *argv[])
                 char *messageLine_3rd = strtok(NULL, delimiters);
                 char *messageLine_4th = strtok(NULL, delimiters);
 
-                //  clear data on lcd
-                lcdClear();
-
-                //  print 1st line to lcd
-                if (messageLine_1st != NULL)
-                {
-                    int idx = 0;
-                    lcdSetCursor(LCD_LINE1_INDEX);
-                    while (messageLine_1st[idx] != 0x00 && messageLine_1st[idx] != 0x0A)
-                    {
-                        lcdWriteByte(messageLine_1st[idx], DATA_MODE);
-                        // std::cout << std::hex << (int)messageLine_1st[idx] << std::endl;
-                        idx++;
-                    }
-                }
-
-                //  print 2nd line to lcd
-                if (messageLine_2nd != NULL)
-                {
-                    int idx = 0;
-                    lcdSetCursor(LCD_LINE2_INDEX);
-                    while (messageLine_2nd[idx] != 0x00 && messageLine_2nd[idx] != 0x0A)
-                    {
-                        lcdWriteByte(messageLine_2nd[idx], DATA_MODE);
-                        idx++;
-                    }
-                }
-
-                //  print 3rd line to lcd
-                if (messageLine_3rd != NULL)
-                {
-                    int idx = 0;
-                    lcdSetCursor(LCD_LINE3_INDEX);
-                    while (messageLine_3rd[idx] != 0x00 && messageLine_3rd[idx] != 0x0A)
-                    {
-                        lcdWriteByte(messageLine_3rd[idx], DATA_MODE);
-                        idx++;
-                    }
-                }
-
-                //  print 4th line to lcd
-                if (messageLine_4th != NULL)
-                {
-                    int idx = 0;
-                    lcdSetCursor(LCD_LINE4_INDEX);
-                    while (messageLine_4th[idx] != 0x00 && messageLine_4th[idx] != 0x0A)
-                    {
-                        lcdWriteByte(messageLine_4th[idx], DATA_MODE);
-                        idx++;
-                    }
-                }
-
                 std::cout << "wrote message to lcd: \n"
                           << messageLine_1st << "\n"
                           << messageLine_2nd << "\n"
@@ -329,209 +221,3 @@ int main(int argc, char *argv[])
 }
 
 //  DEFINE FUNCTIONS________________________________________________________________________________________________________
-
-/**
- * Init gpio
- */
-int initGPIO()
-{
-    if (gpioInitialise() < 0)
-        return 0;
-    else
-    {
-        //  test buttton on pin GPIO14
-        gpioSetMode(BUTTON_1, PI_INPUT);
-        gpioSetPullUpDown(BUTTON_1, PI_PUD_UP);
-
-        //  light pins
-        gpioSetMode(SHCP_PIN_1, PI_OUTPUT);
-        gpioSetMode(SHCP_PIN_2, PI_OUTPUT);
-        gpioSetMode(DS_PIN_1, PI_OUTPUT);
-        gpioSetMode(DS_PIN_2, PI_OUTPUT);
-        gpioSetMode(STCP_PIN, PI_OUTPUT);
-
-        //  enable button pins
-        gpioSetMode(ENABLE_PIN_1, PI_OUTPUT);
-        gpioSetMode(ENABLE_PIN_2, PI_OUTPUT);
-        gpioSetMode(ENABLE_PIN_3, PI_OUTPUT);
-        gpioSetMode(ENABLE_PIN_4, PI_OUTPUT);
-        gpioSetMode(ENABLE_PIN_5, PI_OUTPUT);
-        gpioSetMode(ENABLE_PIN_6, PI_OUTPUT);
-        gpioSetMode(ENABLE_PIN_7, PI_OUTPUT);
-        gpioSetMode(ENABLE_PIN_8, PI_OUTPUT);
-        gpioSetMode(ENABLE_PIN_9, PI_OUTPUT);
-        gpioSetMode(ENABLE_PIN_10, PI_OUTPUT);
-        gpioSetMode(ENABLE_PIN_11, PI_OUTPUT);
-
-        //  read pins
-        gpioSetMode(READ_PIN_1, PI_INPUT);
-        gpioSetMode(READ_PIN_2, PI_INPUT);
-        gpioSetMode(READ_PIN_3, PI_INPUT);
-        gpioSetMode(READ_PIN_4, PI_INPUT);
-        gpioSetMode(READ_PIN_5, PI_INPUT);
-        gpioSetMode(READ_PIN_6, PI_INPUT);
-
-        gpioSetPullUpDown(READ_PIN_1, PI_PUD_DOWN);
-        gpioSetPullUpDown(READ_PIN_2, PI_PUD_DOWN);
-        gpioSetPullUpDown(READ_PIN_3, PI_PUD_DOWN);
-        gpioSetPullUpDown(READ_PIN_4, PI_PUD_DOWN);
-        gpioSetPullUpDown(READ_PIN_5, PI_PUD_DOWN);
-        gpioSetPullUpDown(READ_PIN_6, PI_PUD_DOWN);
-
-        gpioGlitchFilter(BUTTON_1, 10000);
-        gpioSetAlertFunc(BUTTON_1, buttonCallback);
-
-        gpioSetTimerFunc(0, CYCLE_TIMER, timerTick);
-    }
-    return 1;
-}
-
-/**
- * Reset temporary tick of buttons
- */
-int resetButtonTick()
-{
-    for (int i = 0; i < 6; i++)
-    {
-        for (int j = 0; j < 11; j++)
-        {
-            buttonTick[i][j] = 0;
-        }
-    }
-    return 1;
-}
-
-/**
- * Turn all light off
- */
-int resetLight()
-{
-    lightSys.backLightGenerate(0);
-    lightSys.backLightApply();
-    lightSys.frontLightGenerate(0);
-    lightSys.frontLightApply();
-    return 1;
-}
-
-/**
- * Timer tick call every CYCLE_TIMER(100ms)
- */
-void timerTick()
-{
-    timerCount++;
-    // reset counter when it too big
-    if (timerCount > 4000000000)
-    {
-        timerCount = 0;
-        resetButtonTick();
-    }
-    // std::cout << "timer tick!" << "|" << arr1 << std::endl;
-    // mypipe.writePipe(arr1, strlen(arr1));
-}
-
-/**
- * Read buttons on a line
- * Each row has 6 buttons
- * input line from 1 to 11
- * line 1-5 <=> row 1-5 on the front of wall
- * line 6-10 <=> row 1-5 on the back of wall
- * line 11 <=> use for user buttons on the electric cabin
- */
-void readButtons(int line)
-{
-    // set enable pin to 0
-    gpioWrite(enablePin[line - 1], 1);
-
-    // wait for electric sysnal
-    gpioDelay(50);
-
-    // read buttons
-    for (int i = 0; i < buttonSamplesPerCycle; i++)
-    {
-        //  read 6 button per cycle
-        for (int col = 0; col < 6; col++)
-        {
-            if (gpioRead(readPin[col]) == BUTTON_CALL_LEVEL)
-            {
-                buttonSysnalCountPerCycle[col]++;
-            };
-        }
-        gpioDelay(10);
-    }
-
-    //  set enable pin to 0
-    gpioWrite(enablePin[line - 1], 0);
-
-    int row = 0;
-    char side[6];
-    if (line < 6)
-    {
-        row = line;
-        std::sprintf(side, "back");
-    }
-    else if (line >= 6 && line < 11)
-    {
-        row = line - 5;
-        std::sprintf(side, "front");
-    }
-
-    //  check if button was pressed
-    for (int col = 0; col < 6; col++)
-    {
-        // if(buttonSysnalCountPerCycle[col] > 0){
-        //   std::cout << "button W-" << col + 1 << "-" << row << ":" << buttonSysnalCountPerCycle[col] << std::endl;
-        // }
-
-        if (buttonSysnalCountPerCycle[col] >= buttonCountToEmit && (timerCount - buttonTick[col - 1][line - 1]) > buttonDelay)
-        {
-            char arr[100];
-            if (line < 11)
-            {
-                //  row 1 to 10 used for panel buttons on the wall
-                std::sprintf(arr, "button:W.%d.%d:%s\n", col + 1, row, side);
-            }
-            else if (line == 11)
-            {
-                //  line 11 used for user buttons on the electric cabin
-                std::sprintf(arr, "button:U.%d.1\n", col + 1);
-            }
-            //  print out button address
-            std::cout << arr;
-            //  emit button via pipes
-            mypipe.writePipe(arr, strlen(arr));
-            lcdClear();
-            lcdSetCursor(LCD_LINE1_INDEX);
-            int idx = 0;
-            while (arr[idx] != 0x00 && arr[idx] != 0x0A)
-            {
-                lcdWriteByte(arr[idx], DATA_MODE);
-                idx++;
-            }
-            buttonTick[col - 1][line - 1] = timerCount;
-        }
-
-        buttonSysnalCountPerCycle[col] = 0;
-    }
-}
-
-/**
- * Callback when test button pressed
- */
-void buttonCallback(int pin, int level, uint32_t tick)
-{
-    switch (pin)
-    {
-    case 2:
-        if (level == 0)
-        {
-            char amsg[50];
-            std::sprintf(amsg, "button:%d|%d|%d/", pin, level, tick);
-            std::cout << amsg << std::endl;
-            mypipe.writePipe(amsg, strlen(amsg));
-        }
-        break;
-
-    default:
-        std::cout << "invalid pin" << std::endl;
-    }
-}
