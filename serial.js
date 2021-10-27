@@ -3,6 +3,7 @@
  * Scanners are configured
  */
 
+require('dotenv').config({ path: './.env' });
 const GLOBAL = require('./CONFIGURATION');
 const SerialPort = require('serialport');
 const event = require('./event');
@@ -13,8 +14,10 @@ const FILE_NAME = 'serial.js  ';
 
 // const frontScannerPath = GLOBAL.FRONT_SCANNER_PATH;
 // const backScannerPath = GLOBAL.BACK_SCANNER_PATH;
-const frontScannerPath = '/dev/ttyS10';
-const backScannerPath = '/dev/ttyS6';
+let frontScannerPath = process.env.FRONT_SCANNER_PATH;
+let backScannerPath = process.env.BACK_SCANNER_PATH;
+if (frontScannerPath == undefined) frontScannerPath = '/dev/ttyS10';
+if (frontScannerPath == undefined) frontScannerPath = '/dev/ttyS6';
 
 //  NEED TO CONFIG SERIAL PORT FIRST, READ 'README.md'
 const frontScanner = new SerialPort(frontScannerPath, {
