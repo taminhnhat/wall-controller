@@ -1,48 +1,48 @@
-require('dotenv').config({path: './CONFIGURATIONS.env'});
+require('dotenv').config({ path: './CONFIGURATIONS.env' });
 
-class Logger{
-    constructor(){
+class Logger {
+    constructor() {
         //
     }
-    #createLog(message, location, level, value){
-        if(process.env.LOG_MODE == 'console'){
+    #createLog(message, location, level, value) {
+        if (process.env.LOG_MODE == 'console') {
             console.log(message);
-            if(value != null) console.log(value);
+            if (value != null) console.log(value);
         }
-        else{
+        else {
             let logtext = `${Date(Date.now())}\t${level.toUpperCase()}`;
-            if(location != null){
+            if (location != null) {
                 logtext += `\tat:${location}`;
             }
             logtext += `\t\tmessage:${message}`;
-            if(value != null){
+            if (value != null) {
                 logtext += `\t\tvalue:${JSON.stringify(value)}`;
             }
             console.log(logtext);
         }
     }
-    info(obj){
-        const {message, location = null, value = null} = obj;
+    info(obj) {
+        const { message, location = null, value = null } = obj;
         this.#createLog(message, location, 'info', value);
         //if(value != undefined) console.log(JSON.stringify(value));
     }
-    debug(obj){
-        const {message, location = null, value = null} = obj;
+    debug(obj) {
+        const { message, location = null, value = null } = obj;
         this.#createLog(message, location, 'debug', value);
         //if(value != undefined) console.log(JSON.stringify(value));
     }
-    waring(obj){
-        const {message, location = null, value = null} = obj;
+    waring(obj) {
+        const { message, location = null, value = null } = obj;
         this.#createLog(message, location, 'warning', value);
         //if(value != undefined) console.log(JSON.stringify(value));
     }
-    error(obj){
-        const {message, location = null, value = null} = obj;
+    error(obj) {
+        const { message, location = null, value = null } = obj;
         this.#createLog(message, location, 'error', value);
         //if(value != undefined) console.log(JSON.stringify(value));
     }
-    fatal(obj){
-        const {message, location = null, value = null} = obj;
+    fatal(obj) {
+        const { message, location = null, value = null } = obj;
         this.#createLog(message, location, 'fatal', value);
         //if(value != undefined) console.log(JSON.stringify(value));
     }
