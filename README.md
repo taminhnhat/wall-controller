@@ -1,7 +1,7 @@
 # DESCRIPTION
 This project has 2 processes:
-- C++ process: control gpio on rasberry pi board to turn on/off lights and read buttons
-- Node.js process: main process that communicate with server using websocket  
+- GPIO process: control gpio on rasberry pi board to turn on/off lights and read buttons
+- GATEWAY process: main process that communicate with server using websocket  
 
 Two processes communicate to each other using ipc (named-pipe).
 
@@ -23,7 +23,8 @@ Two processes communicate to each other using ipc (named-pipe).
 # OPERATING
 - Do [THIS](#prepare-to-run) first!
 - [Run test in console](#test)
-- [Create and start service](#create-and-start-service)
+- [Create pipes](#named-pipe)
+- [Create and start service](./service/readme.md)
 
 # API
 ## 1. Interface
@@ -43,7 +44,7 @@ Example:
 ```json
 "LightOn": {
     name: "lightOn",
-    clientId: "App1Fahasa",
+    clientId: "server_name",
     bookstoreId: "67",
     version: "1.0.0",
     params: {
@@ -185,28 +186,29 @@ Example:
 button:W.3.4
 ```
 
-## Get and build project
-### 1. Clone frome github
+# Get and build project
+## 1. Clone frome github
 ```sh
 $ cd ~/
 $ git clone https://github.com/taminhnhat/wall-controller.git
 $ npm install mongodb serialport socket.io-client dotenv
 ```
 
-### 2. Build cpp
+## 2. Build cpp
 ```sh
 $ cd ~/wall-controller/gpio
 $ make all
 ```
 After running "make", a executable file named "main"
-### 3. Named pipe
+# Named pipe
+Create pipes for communication between to process
 ```sh
 $ cd ~/wall-controller/pipe
 $ mkfifo emit_gpio
 $ mkfifo button_callback
 ```
 
-## Prepare to run
+# Prepare to run
 After installed all the requirements
 
 Before run, find and kill pigoiod pid if exist
@@ -216,86 +218,7 @@ $ sudo kill -9 <pid>
 ```
 !!! Do not run 'sudo pigpiod'
 
-Go to project directory to run to process  
-
-## Test
-Nodejs side that communicate with server
-```sh
-$ sudo node index.js > system.log
-```
-
-C++ side that control gpio on rasberry pi
-```sh
-$ cd ~/wall-controller/gpio
-$ sudo ./main
-```
-
-## 2. RUN TEST
-
-Start a new terminal window in project directory and create a socket client
-```js
-$ node
-io = require('socket.io-client');
-socket = io.connect('ws://localhost:3000');
-```
-
-Add command from user
-```js
-socket.emit('user:command', 'lightOn.M.1.1.front');
-socket.emit('user:command', 'lightOff.M.2.1.back');
-socket.emit('user:command', 'lightTest.M.1.1.front');
-```
-
-## Create and start service
-
-Create a new servive
-```sh
-$ sudo touch /etc/systemd/system/minhnhat.service
-$ sudo nano /etc/systemd/system/minhnhat.service
-```
-
->[Unit]  
->Description=Startup  
->
->[Service]  
->ExecStart=/home/ubuntu/startup/startup.sh  
->
->[Install]  
->WantedBy=default.target
-
-Create a shell script
-```sh
-$ sudo nano /home/ubuntu/startup/startup.sh
-```
-> #!/bin/bash  
->date > /root/report.txt  
->du -sh /home/ >> /root/report.txt  
->sudo node /home/ubuntu/startup/startup.js
-```sh
-$ sudo chmod 744 /home/ubuntu/startup/startup.sh
-$ sudo chmod 664 /etc/systemd/system/minhnhat.service
-$ systemctl daemon-reload
-$ systemctl enable minhnhat.service
-# Test the script
-$ systemctl start minhnhat.service
-$ cat /root/report.txt
-# Reboot
-$ sudo reboot
-```
-Working with service
-Start
-```sh
-# start
-$ systemctl start minhnhat.service
-# stop
-$ systemctl stop minhnhat.service
-# restart
-$ systemctl restart minhnhat.service
-# get status
-$ systemctl status minhnhat.service
-```
-
-## 7. Error
+# Error
 
 Sometimes c++ process cannot run, this line printed on the console eternally
 > gpioTick: pigpio uninitialised, call gpioInitialise()
