@@ -1,4 +1,4 @@
-class wallState{
+class wallState {
     name
     location
     col
@@ -10,13 +10,13 @@ class wallState{
     exportTote
     frozen
     lastLog
-    constructor(location, name){
+    constructor(location, name) {
         this.location = location;
         this.name = name;
         const temp = location.split('.');
         this.col = temp[1];
         this.row = temp[2];
-        this.lightIndex = Number(this.col) + 1 + Number(this.row - 1)*6;
+        this.lightIndex = Number(this.col) + 1 + Number(this.row - 1) * 6;
         this.frontLight = false;
         this.backLight = false;
         this.importTote = [];
@@ -65,10 +65,10 @@ let M65 = new wallState('W.6.5', 'M-1-30');
 //
 
 const M = [M11, M12, M13, M14, M15,
-                M21, M22, M23, M24, M25,
-                M31, M32, M33, M34, M35,
-                M41, M42, M43, M44, M45,
-                M51, M52, M53, M54, M55,
-                M61, M62, M63, M64, M65]
+    M21, M22, M23, M24, M25,
+    M31, M32, M33, M34, M35,
+    M41, M42, M43, M44, M45,
+    M51, M52, M53, M54, M55,
+    M61, M62, M63, M64, M65]
 
 module.exports = M;
