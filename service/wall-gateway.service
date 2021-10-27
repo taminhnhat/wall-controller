@@ -2,7 +2,7 @@
 Description=Startup
 
 [Service]
-ExecStart=/home/ubuntu/wall-controller/shell/gpio-process.sh
+ExecStart=/home/ubuntu/wall-controller/service/gateway-process.sh
 
 [Install]
 WantedBy=default.target
