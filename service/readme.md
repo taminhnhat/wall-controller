@@ -27,9 +27,23 @@ $ systemctl stop wall-gateway.service
 $ systemctl restart wall-gateway.service
 # get status
 $ systemctl status wall-gateway.service
+# debug
+$ sudo journalctl --unit=wall-gateway
 ```
 View service logs
 ```sh
 $ cat /var/log/wall-controller/gpio-process.log
 $ cat /var/log/wall-controller/gateway-process.log
 ```
+
+Chmod options
+|#|rwx|
+|-|-|
+|7|rwx|
+|6|rw-|
+|5|r-x|
+|4|r--|
+|3|-wx|
+|2|-w-|
+|1|--x|
+|0|---|
