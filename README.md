@@ -127,7 +127,8 @@ Example:
         tote: "L-10"
     },
     date: "Mon Sep 13 2021 14:46:46 GMT+0700 (Indochina Time)",
-    key: "1631519378148-q2i3o9"
+    key: "1631519378148-q2i3o9",
+    token: "wcygwcl4f8439f8"
 }
 ```
 ### 3.2. Put tote to wall
@@ -152,7 +153,8 @@ Example:
         wall: "M-1-4"
     },
     date: "Mon Sep 13 2021 14:46:46 GMT+0700 (Indochina Time)",
-    key: "1631519378148-q2i3o9"
+    key: "1631519378148-q2i3o9",
+    token: "wcygwcl4f8439f8"
 } 
 ```
 ### 3.3. Pick tote from wall
@@ -177,7 +179,8 @@ Example:
         wall: "M-1-4"
     },
     date: "Mon Sep 13 2021 14:46:46 GMT+0700 (Indochina Time)",
-    key: "1631519378148-q2i3o9"
+    key: "1631519378148-q2i3o9",
+    token: "wcygwcl4f8439f8"
 } 
 ```
 ### 3.4. Cancel put to light
@@ -202,7 +205,8 @@ Example:
         wall: "M-1-4"
     },
     date: "Mon Sep 13 2021 14:46:46 GMT+0700 (Indochina Time)",
-    key: "1631519378148-q2i3o9"
+    key: "1631519378148-q2i3o9",
+    token: "wcygwcl4f8439f8"
 } 
 ```
 ### 3.5. Error
@@ -218,8 +222,8 @@ Example:
 |key|String|stand for a complete action on the wall used on client side, just ignore it|
 Example:
 ```json
-"'mergeWall/error'": {
-    name: "'mergeWall/error'",
+"mergeWall/error": {
+    name: "mergeWall/error",
     clientId: "wall-controller_M-1",
     bookstoreId: "67",
     version: "1.0.0",
@@ -229,7 +233,8 @@ Example:
         wall: "M-1-4"
     },
     date: "Mon Sep 13 2021 14:46:46 GMT+0700 (Indochina Time)",
-    key: "1631519378148-q2i3o9"
+    key: "1631519378148-q2i3o9",
+    token: "wcygwcl4f8439f8"
 } 
 ```
 # IPC
