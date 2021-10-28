@@ -1,9 +1,9 @@
 /**
  * 
  */
-
+require('dotenv').config({ path: './.env' });
 const GLOBAL = require('./CONFIGURATION');
-
+const TOKEN = process.env.TOKEN;
 const version = GLOBAL.VERSION;
 const clientId = GLOBAL.WALL_ID;
 const bookstoreId = GLOBAL.BOOKSTORE_ID;
@@ -24,7 +24,8 @@ const message = {
             version: version,
             params: params,
             date: Date(Date.now()),
-            key: key
+            key: key,
+            token: TOKEN
         }
     },
 
