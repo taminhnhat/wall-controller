@@ -5,7 +5,7 @@ StartLimitBurst=5
 StartLimitIntervalSec=10
 
 [Service]
-User=ubuntu
+User=root
 WorkingDirectory=/home/ubuntu/wall-controller/service/
 ExecStart=/home/ubuntu/wall-controller/service/gateway-process.sh
 
