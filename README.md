@@ -62,7 +62,8 @@ Example:
 |clientId|String|Server id|
 |bookstoreId|String|ID of bookstore|
 |version|String|api version|
-|value|String|name of the tote push to wall|
+|tote|String|name of the tote push to wall|
+|wall|String|name of the wall|
 |key|String|stand for a complete action on the wall used on client side, just ignore it|
 Example:
 ```json
@@ -86,7 +87,8 @@ Example:
 |clientId|String|Server id|
 |bookstoreId|String|ID of bookstore|
 |version|String|api version|
-|value|String|name of the tote pick from wall|
+|tote|String|name of the tote pick from wall|
+|wall|String|name of the wall|
 |key|String|stand for a complete action on the wall used on client side, just ignore it|
 Example:
 ```json
@@ -112,7 +114,7 @@ Example:
 |clientId|String|ID of wall|
 |bookstoreId|String|ID of bookstore|
 |version|String|api version|
-|value|String|name of the tote scanned|
+|tote|String|name of the tote scanned|
 |key|String|stand for a complete action on the wall used on client side, just ignore it|
 Example:
 ```json
@@ -135,7 +137,8 @@ Example:
 |clientId|String|ID of wall|
 |bookstoreId|String|ID of bookstore|
 |version|String|api version|
-|value|String|name of the tote push to wall|
+|tote|String|name of the tote push to wall|
+|wall|String|name of the wall|
 |key|String|stand for a complete action on the wall used on client side, just ignore it|
 Example:
 ```json
@@ -159,7 +162,8 @@ Example:
 |clientId|String|ID of wall|
 |bookstoreId|String|ID of bookstore|
 |version|String|api version|
-|value|String|name of the tote pick from wall|
+|tote|String|name of the tote pick from wall|
+|wall|String|name of the wall|
 |key|String|stand for a complete action on the wall used on client side, just ignore it|
 Example:
 ```json
@@ -183,7 +187,8 @@ Example:
 |clientId|String|ID of wall|
 |bookstoreId|String|ID of bookstore|
 |version|String|api version|
-|value|String|name of the tote pick from wall|
+|tote|String|name of the tote pick from wall|
+|wall|String|name of the wall|
 |key|String|stand for a complete action on the wall used on client side, just ignore it|
 Example:
 ```json
@@ -193,6 +198,33 @@ Example:
     bookstoreId: "67",
     version: "1.0.0",
     params: {
+        tote: "L-11",
+        wall: "M-1-4"
+    },
+    date: "Mon Sep 13 2021 14:46:46 GMT+0700 (Indochina Time)",
+    key: "1631519378148-q2i3o9"
+} 
+```
+### 3.5. Error
+|Property|Type|Description|  
+|---|---|---|
+|name|String|name of api|
+|clientId|String|ID of wall|
+|bookstoreId|String|ID of bookstore|
+|version|String|api version|
+|message|String|message error|
+|tote|String|name of the tote|
+|wall|String|name of the wall|
+|key|String|stand for a complete action on the wall used on client side, just ignore it|
+Example:
+```json
+"'mergeWall/error'": {
+    name: "'mergeWall/error'",
+    clientId: "wall-controller_M-1",
+    bookstoreId: "67",
+    version: "1.0.0",
+    params: {
+        message: "Invalid wall",
         tote: "L-11",
         wall: "M-1-4"
     },
