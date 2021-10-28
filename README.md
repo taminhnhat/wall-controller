@@ -42,8 +42,8 @@ Wall-controller run as a client.
 |key|String|stand for a complete action on the wall used on client side, just ignore it|
 Example:
 ```json
-"LightOn": {
-    name: "lightOn",
+"mergeWall/LightOn": {
+    name: "mergeWall/lightOn",
     clientId: "server_name",
     bookstoreId: "67",
     version: "1.0.0",
@@ -55,8 +55,54 @@ Example:
     key: "1631519378148-q2i3o9"
 }
 ```
-### 2.2. Send confirm
-
+### 2.2. Send put to light confirm
+|Property|Type|Description|  
+|---|---|---|
+|name|String|name of api|
+|clientId|String|Server id|
+|bookstoreId|String|ID of bookstore|
+|version|String|api version|
+|value|String|name of the tote push to wall|
+|key|String|stand for a complete action on the wall used on client side, just ignore it|
+Example:
+```json
+"mergeWall/confirmPutToLight": {
+    name: "mergeWall/confirmPutToLight",
+    clientId: "server_name",
+    bookstoreId: "67",
+    version: "1.0.0",
+    params: {
+        tote: "L-10",
+        wall: "M-1-4"
+    },
+    date: "Mon Sep 13 2021 14:46:46 GMT+0700 (Indochina Time)",
+    key: "1631519378148-q2i3o9"
+} 
+```
+### 2.3. Send pick to light confirm
+|Property|Type|Description|  
+|---|---|---|
+|name|String|name of api|
+|clientId|String|Server id|
+|bookstoreId|String|ID of bookstore|
+|version|String|api version|
+|value|String|name of the tote pick from wall|
+|key|String|stand for a complete action on the wall used on client side, just ignore it|
+Example:
+```json
+"mergeWall/confirmPickToLight": {
+    name: "mergeWall/confirmPickToLight",
+    clientId: "server_name",
+    bookstoreId: "67",
+    version: "1.0.0",
+    params: {
+        tote: "L-11",
+        wall: "M-1-4"
+    },
+    date: "Mon Sep 13 2021 14:46:46 GMT+0700 (Indochina Time)",
+    key: "1631519378148-q2i3o9"
+} 
+```
 
 ## 3. Outgoing events
 ### 3.1. New tote scaned put to wall
@@ -70,13 +116,13 @@ Example:
 |key|String|stand for a complete action on the wall used on client side, just ignore it|
 Example:
 ```json
-"scanTotePushToWall": {
-    name: "scanTotePushToWall",
+"mergeWall/scanTotePutToLight": {
+    name: "mergeWall/scanTotePutToLight",
     clientId: "wall-controller_M-1",
     bookstoreId: "67",
     version: "1.0.0",
     params: {
-        value: "L-10"
+        tote: "L-10"
     },
     date: "Mon Sep 13 2021 14:46:46 GMT+0700 (Indochina Time)",
     key: "1631519378148-q2i3o9"
@@ -93,13 +139,14 @@ Example:
 |key|String|stand for a complete action on the wall used on client side, just ignore it|
 Example:
 ```json
-"pushToWall": {
-    name: "pushToWall",
+"mergeWall/putToLight": {
+    name: "mergeWall/putToLight",
     clientId: "wall-controller_M-1",
     bookstoreId: "67",
     version: "1.0.0",
     params: {
-        value: "L-10"
+        tote: "L-10",
+        wall: "M-1-4"
     },
     date: "Mon Sep 13 2021 14:46:46 GMT+0700 (Indochina Time)",
     key: "1631519378148-q2i3o9"
@@ -116,14 +163,38 @@ Example:
 |key|String|stand for a complete action on the wall used on client side, just ignore it|
 Example:
 ```json
-"pickToLight": {
-    name: "pickToLight",
+"mergeWall/pickToLight": {
+    name: "mergeWall/pickToLight",
     clientId: "wall-controller_M-1",
     bookstoreId: "67",
     version: "1.0.0",
     params: {
-        value: "L-11",
-        wall: "M-2-3"
+        tote: "L-11",
+        wall: "M-1-4"
+    },
+    date: "Mon Sep 13 2021 14:46:46 GMT+0700 (Indochina Time)",
+    key: "1631519378148-q2i3o9"
+} 
+```
+### 3.4. Cancel put to light
+|Property|Type|Description|  
+|---|---|---|
+|name|String|name of api|
+|clientId|String|ID of wall|
+|bookstoreId|String|ID of bookstore|
+|version|String|api version|
+|value|String|name of the tote pick from wall|
+|key|String|stand for a complete action on the wall used on client side, just ignore it|
+Example:
+```json
+"mergeWall/cancelPutToLight": {
+    name: "mergeWall/cancelPutToLight",
+    clientId: "wall-controller_M-1",
+    bookstoreId: "67",
+    version: "1.0.0",
+    params: {
+        tote: "L-11",
+        wall: "M-1-4"
     },
     date: "Mon Sep 13 2021 14:46:46 GMT+0700 (Indochina Time)",
     key: "1631519378148-q2i3o9"
