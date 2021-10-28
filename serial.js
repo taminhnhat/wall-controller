@@ -55,6 +55,10 @@ backScanner.on('data', function (data) {
   //   location: FILE_NAME,
   //   value: scanString
   // });
+  const scanArray = scanString.split('-');
+  if (scanArray.length == 3) {
+    event.emit('buttonFromScanner:back', { wall: scanString });
+  }
 
   event.emit('scanner:back', {
     value: scanString
