@@ -215,14 +215,14 @@ readfifo.on('exit', function (status) {
         const mess = `light:${lightBitmap}:${wallSide}\n`;
         //  write message to named-pipe
         fifoWs.write(mess);
-        logger.debug({ message: 'emit message to pipe:', location: FILE_NAME, value: mess });
+        logger.debug({ message: 'Write to pipe:', location: FILE_NAME, value: mess });
     }
 
     function emitLcdPrintToPipe(data) {
         //  create message
         const mess = `lcd:${data}\n`;
         fifoWs.write(mess);
-        logger.debug({ message: 'emit message to pipe:', location: FILE_NAME, value: mess });
+        logger.debug({ message: 'Write to pipe:', location: FILE_NAME, value: mess });
     }
 
     function emitErrorToPipe(greenLight, redLight, wallSide) {
@@ -243,6 +243,6 @@ readfifo.on('exit', function (status) {
         //  generate message
         const mess = `light:${lightBitmap}:${wallSide}\n`;
         fifoWs.write(mess);
-        logger.debug({ message: 'emit message to pipe:', location: FILE_NAME, value: mess });
+        logger.debug({ message: 'Write to pipe:', location: FILE_NAME, value: mess });
     }
 });

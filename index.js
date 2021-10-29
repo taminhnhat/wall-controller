@@ -622,7 +622,7 @@ mongoClient.connect(url, { useUnifiedTopology: true }, function (err, client) {
         // Update document where a is 2, set b equal to 1
         collection.updateOne(queryByName, { $set: newBackupValues }, function (err, res) {
             if (err) logger.error({ message: 'Fail to update database', location: FILE_NAME });
-            logger.debug({ message: `Empty wall ${wallName}`, location: FILE_NAME, value: res });
+            logger.debug({ message: `Empty wall ${wallName}`, location: FILE_NAME });
             dbLog({ level: 'DEBUG', message: `Empty wall ${wallName}` });
         });
     };
@@ -804,7 +804,7 @@ mongoClient.connect(url, { useUnifiedTopology: true }, function (err, client) {
         let wallState;
         db.collection(BACKUP_COLLECTION).findOne(queryByName)
             .then(result => {
-                logger.debug({ message: 'update to backup result', location: FILE_NAME, value: result });
+                // logger.debug({ message: 'update to backup result', location: FILE_NAME, value: result });
                 wallState = result;
 
                 const newHistoryValues = {
@@ -818,7 +818,7 @@ mongoClient.connect(url, { useUnifiedTopology: true }, function (err, client) {
             })
             .then(result => {
                 // Update exportTote on wall to database
-                logger.debug({ message: 'insert to history result', location: FILE_NAME, value: result });
+                // logger.debug({ message: 'insert to history result', location: FILE_NAME, value: result });
                 event.emit('light:off', {
                     wall: wallName,
                     location: wallState.location,

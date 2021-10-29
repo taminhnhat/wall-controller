@@ -1,4 +1,4 @@
-require('dotenv').config({ path: './CONFIGURATIONS.env' });
+require('dotenv').config({ path: './.env' });
 
 class Logger {
     constructor() {
@@ -15,10 +15,10 @@ class Logger {
                 logtext += `\tat:${location}`;
             }
             logtext += `\t\tmessage:${message}`;
-            if (value != null) {
-                logtext += `\t\tvalue:${JSON.stringify(value)}`;
-            }
             console.log(logtext);
+            if (value != null) {
+                console.log(value);
+            }
         }
     }
     info(obj) {
