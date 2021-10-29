@@ -43,10 +43,17 @@ frontScanner.on('data', function (data) {
   //   location: FILE_NAME,
   //   value: scanString
   // });
-
-  event.emit('scanner:front', {
-    value: scanString
-  });
+  const scanArray = scanString.split('-');
+  if (scanArray.length == 3) {
+    event.emit('buttonFromScanner:front', {
+      wall: scanString
+    });
+  }
+  else {
+    event.emit('scanner:front', {
+      value: scanString
+    });
+  }
 });
 backScanner.on('data', function (data) {
   let scanString = String(data).trim();
@@ -57,12 +64,16 @@ backScanner.on('data', function (data) {
   // });
   const scanArray = scanString.split('-');
   if (scanArray.length == 3) {
-    event.emit('buttonFromScanner:back', { wall: scanString });
+    event.emit('buttonFromScanner:back', {
+      wall: scanString
+    });
+  }
+  else {
+    event.emit('scanner:back', {
+      value: scanString
+    });
   }
 
-  event.emit('scanner:back', {
-    value: scanString
-  });
 });
 
 frontScanner.on('close', () => {

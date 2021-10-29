@@ -5,15 +5,15 @@ require('dotenv').config({ path: './.env' });
 const GLOBAL = require('./CONFIGURATION');
 const TOKEN = process.env.TOKEN;
 const version = GLOBAL.VERSION;
-const clientId = GLOBAL.WALL_ID;
-const bookstoreId = GLOBAL.BOOKSTORE_ID;
+const clientId = process.env.WALL_ID;
+const bookstoreId = process.env.BOOKSTORE_ID;
 
 const message = {
     /**
      * 
      * @param {*} name name of api
-     * @param {*} clientId id of client sending
      * @param {*} params params of api
+     * @param {*} key 
      * @returns an object
      */
     generateApi: function (name, params, key) {
@@ -23,7 +23,7 @@ const message = {
             bookstoreId: bookstoreId,
             version: version,
             params: params,
-            date: Date(Date.now()),
+            date: new Date().toISOString(),
             key: key,
             token: TOKEN
         }
@@ -58,7 +58,7 @@ const message = {
         return {
             createdBy: auth,
             message: mess,
-            date: Date(Date.now())
+            date: new Date().toISOString()
         }
     }
 }

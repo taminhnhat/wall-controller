@@ -162,7 +162,7 @@ readfifo.on('exit', function (status) {
      * _side: 'front'|'back'
      */
     event.on('towerlight:set', function (lightParams) {
-        logger.debug({ message: `'towerlight:set' event`, location: FILE_NAME, value: lightParams });
+        // logger.debug({ message: `'towerlight:set' event`, location: FILE_NAME, value: lightParams });
         const errorLightStatus = lightParams.status;
         const wallSide = lightParams.side;
         let greenLight = false, redLight = false;

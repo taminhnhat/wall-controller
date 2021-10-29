@@ -120,10 +120,11 @@ Example:
 ```json
 "mergeWall/scanTotePutToLight": {
     name: "mergeWall/scanTotePutToLight",
-    clientId: "wall-controller_M-1",
+    clientId: "MERGE_WALL_M-1",
     bookstoreId: "67",
     version: "1.0.0",
     params: {
+        wallIndex: 1,
         tote: "L-10"
     },
     date: "Mon Sep 13 2021 14:46:46 GMT+0700 (Indochina Time)",
@@ -145,7 +146,7 @@ Example:
 ```json
 "mergeWall/putToLight": {
     name: "mergeWall/putToLight",
-    clientId: "wall-controller_M-1",
+    clientId: "MERGE_WALL_M-1",
     bookstoreId: "67",
     version: "1.0.0",
     params: {
@@ -171,12 +172,13 @@ Example:
 ```json
 "mergeWall/pickToLight": {
     name: "mergeWall/pickToLight",
-    clientId: "wall-controller_M-1",
+    clientId: "MERGE_WALL_M-1",
     bookstoreId: "67",
     version: "1.0.0",
     params: {
-        tote: "L-11",
-        wall: "M-1-4"
+        wall: "M-1-4",
+        importTote: ["L-18", "L-19"],
+        exportTote: "L-11"
     },
     date: "Mon Sep 13 2021 14:46:46 GMT+0700 (Indochina Time)",
     key: "1631519378148-q2i3o9",
