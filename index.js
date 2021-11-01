@@ -121,7 +121,7 @@ mongoClient.connect(url, { useUnifiedTopology: true }, function (err, client) {
         .sort({ location: 1 })
         .toArray()
         .then(result => {
-            restoreFromBackupDb(result);
+            restoreLight(result);
             return new Promise((resolve, reject) => {
                 if (isRestoredWallDone) resolve('Restore from backup completed');
                 else reject('Fail to restore from backup!');
@@ -129,7 +129,11 @@ mongoClient.connect(url, { useUnifiedTopology: true }, function (err, client) {
         })
         .then(result => {
             logger.debug({ message: result, location: FILE_NAME });
-            // Handle internal event
+
+            //  Reload light state on wall (Dit me den tren mach nhieu nhu lone)
+            setInterval(restoreLightFromDatabase, 5000);
+
+            // Handle internal event`
             event.on('button:front', handleFrontButtonFromGPIO);
 
             event.on('button:back', handleBackButtonFromGPIO);
@@ -194,10 +198,10 @@ mongoClient.connect(url, { useUnifiedTopology: true }, function (err, client) {
      */
 
     /**
-     * Read and load all light state in database
+     * Reload all light state
      * @param {Array} backupState 
      */
-    function restoreFromBackupDb(backupState) {
+    function restoreLight(backupState) {
         let frontBitmap = 0;
         let backBitmap = 0;
         //  Check light state of wall
@@ -221,6 +225,21 @@ mongoClient.connect(url, { useUnifiedTopology: true }, function (err, client) {
         setTimeout(function () {
             event.emit('light:set', { bitmap: backBitmap, side: 'back' });
         }, 500);
+    }
+
+    /**
+     * Read and load all light state from database
+     * 
+     */
+    function restoreLightFromDatabase() {
+        db.collection(BACKUP_COLLECTION)
+            .find({}, projection)
+            .sort({ location: 1 })
+            .toArray()
+            .then(result => {
+                restoreLight(result);
+            })
+            .catch(error => logger.error({ message: 'Error restore GPIO', location: FILE_NAME, value: error }));
     }
 
     /**
@@ -400,17 +419,6 @@ mongoClient.connect(url, { useUnifiedTopology: true }, function (err, client) {
                 break;
             default:
                 logger.waring({ message: `Bad params for 'button:user' event`, location: FILE_NAME });
-        }
-
-        function restoreLightFromDatabase() {
-            db.collection(BACKUP_COLLECTION)
-                .find({}, projection)
-                .sort({ location: 1 })
-                .toArray()
-                .then(result => {
-                    restoreFromBackupDb(result);
-                })
-                .catch(error => logger.error({ message: 'Error restore GPIO', location: FILE_NAME, value: error }));
         }
 
         function runningLight() {
