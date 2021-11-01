@@ -1,12 +1,12 @@
 # SERVICE
-Create services at /ec
+Create services at /etc/systemd/system
 ```sh
 #
 $ sudo chmod 744 ~/wall-controller/service/gpio-process.sh
-$ sudo chmod 664 ~/wall-controller/service/wall-gpio.service
+$ sudo chmod 664 /etc/systemd/system/wall-gpio.service
 #
 $ sudo chmod 744 ~/wall-controller/service/gateway-process.sh
-$ sudo chmod 664 ~/wall-controller/service/wall-gateway.service
+$ sudo chmod 664 /etc/systemd/system/wall-gateway.service
 # reload service
 $ systemctl daemon-reload
 #
@@ -48,3 +48,15 @@ Chmod options
 |2|-w-|
 |1|--x|
 |0|---|
+
+Remove service
+```sh
+$ systemctl stop [servicename]
+$ systemctl disable [servicename]
+$ rm /etc/systemd/system/[servicename]
+rm /etc/systemd/system/[servicename] # and symlinks that might be related
+rm /usr/lib/systemd/system/[servicename] 
+rm /usr/lib/systemd/system/[servicename] # and symlinks that might be related
+$ systemctl daemon-reload
+$ systemctl reset-failed
+```
