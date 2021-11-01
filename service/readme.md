@@ -2,18 +2,18 @@
 Create services at /etc/systemd/system
 ```sh
 #
-$ sudo chmod 744 ~/wall-controller/service/gpio-process.sh
-$ sudo chmod 664 /etc/systemd/system/wall-gpio.service
+$ sudo chmod 744 ~/wall-controller/service/wall-gpio.sh
+$ sudo chmod 744 ~/wall-controller/service/wall-gateway.sh
 #
-$ sudo chmod 744 ~/wall-controller/service/gateway-process.sh
+$ sudo chmod 664 /etc/systemd/system/wall-gpio.service
 $ sudo chmod 664 /etc/systemd/system/wall-gateway.service
 # reload service
 $ systemctl daemon-reload
 #
 $ systemctl enable wall-gpio.service
-$ systemctl start wall-gpio.service
-#
 $ systemctl enable wall-gateway.service
+#
+$ systemctl start wall-gpio.service
 $ systemctl start wall-gateway.service
 # Reboot
 $ sudo reboot

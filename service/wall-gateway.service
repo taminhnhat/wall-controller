@@ -7,7 +7,7 @@ StartLimitIntervalSec=10
 [Service]
 User=root
 WorkingDirectory=/home/ubuntu/wall-controller/service/
-ExecStart=/home/ubuntu/wall-controller/service/gateway-process.sh
+ExecStart=/home/ubuntu/wall-controller/service/wall-gateway.sh
 
 SuccessExitStatus=143
 TimeoutStopSec=10

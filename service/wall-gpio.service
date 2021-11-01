@@ -4,7 +4,7 @@ Description=GPIO process service
 [Service]
 User=root
 WorkingDirectory=/home/ubuntu/wall-controller/service/
-ExecStart=/home/ubuntu/wall-controller/service/gpio-process.sh
+ExecStart=/home/ubuntu/wall-controller/service/wall-gpio.sh
 
 SuccessExitStatus=143
 TimeoutStopSec=10
