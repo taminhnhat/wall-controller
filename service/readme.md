@@ -1,4 +1,5 @@
 # SERVICE
+Create services at /ec
 ```sh
 #
 $ sudo chmod 744 ~/wall-controller/service/gpio-process.sh
