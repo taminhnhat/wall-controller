@@ -30,6 +30,7 @@ $ systemctl restart wall-gateway.service
 $ systemctl status wall-gateway.service
 # debug
 $ sudo journalctl --unit=wall-gateway
+$ sudo journalctl --unit=wall-gpio
 ```
 View service logs
 ```sh
