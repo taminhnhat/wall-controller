@@ -409,13 +409,13 @@ mongoClient.connect(url, { useUnifiedTopology: true }, function (err, client) {
                 runningLight();
                 break;
             case 'U.4.1':
-                cancelAction();
+                testLightProgram();
                 break;
             case 'U.5.1':
                 restoreLightFromDatabase();
                 break;
             case 'U.6.1':
-                testLightProgram();
+                cancelAction();
                 break;
             default:
                 logger.waring({ message: `Bad params for 'button:user' event`, location: FILE_NAME });
