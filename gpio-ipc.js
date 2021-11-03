@@ -129,7 +129,7 @@ readfifo.on('exit', function (status) {
     });
 
     event.on('light:set', function (lightParams) {
-        logger.debug({ message: `'light:set' event`, location: FILE_NAME, value: lightParams });
+        // logger.debug({ message: `'light:set' event`, location: FILE_NAME, value: lightParams });
         const lightBitmap = lightParams.bitmap;
         const wallSide = lightParams.side;
         //  Set bimap
