@@ -251,75 +251,75 @@ int main(int argc, char *argv[])
           std::cout << "error:light command is missing tokens!" << std::endl;
         }
       }
-      else if (!strncmp(commandHeader, LCD_CMD_HEADER, 3))
-      {
-        // Enter lcd mode
-        char *messageLine_1st = strtok(NULL, delimiters);
-        char *messageLine_2nd = strtok(NULL, delimiters);
-        char *messageLine_3rd = strtok(NULL, delimiters);
-        char *messageLine_4th = strtok(NULL, delimiters);
+      // else if (!strncmp(commandHeader, LCD_CMD_HEADER, 3))
+      // {
+      //   // Enter lcd mode
+      //   char *messageLine_1st = strtok(NULL, delimiters);
+      //   char *messageLine_2nd = strtok(NULL, delimiters);
+      //   char *messageLine_3rd = strtok(NULL, delimiters);
+      //   char *messageLine_4th = strtok(NULL, delimiters);
 
-        //  clear data on lcd
-        lcdClear();
+      //   //  clear data on lcd
+      //   lcdClear();
 
-        //  print 1st line to lcd
-        if (messageLine_1st != NULL)
-        {
-          int idx = 0;
-          lcdSetCursor(LCD_LINE1_INDEX);
-          while (messageLine_1st[idx] != 0x00 && messageLine_1st[idx] != 0x0A)
-          {
-            lcdWriteByte(messageLine_1st[idx], DATA_MODE);
-            // std::cout << std::hex << (int)messageLine_1st[idx] << std::endl;
-            idx++;
-          }
-        }
+      //   //  print 1st line to lcd
+      //   if (messageLine_1st != NULL)
+      //   {
+      //     int idx = 0;
+      //     lcdSetCursor(LCD_LINE1_INDEX);
+      //     while (messageLine_1st[idx] != 0x00 && messageLine_1st[idx] != 0x0A)
+      //     {
+      //       lcdWriteByte(messageLine_1st[idx], DATA_MODE);
+      //       // std::cout << std::hex << (int)messageLine_1st[idx] << std::endl;
+      //       idx++;
+      //     }
+      //   }
 
-        //  print 2nd line to lcd
-        if (messageLine_2nd != NULL)
-        {
-          int idx = 0;
-          lcdSetCursor(LCD_LINE2_INDEX);
-          while (messageLine_2nd[idx] != 0x00 && messageLine_2nd[idx] != 0x0A)
-          {
-            lcdWriteByte(messageLine_2nd[idx], DATA_MODE);
-            idx++;
-          }
-        }
+      //   //  print 2nd line to lcd
+      //   if (messageLine_2nd != NULL)
+      //   {
+      //     int idx = 0;
+      //     lcdSetCursor(LCD_LINE2_INDEX);
+      //     while (messageLine_2nd[idx] != 0x00 && messageLine_2nd[idx] != 0x0A)
+      //     {
+      //       lcdWriteByte(messageLine_2nd[idx], DATA_MODE);
+      //       idx++;
+      //     }
+      //   }
 
-        //  print 3rd line to lcd
-        if (messageLine_3rd != NULL)
-        {
-          int idx = 0;
-          lcdSetCursor(LCD_LINE3_INDEX);
-          while (messageLine_3rd[idx] != 0x00 && messageLine_3rd[idx] != 0x0A)
-          {
-            lcdWriteByte(messageLine_3rd[idx], DATA_MODE);
-            idx++;
-          }
-        }
+      //   //  print 3rd line to lcd
+      //   if (messageLine_3rd != NULL)
+      //   {
+      //     int idx = 0;
+      //     lcdSetCursor(LCD_LINE3_INDEX);
+      //     while (messageLine_3rd[idx] != 0x00 && messageLine_3rd[idx] != 0x0A)
+      //     {
+      //       lcdWriteByte(messageLine_3rd[idx], DATA_MODE);
+      //       idx++;
+      //     }
+      //   }
 
-        //  print 4th line to lcd
-        if (messageLine_4th != NULL)
-        {
-          int idx = 0;
-          lcdSetCursor(LCD_LINE4_INDEX);
-          while (messageLine_4th[idx] != 0x00 && messageLine_4th[idx] != 0x0A)
-          {
-            lcdWriteByte(messageLine_4th[idx], DATA_MODE);
-            idx++;
-          }
-        }
+      //   //  print 4th line to lcd
+      //   if (messageLine_4th != NULL)
+      //   {
+      //     int idx = 0;
+      //     lcdSetCursor(LCD_LINE4_INDEX);
+      //     while (messageLine_4th[idx] != 0x00 && messageLine_4th[idx] != 0x0A)
+      //     {
+      //       lcdWriteByte(messageLine_4th[idx], DATA_MODE);
+      //       idx++;
+      //     }
+      //   }
 
-        std::cout << "wrote message to lcd: \n"
-                  << messageLine_1st << "\n"
-                  << messageLine_2nd << "\n"
-                  << messageLine_3rd << "\n"
-                  << messageLine_4th << std::endl;
-      }
+      //   std::cout << "wrote message to lcd: \n"
+      //             << messageLine_1st << "\n"
+      //             << messageLine_2nd << "\n"
+      //             << messageLine_3rd << "\n"
+      //             << messageLine_4th << std::endl;
+      // }
       else
       {
-        //
+
         std::cout << "error:not a valid command!" << std::endl;
       }
     }
