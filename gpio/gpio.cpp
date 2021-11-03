@@ -32,9 +32,9 @@
 #define READ_PIN_1 11 //read button 1 on column 1
 #define READ_PIN_2 9  //read button 2 on column 2
 #define READ_PIN_3 10 //read button 3 on column 3
-#define READ_PIN_4 22 //read button 4 on column 4
-#define READ_PIN_5 27 //read button 5 on column 5
-#define READ_PIN_6 17 //read button 6 on column 6
+#define READ_PIN_4 27 //read button 4 on column 4
+#define READ_PIN_5 17 //read button 5 on column 5
+#define READ_PIN_6 4  //read button 6 on column 6
 
 // #define DS_PIN_1 21
 // #define DS_PIN_2 12
