@@ -198,7 +198,7 @@ readfifo.on('exit', function (status) {
 
     event.on('lcd:print', function (data) {
         logger.debug({ message: `'lcd:print' event`, location: FILE_NAME, value: data });
-        emitLcdPrintToPipe(data.message);
+        // emitLcdPrintToPipe(data.message);
     });
 
     /**

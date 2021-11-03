@@ -452,6 +452,7 @@ mongoClient.connect(url, { useUnifiedTopology: true }, function (err, client) {
             db.collection(BACKUP_COLLECTION).updateMany({ frontLight: true }, { $set: { frontLight: false } }, (err, res) => {
                 if (err) logger.error({ message: 'Fail to update database', location: FILE_NAME, value: err });
                 else logger.debug({ message: 'Reset front light', location: FILE_NAME, value: res });
+                restoreLightFromDatabase();
             });
         }
 
