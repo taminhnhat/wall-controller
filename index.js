@@ -853,27 +853,27 @@ mongoClient.connect(url, { useUnifiedTopology: true }, function (err, client) {
             if (err) logger.error({ message: err, location: FILE_NAME });
         });
 
-        let flashCount = 0;
-        const flashLight = setInterval(() => {
-            if (flashCount == 3) {
-                clearInterval(flashLight);
-            }
-            event.emit('towerlight:set', {
-                status: 'warning',
-                side: 'front',
-                redLight: true,
-                greenLight: false
-            });
-            setTimeout(function () {
-                event.emit('towerlight:set', {
-                    status: 'warning',
-                    side: 'back',
-                    redLight: true,
-                    greenLight: false
-                });
-            }, 500);
-            flashCount++;
-        }, 1000);
+        // let flashCount = 0;
+        // const flashLight = setInterval(() => {
+        //     if (flashCount == 3) {
+        //         clearInterval(flashLight);
+        //     }
+        //     event.emit('towerlight:set', {
+        //         status: 'warning',
+        //         side: 'front',
+        //         redLight: true,
+        //         greenLight: false
+        //     });
+        //     setTimeout(function () {
+        //         event.emit('towerlight:set', {
+        //             status: 'warning',
+        //             side: 'back',
+        //             redLight: true,
+        //             greenLight: false
+        //         });
+        //     }, 500);
+        //     flashCount++;
+        // }, 1000);
 
         //  emit event to print error message on screen
         event.emit('lcd:print', {
