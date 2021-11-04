@@ -131,7 +131,7 @@ mongoClient.connect(url, { useUnifiedTopology: true }, function (err, client) {
             logger.debug({ message: result, location: FILE_NAME });
 
             //  Reload light state on wall (Dit me den tren mach nhieu nhu lone)
-            setInterval(restoreLightFromDatabase, 5000);
+            // setInterval(restoreLightFromDatabase, 5000);
 
             // Handle internal event`
             event.on('button:front', handleFrontButtonFromGPIO);
@@ -290,7 +290,7 @@ mongoClient.connect(url, { useUnifiedTopology: true }, function (err, client) {
             else {
                 logger.debug({ message: 'Front button pressed, not valid button!!!', location: FILE_NAME });
                 dbLog({ level: 'ERROR', message: 'Front button pressed, not valid button!' });
-
+                restoreLightFromDatabase();
                 // event.emit('light:off', {
                 //     wall: wallName,
                 //     location: wallState.location,
@@ -337,6 +337,7 @@ mongoClient.connect(url, { useUnifiedTopology: true }, function (err, client) {
                     };
                     const tempApi = message.generateApi('mergeWall/pickToLight', params, backScanKey);
                     logger.debug({ message: `Wall ${wallName} pick to tote ${exportToteNow}, key: ${tempApi.key}`, location: FILE_NAME });
+                    exportToteNow = null;
                     dbLog({ level: 'DEBUG', message: 'Pick to light', value: params });
                     socket.emit('mergeWall/pickToLight', tempApi);
                 })
