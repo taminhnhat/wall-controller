@@ -242,6 +242,18 @@ mongoClient.connect(url, { useUnifiedTopology: true }, function (err, client) {
             .catch(error => logger.error({ message: 'Error restore GPIO', location: FILE_NAME, value: error }));
     }
 
+    function cancelAction() {
+        socket.emit('mergeWall/cancelPuttoLight', message.generateApi('mergeWall/cancelPuttoLight', { wallIndex: WALL_INDEX, tote: importToteNow }, frontScanKey));
+        //  Clear data from scanners
+        importToteNow = null;
+        //  Reset front lights
+        db.collection(BACKUP_COLLECTION).updateMany({ frontLight: true }, { $set: { frontLight: false } }, (err, res) => {
+            if (err) logger.error({ message: 'Fail to update database', location: FILE_NAME, value: err });
+            else logger.debug({ message: 'Reset front light', location: FILE_NAME, value: res });
+            restoreLightFromDatabase();
+        });
+    }
+
     /**
      * Handle 'button:front' event from gpio
      * Emitted in 'gpio-ipc.js'
@@ -444,19 +456,6 @@ mongoClient.connect(url, { useUnifiedTopology: true }, function (err, client) {
             }, 500);
         }
 
-        function cancelAction() {
-            socket.emit('mergeWall/cancelPuttoLight', message.generateApi('mergeWall/cancelPuttoLight', { wallIndex: WALL_INDEX, tote: importToteNow }, frontScanKey));
-            //  Clear data from scanners
-            importToteNow = null;
-            exportToteNow = null;
-            //  Reset front lights
-            db.collection(BACKUP_COLLECTION).updateMany({ frontLight: true }, { $set: { frontLight: false } }, (err, res) => {
-                if (err) logger.error({ message: 'Fail to update database', location: FILE_NAME, value: err });
-                else logger.debug({ message: 'Reset front light', location: FILE_NAME, value: res });
-                restoreLightFromDatabase();
-            });
-        }
-
         function testLightProgram() {
             // Turn on all lights
             const bitmap = (2 ** 32 - 1) >>> 0;
@@ -520,12 +519,15 @@ mongoClient.connect(url, { useUnifiedTopology: true }, function (err, client) {
     function handleFrontScannerFromSerialPort(scanParams) {
         //logger.debug({message: 'New front scan', location: FILE_NAME, value: scanParams});
 
+        cancelAction();
+
         frontScanKey = generateKey(3);
 
         let scanApi = message.generateApi('mergeWall/scanTotePutToLight', { wallIndex: WALL_INDEX, tote: scanParams.value }, frontScanKey);
 
         //  Check if scanned tote a valid value
         if (isScannedToteValid(scanParams.value)) {
+            //
             socket.emit('mergeWall/scanTotePutToLight', scanApi);
             logger.debug({ message: `Send 'mergeWall/scanTotePutToLight' message to server`, location: FILE_NAME, value: scanApi });
 
