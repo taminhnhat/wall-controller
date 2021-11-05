@@ -585,14 +585,15 @@ mongoClient.connect(url, { useUnifiedTopology: true }, function (err, client) {
             logger.debug({ message: `Export tote: ${exportToteNow}` });
         } else {
             logger.debug({ message: `Unknown export tote:${scanParams.value}`, location: FILE_NAME });
-            dbLog({ level: 'WARMING', message: 'Unknown export tote', value: scanParams });
+            dbLog({ level: 'WARNING', message: 'Unknown export tote', value: scanParams });
         }
         // Insert new event to database
         const db = client.db(WALL_DB);
-        let temp = {};
-        temp.val = scanParams.value;
-        temp.side = 'back';
-        temp.date = new Date().toISOString();
+        const temp = {
+            value: scanParams.value,
+            side: 'back',
+            date: new Date().toISOString()
+        };
 
         db.collection("scanner").insertOne(temp, function (err, res) {
             if (err) logger.error({ message: error, location: FILE_NAME });

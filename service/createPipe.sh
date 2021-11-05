@@ -1,7 +1,6 @@
 #!/bin/bash
 
-date > /root/report.txt
-du -sh /home/ >> /root/report.txt
-
 mkfifo /tmp/emit_gpio
 mkfifo /tmp/gpio_callback
+sudo chmod 777 /tmp/emit_gpio
+sudo chmod 777 /tmp/gpio_callback
