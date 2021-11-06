@@ -52,8 +52,8 @@
 #define FOR_LOOP_BACK_LIGHT for (int idx = 31; idx >= 0; idx--)
 #endif
 
-#define CYCLE_TIMER 100     //miliseconds
-#define CYCLE_BUTTON_READ 1 //milliseconds
+#define CYCLE_TIMER 100       //miliseconds
+#define CYCLE_BUTTON_READ 100 //miliseconds
 
 #define BUTTON_CALL_LEVEL 1
 
@@ -491,8 +491,9 @@ void readButtonOnARowEveryCycle()
   {
     if (buttonSysnalCountPerCycle[col - 1] >= buttonCountToEmit && (timerCount - buttonTick[col - 1][lineCount - 1]) > 5)
     {
-      std::cout << "button:" << col << ":" << lineCount << std::endl;
+      std::cout << "pressed button:" << col << ":" << lineCount << std::endl;
     }
+    std::cout << "button:" << col << ":" << lineCount << "/" << buttonSysnalCountPerCycle[col - 1] << std::endl;
   }
   if (lineCount >= 11)
   {
