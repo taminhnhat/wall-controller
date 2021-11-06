@@ -157,6 +157,7 @@ public:
 //  DECLARE FUNCTIONS______________________________________________________________________________
 int lineCount = 1;
 uint32_t timeStamp = 0;
+uint32_t maxTimeStamp = 0;
 
 int initGPIO();
 int resetButtonTick();
@@ -198,7 +199,7 @@ int main(int argc, char *argv[])
     // Check every 1 milisecond
     if (gpioTick() % 1000000 == 0)
     {
-      std::cout << "Timestamp:" << timeStamp << std::endl;
+      std::cout << "Timestamp:" << maxTimeStamp << std::endl;
       //std::cout << "read row" << lineCount <<std::endl;
       //  Read buttons on a line
       // readButtons(lineCount);
@@ -499,7 +500,24 @@ void readButtonOnARowEveryCycle()
   {
     if (buttonSysnalCountPerCycle[col - 1] >= buttonCountToEmit && (timerCount - buttonTick[col - 1][lineCount - 1]) > 5)
     {
-      std::cout << "pressed button:" << col << ":" << lineCount << std::endl;
+      int row = 0;
+      char side[6];
+      if (lineCount < 6)
+      {
+        row = lineCount;
+        std::sprintf(side, "back");
+      }
+      else if (line >= 6 && line < 11)
+      {
+        row = lineCount - 5;
+        std::sprintf(side, "front");
+      }
+      else
+      {
+        row = 1;
+        std::sprintf(side, "cabin");
+      }
+      std::cout << "pressed button:" << col << ":" << row << std::endl;
     }
   }
   if (lineCount >= 11)
@@ -512,6 +530,8 @@ void readButtonOnARowEveryCycle()
   }
 
   timeStamp = gpioTick() - tmpTime;
+  if (timeStamp > maxTimeStamp)
+    ` maxTimeStamp = timeStamp;
 }
 
 /**
