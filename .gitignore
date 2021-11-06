@@ -4,6 +4,8 @@ node_modules/
 gpio/configuration.h
 gpio/gpio.o
 gpio/lcd-i2c.o
+service/wall-gpio.sh
+service/wall-gateway.sh
 gpio/main
 test/
 log/
