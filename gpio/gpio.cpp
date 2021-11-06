@@ -507,7 +507,7 @@ void readButtonOnARowEveryCycle()
         row = lineCount;
         std::sprintf(side, "back");
       }
-      else if (line >= 6 && line < 11)
+      else if (lineCount >= 6 && line < 11)
       {
         row = lineCount - 5;
         std::sprintf(side, "front");
