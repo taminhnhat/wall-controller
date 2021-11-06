@@ -531,7 +531,9 @@ void readButtonOnARowEveryCycle()
 
   timeStamp = gpioTick() - tmpTime;
   if (timeStamp > maxTimeStamp)
-    ` maxTimeStamp = timeStamp;
+  {
+    maxTimeStamp = timeStamp;
+  }
 }
 
 /**
