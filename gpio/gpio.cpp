@@ -52,7 +52,8 @@
 #define FOR_LOOP_BACK_LIGHT for (int idx = 31; idx >= 0; idx--)
 #endif
 
-#define CYCLE_TIMER 100 //miliseconds`
+#define CYCLE_TIMER 100     //miliseconds
+#define CYCLE_BUTTON_READ 1 //milliseconds
 
 #define BUTTON_CALL_LEVEL 1
 
@@ -154,11 +155,14 @@ public:
 } lightSys(0, 0);
 
 //  DECLARE FUNCTIONS______________________________________________________________________________
+int lineCount = 1;
+uint32_t timeStamp = 0;
 
 int initGPIO();
 int resetButtonTick();
 int resetLight();
 void timerTick();
+void readButtonOnARowEveryCycle();
 void readButtons(int);
 void buttonCallback(int, int, uint32_t);
 int charToInt(char c)
@@ -170,6 +174,7 @@ int charToInt(char c)
 
 int main(int argc, char *argv[])
 {
+
   //  Start named-pipe ipc
   mypipe.startPipe();
 
@@ -188,20 +193,19 @@ int main(int argc, char *argv[])
   // Init lcd
   lcdInit(1, 0x27);
 
-  int lineCount = 1;
-
   while (true)
   {
     // Check every 1 milisecond
     if (gpioTick() % 1000 == 0)
     {
+      std::cout << "Timestamp:" << timeStamp << std::endl;
       //std::cout << "read row" << lineCount <<std::endl;
       //  Read buttons on a line
-      readButtons(lineCount);
-      if (lineCount >= 11)
-        lineCount = 1;
-      else
-        lineCount++;
+      // readButtons(lineCount);
+      // if (lineCount >= 11)
+      //   lineCount = 1;
+      // else
+      //   lineCount++;
     }
 
     /**
@@ -397,6 +401,8 @@ int initGPIO()
     gpioSetAlertFunc(BUTTON_1, buttonCallback);
 
     gpioSetTimerFunc(0, CYCLE_TIMER, timerTick);
+
+    gpioSetTimerFunc(1, CYCLE_BUTTON_READ, readButtonOnARowEveryCycle);
   }
   return 1;
 }
@@ -442,6 +448,62 @@ void timerTick()
   }
   //std::cout << "timer tick!" << "|" << arr1 << std::endl;
   //mypipe.writePipe(arr1, strlen(arr1));
+}
+
+void readButtonOnARowEveryCycle()
+{
+  const int tmpTime = gpioTick();
+  // Only 1 enable pin set to High
+  gpioWrite(enablePin[0], 0);
+  gpioWrite(enablePin[1], 0);
+  gpioWrite(enablePin[2], 0);
+  gpioWrite(enablePin[3], 0);
+  gpioWrite(enablePin[4], 0);
+  gpioWrite(enablePin[5], 0);
+  gpioWrite(enablePin[6], 0);
+  gpioWrite(enablePin[7], 0);
+  gpioWrite(enablePin[8], 0);
+  gpioWrite(enablePin[9], 0);
+  gpioWrite(enablePin[10], 0);
+  gpioWrite(enablePin[lineCount - 1], 1);
+
+  // wait for electric sysnal
+  gpioDelay(50);
+
+  // read buttons
+  for (int i = 0; i < buttonSamplesPerCycle; i++)
+  {
+    //  read 6 button per cycle
+    for (int col = 1; col <= 6; col++)
+    {
+      if (gpioRead(readPin[col - 1]) == BUTTON_CALL_LEVEL)
+      {
+        buttonSysnalCountPerCycle[col - 1]++;
+      };
+    }
+    gpioDelay(10);
+  }
+
+  //  set enable pin to 0
+  gpioWrite(enablePin[lineCount - 1], 0);
+
+  for (int col = 1; col <= 6; col++)
+  {
+    if (buttonSysnalCountPerCycle[col - 1] >= buttonCountToEmit && (timerCount - buttonTick[col - 1][line - 1]) > 5)
+    {
+      std::cout << "button:" << col << ":" << lineCount << std : endl;
+    }
+  }
+  if (lineCount >= 11)
+  {
+    lineCount = 1;
+  }
+  else
+  {
+    lineCount++;
+  }
+
+  timeStamp = gpioTick() - temp;
 }
 
 /**
