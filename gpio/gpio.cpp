@@ -72,7 +72,7 @@ const int enablePin[11] = {ENABLE_PIN_1, ENABLE_PIN_2, ENABLE_PIN_3, ENABLE_PIN_
 const int readPin[6] = {READ_PIN_1, READ_PIN_2, READ_PIN_3, READ_PIN_4, READ_PIN_5, READ_PIN_6};
 
 //  Variables to delay button read
-int buttonTick[6][11];
+uint32_t buttonTick[6][11];
 const int buttonDelay = 10;                            // multi of CYCLE_TIMER
 int buttonSysnalCountPerCycle[6] = {0, 0, 0, 0, 0, 0}; //number of times that button ticks in a cycle
 const int buttonSamplesPerCycle = 50;                  //number of button samples in 1 cycle
@@ -445,7 +445,7 @@ void timerTick()
   if (timerCount > 4000000000)
   {
     timerCount = 0;
-    resetButtonTick();
+    // resetButtonTick();
   }
   //std::cout << "timer tick!" << "|" << arr1 << std::endl;
   //mypipe.writePipe(arr1, strlen(arr1));
@@ -498,26 +498,34 @@ void readButtonOnARowEveryCycle()
 
   for (int col = 1; col <= 6; col++)
   {
-    if (buttonSysnalCountPerCycle[col - 1] >= buttonCountToEmit && (timerCount - buttonTick[col - 1][lineCount - 1]) > 5)
+    if (buttonSysnalCountPerCycle[col - 1] >= buttonCountToEmit && (gpioTick() - buttonTick[col - 1][lineCount - 1]) > 500000)
     {
       int row = 0;
-      char side[6];
+      char messageSendToGateway[100];
       if (lineCount < 6)
       {
         row = lineCount;
-        std::sprintf(side, "back");
+        std::sprintf(messageSendToGateway, "button:W.%d.%d:back\n", col, row);
       }
       else if (lineCount >= 6 && lineCount < 11)
       {
         row = lineCount - 5;
-        std::sprintf(side, "front");
+        std::sprintf(messageSendToGateway, "button:W.%d.%d:front\n", col, row);
+      }
+      else if (lineCount == 11)
+      {
+        row = 1;
+        std::sprintf(messageSendToGateway, "button:U.%d.%d:cabin\n", col, row);
       }
       else
       {
-        row = 1;
-        std::sprintf(side, "cabin");
+        std::cout << "Warning: Not valid linecount" << std::endl;
       }
-      std::cout << "pressed button:" << col << ":" << row << std::endl;
+      //  print out button address
+      std::cout << messageSendToGateway;
+      //  emit button via pipes
+      mypipe.writePipe(messageSendToGateway, strlen(messageSendToGateway));
+      buttonTick[col - 1][lineCount - 1] = gpioTick();
     }
   }
   if (lineCount >= 11)
