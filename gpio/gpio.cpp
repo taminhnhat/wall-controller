@@ -12,6 +12,8 @@
 #include "./lcd-i2c.h"
 #include "./configuration.h"
 
+#define IF_LCD_ENABLE if (LCD_ENABLE)
+
 #if TOGGLE_WALL == true
 #define DS_PIN_1 21
 #define DS_PIN_2 12
@@ -73,7 +75,6 @@ const int readPin[6] = {READ_PIN_1, READ_PIN_2, READ_PIN_3, READ_PIN_4, READ_PIN
 
 //  Variables to delay button read
 uint32_t buttonTick[6][11];
-const int buttonDelay = 10;                            // multi of CYCLE_TIMER
 int buttonSysnalCountPerCycle[6] = {0, 0, 0, 0, 0, 0}; //number of times that button ticks in a cycle
 const int buttonSamplesPerCycle = 50;                  //number of button samples in 1 cycle
 const int buttonCountToEmit = 40;                      //minimum number of times that button ticks in a cycle to emit event to named-pipe
@@ -192,7 +193,10 @@ int main(int argc, char *argv[])
   resetLight();
 
   // Init lcd
-  lcdInit(1, 0x27);
+  if (LCD_ENABLE)
+  {
+    lcdInit(1, 0x27);
+  }
 
   while (true)
   {
@@ -200,17 +204,10 @@ int main(int argc, char *argv[])
     if (gpioTick() % 1000000 == 0)
     {
       std::cout << "Timestamp:" << maxTimeStamp << std::endl;
-      //std::cout << "read row" << lineCount <<std::endl;
-      //  Read buttons on a line
-      // readButtons(lineCount);
-      // if (lineCount >= 11)
-      //   lineCount = 1;
-      // else
-      //   lineCount++;
     }
 
     /**
-     * Check if pipe has new command from nodejs side
+     * Check if pipe has new command from Gateway process
      * Light command:   'light:<light bitmap>:<side>'
      * Lcd command:     'lcd:<1st message>:<2nd message>:<3rd message>:<4th message>'
      */
@@ -220,14 +217,17 @@ int main(int argc, char *argv[])
       mypipe.readPipe(arr);
       std::cout << "read from pipe: " << arr << std::endl;
 
-      lcdClear();
-      lcdSetCursor(LCD_LINE1_INDEX);
-      int idx = 0;
-      while (arr[idx] != 0x00 && arr[idx] != 0x0A)
+      if (LCD_ENABLE)
       {
-        lcdWriteByte(arr[idx], DATA_MODE);
-        // std::cout << std::hex << (int)messageLine_1st[idx] << std::endl;
-        idx++;
+        lcdClear();
+        lcdSetCursor(LCD_LINE1_INDEX);
+        int idx = 0;
+        while (arr[idx] != 0x00 && arr[idx] != 0x0A)
+        {
+          lcdWriteByte(arr[idx], DATA_MODE);
+          // std::cout << std::hex << (int)messageLine_1st[idx] << std::endl;
+          idx++;
+        }
       }
 
       char delimiters[] = ":\n";
@@ -271,75 +271,74 @@ int main(int argc, char *argv[])
           std::cout << "error:light command is missing tokens!" << std::endl;
         }
       }
-      // else if (!strncmp(commandHeader, LCD_CMD_HEADER, 3))
-      // {
-      //   // Enter lcd mode
-      //   char *messageLine_1st = strtok(NULL, delimiters);
-      //   char *messageLine_2nd = strtok(NULL, delimiters);
-      //   char *messageLine_3rd = strtok(NULL, delimiters);
-      //   char *messageLine_4th = strtok(NULL, delimiters);
+      else if (!strncmp(commandHeader, LCD_CMD_HEADER, 3) && LCD_ENABLE)
+      {
+        // Enter lcd mode
+        char *messageLine_1st = strtok(NULL, delimiters);
+        char *messageLine_2nd = strtok(NULL, delimiters);
+        char *messageLine_3rd = strtok(NULL, delimiters);
+        char *messageLine_4th = strtok(NULL, delimiters);
 
-      //   //  clear data on lcd
-      //   lcdClear();
+        //  clear data on lcd
+        lcdClear();
 
-      //   //  print 1st line to lcd
-      //   if (messageLine_1st != NULL)
-      //   {
-      //     int idx = 0;
-      //     lcdSetCursor(LCD_LINE1_INDEX);
-      //     while (messageLine_1st[idx] != 0x00 && messageLine_1st[idx] != 0x0A)
-      //     {
-      //       lcdWriteByte(messageLine_1st[idx], DATA_MODE);
-      //       // std::cout << std::hex << (int)messageLine_1st[idx] << std::endl;
-      //       idx++;
-      //     }
-      //   }
+        //  print 1st line to lcd
+        if (messageLine_1st != NULL)
+        {
+          int idx = 0;
+          lcdSetCursor(LCD_LINE1_INDEX);
+          while (messageLine_1st[idx] != 0x00 && messageLine_1st[idx] != 0x0A)
+          {
+            lcdWriteByte(messageLine_1st[idx], DATA_MODE);
+            // std::cout << std::hex << (int)messageLine_1st[idx] << std::endl;
+            idx++;
+          }
+        }
 
-      //   //  print 2nd line to lcd
-      //   if (messageLine_2nd != NULL)
-      //   {
-      //     int idx = 0;
-      //     lcdSetCursor(LCD_LINE2_INDEX);
-      //     while (messageLine_2nd[idx] != 0x00 && messageLine_2nd[idx] != 0x0A)
-      //     {
-      //       lcdWriteByte(messageLine_2nd[idx], DATA_MODE);
-      //       idx++;
-      //     }
-      //   }
+        //  print 2nd line to lcd
+        if (messageLine_2nd != NULL)
+        {
+          int idx = 0;
+          lcdSetCursor(LCD_LINE2_INDEX);
+          while (messageLine_2nd[idx] != 0x00 && messageLine_2nd[idx] != 0x0A)
+          {
+            lcdWriteByte(messageLine_2nd[idx], DATA_MODE);
+            idx++;
+          }
+        }
 
-      //   //  print 3rd line to lcd
-      //   if (messageLine_3rd != NULL)
-      //   {
-      //     int idx = 0;
-      //     lcdSetCursor(LCD_LINE3_INDEX);
-      //     while (messageLine_3rd[idx] != 0x00 && messageLine_3rd[idx] != 0x0A)
-      //     {
-      //       lcdWriteByte(messageLine_3rd[idx], DATA_MODE);
-      //       idx++;
-      //     }
-      //   }
+        //  print 3rd line to lcd
+        if (messageLine_3rd != NULL)
+        {
+          int idx = 0;
+          lcdSetCursor(LCD_LINE3_INDEX);
+          while (messageLine_3rd[idx] != 0x00 && messageLine_3rd[idx] != 0x0A)
+          {
+            lcdWriteByte(messageLine_3rd[idx], DATA_MODE);
+            idx++;
+          }
+        }
 
-      //   //  print 4th line to lcd
-      //   if (messageLine_4th != NULL)
-      //   {
-      //     int idx = 0;
-      //     lcdSetCursor(LCD_LINE4_INDEX);
-      //     while (messageLine_4th[idx] != 0x00 && messageLine_4th[idx] != 0x0A)
-      //     {
-      //       lcdWriteByte(messageLine_4th[idx], DATA_MODE);
-      //       idx++;
-      //     }
-      //   }
+        //  print 4th line to lcd
+        if (messageLine_4th != NULL)
+        {
+          int idx = 0;
+          lcdSetCursor(LCD_LINE4_INDEX);
+          while (messageLine_4th[idx] != 0x00 && messageLine_4th[idx] != 0x0A)
+          {
+            lcdWriteByte(messageLine_4th[idx], DATA_MODE);
+            idx++;
+          }
+        }
 
-      //   std::cout << "wrote message to lcd: \n"
-      //             << messageLine_1st << "\n"
-      //             << messageLine_2nd << "\n"
-      //             << messageLine_3rd << "\n"
-      //             << messageLine_4th << std::endl;
-      // }
+        std::cout << "wrote message to lcd: \n"
+                  << messageLine_1st << "\n"
+                  << messageLine_2nd << "\n"
+                  << messageLine_3rd << "\n"
+                  << messageLine_4th << std::endl;
+      }
       else
       {
-
         std::cout << "error:not a valid command!" << std::endl;
       }
     }
@@ -451,6 +450,13 @@ void timerTick()
   //mypipe.writePipe(arr1, strlen(arr1));
 }
 
+/**
+ * Read buttons on a line
+ * Each line has 6 buttons
+ * line 1-5 <=> row 1-5 on the front of wall
+ * line 6-10 <=> row 1-5 on the back of wall
+ * line 11 <=> use for user buttons on the electric cabin
+ */
 void readButtonOnARowEveryCycle()
 {
   const int tmpTime = gpioTick();
@@ -498,7 +504,7 @@ void readButtonOnARowEveryCycle()
 
   for (int col = 1; col <= 6; col++)
   {
-    if (buttonSysnalCountPerCycle[col - 1] >= buttonCountToEmit && (gpioTick() - buttonTick[col - 1][lineCount - 1]) > 500000)
+    if (buttonSysnalCountPerCycle[col - 1] >= buttonCountToEmit && (gpioTick() - buttonTick[col - 1][lineCount - 1]) > BUTTON_DELAY_MICROS)
     {
       int row = 0;
       char messageSendToGateway[100];
@@ -544,87 +550,79 @@ void readButtonOnARowEveryCycle()
   }
 }
 
-/**
- * Read buttons on a line
- * Each row has 6 buttons
- * input line from 1 to 11
- * line 1-5 <=> row 1-5 on the front of wall
- * line 6-10 <=> row 1-5 on the back of wall
- * line 11 <=> use for user buttons on the electric cabin
- */
-void readButtons(int line)
-{
-  // set enable pin to 0
-  gpioWrite(enablePin[line - 1], 1);
+// void readButtons(int line)
+// {
+//   // set enable pin to 0
+//   gpioWrite(enablePin[line - 1], 1);
 
-  // wait for electric sysnal
-  gpioDelay(50);
+//   // wait for electric sysnal
+//   gpioDelay(50);
 
-  // read buttons
-  for (int i = 0; i < buttonSamplesPerCycle; i++)
-  {
-    //  read 6 button per cycle
-    for (int col = 0; col < 6; col++)
-    {
-      if (gpioRead(readPin[col]) == BUTTON_CALL_LEVEL)
-      {
-        buttonSysnalCountPerCycle[col]++;
-      };
-    }
-    gpioDelay(10);
-  }
+//   // read buttons
+//   for (int i = 0; i < buttonSamplesPerCycle; i++)
+//   {
+//     //  read 6 button per cycle
+//     for (int col = 0; col < 6; col++)
+//     {
+//       if (gpioRead(readPin[col]) == BUTTON_CALL_LEVEL)
+//       {
+//         buttonSysnalCountPerCycle[col]++;
+//       };
+//     }
+//     gpioDelay(10);
+//   }
 
-  //  set enable pin to 0
-  gpioWrite(enablePin[line - 1], 0);
+//   //  set enable pin to 0
+//   gpioWrite(enablePin[line - 1], 0);
 
-  int row = 0;
-  char side[6];
-  if (line < 6)
-  {
-    row = line;
-    std::sprintf(side, "back");
-  }
-  else if (line >= 6 && line < 11)
-  {
-    row = line - 5;
-    std::sprintf(side, "front");
-  }
+//   int row = 0;
+//   char side[6];
+//   if (line < 6)
+//   {
+//     row = line;
+//     std::sprintf(side, "back");
+//   }
+//   else if (line >= 6 && line < 11)
+//   {
+//     row = line - 5;
+//     std::sprintf(side, "front");
+//   }
 
-  //  check if button was pressed
-  for (int col = 1; col <= 6; col++)
-  {
+//   //  check if button was pressed
+//   for (int col = 1; col <= 6; col++)
+//   {
 
-    if (buttonSysnalCountPerCycle[col - 1] >= buttonCountToEmit && (timerCount - buttonTick[col - 1][line - 1]) > buttonDelay)
-    {
-      char arr[100];
-      if (line < 11)
-      {
-        //  row 1 to 10 used for panel buttons on the wall
-        std::sprintf(arr, "button:W.%d.%d:%s\n", col, row, side);
-      }
-      else if (line == 11)
-      {
-        //  line 11 used for user buttons on the electric cabin
-        std::sprintf(arr, "button:U.%d.1\n", col);
-      }
-      //  print out button address
-      std::cout << arr;
-      //  emit button via pipes
-      mypipe.writePipe(arr, strlen(arr));
-      lcdClear();
-      lcdSetCursor(LCD_LINE1_INDEX);
-      int idx = 0;
-      while (arr[idx] != 0x00 && arr[idx] != 0x0A)
-      {
-        lcdWriteByte(arr[idx], DATA_MODE);
-        idx++;
-      }
-      buttonTick[col - 1][line - 1] = timerCount;
-    }
+//     if (buttonSysnalCountPerCycle[col - 1] >= buttonCountToEmit && (timerCount - buttonTick[col - 1][line - 1]) > BUTTON_DELAY_MICROS)
+//     {
+//       char arr[100];
+//       if (line < 11)
+//       {
+//         //  row 1 to 10 used for panel buttons on the wall
+//         std::sprintf(arr, "button:W.%d.%d:%s\n", col, row, side);
+//       }
+//       else if (line == 11)
+//       {
+//         //  line 11 used for user buttons on the electric cabin
+//         std::sprintf(arr, "button:U.%d.1\n", col);
+//       }
+//       //  print out button address
+//       std::cout << arr;
+//       //  emit button via pipes
+//       mypipe.writePipe(arr, strlen(arr));
+//       lcdClear();
+//       lcdSetCursor(LCD_LINE1_INDEX);
+//       int idx = 0;
+//       while (arr[idx] != 0x00 && arr[idx] != 0x0A)
+//       {
+//         lcdWriteByte(arr[idx], DATA_MODE);
+//         idx++;
+//       }
+//       buttonTick[col - 1][line - 1] = timerCount;
+//     }
 
-    buttonSysnalCountPerCycle[col - 1] = 0;
-  }
-}
+//     buttonSysnalCountPerCycle[col - 1] = 0;
+//   }
+// }
 
 /**
  * Callback when test button pressed
