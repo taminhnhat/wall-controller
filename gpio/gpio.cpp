@@ -467,6 +467,14 @@ void readButtonOnARowEveryCycle()
   gpioWrite(enablePin[10], 0);
   gpioWrite(enablePin[lineCount - 1], 1);
 
+  //  reset
+  buttonSysnalCountPerCycle[0] = 0;
+  buttonSysnalCountPerCycle[1] = 0;
+  buttonSysnalCountPerCycle[2] = 0;
+  buttonSysnalCountPerCycle[3] = 0;
+  buttonSysnalCountPerCycle[4] = 0;
+  buttonSysnalCountPerCycle[5] = 0;
+
   // wait for electric sysnal
   gpioDelay(50);
 
@@ -493,8 +501,6 @@ void readButtonOnARowEveryCycle()
     {
       std::cout << "pressed button:" << col << ":" << lineCount << std::endl;
     }
-    std::cout << "button:" << col << ":" << lineCount << "/" << buttonSysnalCountPerCycle[col - 1] << std::endl;
-    buttonSysnalCountPerCycle[col - 1] = 0;
   }
   if (lineCount >= 11)
   {
