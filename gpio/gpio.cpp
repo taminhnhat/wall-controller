@@ -196,7 +196,7 @@ int main(int argc, char *argv[])
   while (true)
   {
     // Check every 1 milisecond
-    if (gpioTick() % 1000 == 0)
+    if (gpioTick() % 1000000 == 0)
     {
       std::cout << "Timestamp:" << timeStamp << std::endl;
       //std::cout << "read row" << lineCount <<std::endl;
