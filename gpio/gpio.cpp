@@ -18,17 +18,17 @@
 #define SHCP_PIN_1 16
 #define SHCP_PIN_2 1
 #define STCP_PIN 20
-#define ENABLE_PIN_1 23  //enable buttons on row M-1 front of wall
-#define ENABLE_PIN_2 24  //enable buttons on row M-2 front of wall
-#define ENABLE_PIN_3 25  //enable buttons on row M-3 front of wall
-#define ENABLE_PIN_4 8   //enable buttons on row M-4 front of wall
-#define ENABLE_PIN_5 7   //enable buttons on row M-5 front of wall
-#define ENABLE_PIN_6 5   //enable buttons on row M-1 back of wall
-#define ENABLE_PIN_7 6   //enable buttons on row M-2 back of wall
-#define ENABLE_PIN_8 13  //enable buttons on row M-3 back of wall
-#define ENABLE_PIN_9 19  //enable buttons on row M-4 back of wall
-#define ENABLE_PIN_10 26 //enable buttons on row M-5 back of wall
-#define ENABLE_PIN_11 0  //enable user buttons on elctric cabin
+#define ENABLE_PIN_1 7  //enable buttons on row M-1 front of wall
+#define ENABLE_PIN_2 8  //enable buttons on row M-2 front of wall
+#define ENABLE_PIN_3 25 //enable buttons on row M-3 front of wall
+#define ENABLE_PIN_4 24 //enable buttons on row M-4 front of wall
+#define ENABLE_PIN_5 23 //enable buttons on row M-5 front of wall
+#define ENABLE_PIN_6 26 //enable buttons on row M-1 back of wall
+#define ENABLE_PIN_7 19 //enable buttons on row M-2 back of wall
+#define ENABLE_PIN_8 13 //enable buttons on row M-3 back of wall
+#define ENABLE_PIN_9 6  //enable buttons on row M-4 back of wall
+#define ENABLE_PIN_10 5 //enable buttons on row M-5 back of wall
+#define ENABLE_PIN_11 0 //enable user buttons on elctric cabin
 #define FOR_LOOP_FRONT_LIGHT for (int idx = 31; idx >= 0; idx--)
 #define FOR_LOOP_BACK_LIGHT for (int idx = 0; idx < 32; idx++)
 #elif TOGGLE_WALL == false
