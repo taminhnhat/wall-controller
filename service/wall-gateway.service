@@ -1,17 +1,13 @@
 [Unit]
 Description=GATEWAY process service
-After=wall-gpio.service
-StartLimitBurst=5
-StartLimitIntervalSec=10
 
 [Service]
 User=root
-WorkingDirectory=/home/ubuntu/wall-controller/service/
-ExecStart=/home/ubuntu/wall-controller/service/wall-gateway.sh
+WorkingDirectory=/home/ubuntu/service/
+ExecStart=/home/ubuntu/service/wall-gateway.sh
 
 SuccessExitStatus=143
 TimeoutStopSec=10
-Restart=always
 RestartSec=1
 
 [Install]
