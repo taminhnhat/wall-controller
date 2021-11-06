@@ -1,6 +1,7 @@
 node_modules/
 .vscode/
 .env
+gpio/configuration.h
 gpio/gpio.o
 gpio/lcd-i2c.o
 gpio/main

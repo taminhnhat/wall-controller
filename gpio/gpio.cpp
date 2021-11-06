@@ -10,13 +10,31 @@
 #include <string.h>
 #include "./named-pipe.h"
 #include "./lcd-i2c.h"
+#include "./configuration.h"
 
-#define CYCLE_TIMER 100 //miliseconds`
-
-#define BUTTON_CALL_LEVEL 1
-
-#define BUTTON_1 14
-
+#if TOGGLE_WALL == true
+#define DS_PIN_1 21
+#define DS_PIN_2 12
+#define SHCP_PIN_1 16
+#define SHCP_PIN_2 1
+#define STCP_PIN 20
+#define ENABLE_PIN_1 23  //enable buttons on row M-1 front of wall
+#define ENABLE_PIN_2 24  //enable buttons on row M-2 front of wall
+#define ENABLE_PIN_3 25  //enable buttons on row M-3 front of wall
+#define ENABLE_PIN_4 8   //enable buttons on row M-4 front of wall
+#define ENABLE_PIN_5 7   //enable buttons on row M-5 front of wall
+#define ENABLE_PIN_6 5   //enable buttons on row M-1 back of wall
+#define ENABLE_PIN_7 6   //enable buttons on row M-2 back of wall
+#define ENABLE_PIN_8 13  //enable buttons on row M-3 back of wall
+#define ENABLE_PIN_9 19  //enable buttons on row M-4 back of wall
+#define ENABLE_PIN_10 26 //enable buttons on row M-5 back of wall
+#define ENABLE_PIN_11 0  //enable user buttons on elctric cabin
+#elif TOGGLE_WALL == false
+#define DS_PIN_1 12
+#define DS_PIN_2 21
+#define SHCP_PIN_1 1
+#define SHCP_PIN_2 16
+#define STCP_PIN 20
 #define ENABLE_PIN_1 26  //enable buttons on row M-1 front of wall
 #define ENABLE_PIN_2 19  //enable buttons on row M-2 front of wall
 #define ENABLE_PIN_3 13  //enable buttons on row M-3 front of wall
@@ -28,6 +46,13 @@
 #define ENABLE_PIN_9 24  //enable buttons on row M-4 back of wall
 #define ENABLE_PIN_10 23 //enable buttons on row M-5 back of wall
 #define ENABLE_PIN_11 0  //enable user buttons on elctric cabin
+#endif
+
+#define CYCLE_TIMER 100 //miliseconds`
+
+#define BUTTON_CALL_LEVEL 1
+
+#define BUTTON_1 14
 
 #define READ_PIN_1 11 //read button 1 on column 1
 #define READ_PIN_2 9  //read button 2 on column 2
@@ -35,20 +60,6 @@
 #define READ_PIN_4 27 //read button 4 on column 4
 #define READ_PIN_5 17 //read button 5 on column 5
 #define READ_PIN_6 4  //read button 6 on column 6
-
-// #define DS_PIN_1 21
-// #define DS_PIN_2 12
-
-// #define SHCP_PIN_1 16
-// #define SHCP_PIN_2 1
-
-#define DS_PIN_1 12
-#define DS_PIN_2 21
-
-#define SHCP_PIN_1 1
-#define SHCP_PIN_2 16
-
-#define STCP_PIN 20
 
 //  enable pin variables
 const int enablePin[11] = {ENABLE_PIN_1, ENABLE_PIN_2, ENABLE_PIN_3, ENABLE_PIN_4, ENABLE_PIN_5, ENABLE_PIN_6, ENABLE_PIN_7, ENABLE_PIN_8, ENABLE_PIN_9, ENABLE_PIN_10, ENABLE_PIN_11};
