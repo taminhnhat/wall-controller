@@ -200,11 +200,11 @@ int main(int argc, char *argv[])
 
   while (true)
   {
-    // Check every 1 milisecond
-    if (gpioTick() % 1000000 == 0)
-    {
-      std::cout << "Timestamp:" << maxTimeStamp << std::endl;
-    }
+    // // Check every 1 milisecond
+    // if (gpioTick() % 1000000 == 0)
+    // {
+    //   std::cout << "Timestamp:" << maxTimeStamp << std::endl;
+    // }
 
     /**
      * Check if pipe has new command from Gateway process
