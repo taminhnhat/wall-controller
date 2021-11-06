@@ -52,8 +52,8 @@
 #define FOR_LOOP_BACK_LIGHT for (int idx = 31; idx >= 0; idx--)
 #endif
 
-#define CYCLE_TIMER 100       //miliseconds
-#define CYCLE_BUTTON_READ 100 //miliseconds
+#define CYCLE_TIMER 100      //miliseconds
+#define CYCLE_BUTTON_READ 10 //miliseconds
 
 #define BUTTON_CALL_LEVEL 1
 
