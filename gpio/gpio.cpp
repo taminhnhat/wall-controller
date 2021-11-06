@@ -494,6 +494,7 @@ void readButtonOnARowEveryCycle()
       std::cout << "pressed button:" << col << ":" << lineCount << std::endl;
     }
     std::cout << "button:" << col << ":" << lineCount << "/" << buttonSysnalCountPerCycle[col - 1] << std::endl;
+    buttonSysnalCountPerCycle[col - 1] = 0;
   }
   if (lineCount >= 11)
   {
