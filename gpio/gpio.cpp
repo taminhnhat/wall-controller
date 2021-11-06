@@ -29,6 +29,8 @@
 #define ENABLE_PIN_9 19  //enable buttons on row M-4 back of wall
 #define ENABLE_PIN_10 26 //enable buttons on row M-5 back of wall
 #define ENABLE_PIN_11 0  //enable user buttons on elctric cabin
+#define FOR_LOOP_FRONT_LIGHT for (int idx = 31; idx >= 0; idx--)
+#define FOR_LOOP_BACK_LIGHT for (int idx = 0; idx < 32; idx++)
 #elif TOGGLE_WALL == false
 #define DS_PIN_1 12
 #define DS_PIN_2 21
@@ -46,6 +48,8 @@
 #define ENABLE_PIN_9 24  //enable buttons on row M-4 back of wall
 #define ENABLE_PIN_10 23 //enable buttons on row M-5 back of wall
 #define ENABLE_PIN_11 0  //enable user buttons on elctric cabin
+#define FOR_LOOP_FRONT_LIGHT for (int idx = 0; idx < 32; idx++)
+#define FOR_LOOP_BACK_LIGHT for (int idx = 31; idx >= 0; idx--)
 #endif
 
 #define CYCLE_TIMER 100 //miliseconds`
@@ -117,7 +121,7 @@ public:
   }
   void frontLightApply()
   {
-    for (int idx = 0; idx < 32; idx++)
+    FOR_LOOP_FRONT_LIGHT
     {
       int bitVal = (this->frontLightBitmap >> idx) & 1;
       gpioWrite(DS_PIN_1, bitVal);
@@ -129,7 +133,7 @@ public:
   }
   void backLightApply()
   {
-    for (int idx = 31; idx >= 0; idx--)
+    FOR_LOOP_BACK_LIGHT
     {
       int bitVal = (this->backLightBitmap >> idx) & 1;
       gpioWrite(DS_PIN_2, bitVal);
