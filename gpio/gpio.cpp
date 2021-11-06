@@ -207,7 +207,7 @@ int main(int argc, char *argv[])
     /**
      * Check if pipe has new command from nodejs side
      * Light command:   'light:<light bitmap>:<side>'
-     * Lcd command:     'lcd:<message>'
+     * Lcd command:     'lcd:<1st message>:<2nd message>:<3rd message>:<4th message>'
      */
     if (mypipe.readAvailable())
     {
@@ -491,24 +491,21 @@ void readButtons(int line)
   }
 
   //  check if button was pressed
-  for (int col = 0; col < 6; col++)
+  for (int col = 1; col <= 6; col++)
   {
-    // if(buttonSysnalCountPerCycle[col] > 0){
-    //   std::cout << "button W-" << col + 1 << "-" << row << ":" << buttonSysnalCountPerCycle[col] << std::endl;
-    // }
 
-    if (buttonSysnalCountPerCycle[col] >= buttonCountToEmit && (timerCount - buttonTick[col - 1][line - 1]) > buttonDelay)
+    if (buttonSysnalCountPerCycle[col - 1] >= buttonCountToEmit && (timerCount - buttonTick[col - 1][line - 1]) > buttonDelay)
     {
       char arr[100];
       if (line < 11)
       {
         //  row 1 to 10 used for panel buttons on the wall
-        std::sprintf(arr, "button:W.%d.%d:%s\n", col + 1, row, side);
+        std::sprintf(arr, "button:W.%d.%d:%s\n", col, row, side);
       }
       else if (line == 11)
       {
         //  line 11 used for user buttons on the electric cabin
-        std::sprintf(arr, "button:U.%d.1\n", col + 1);
+        std::sprintf(arr, "button:U.%d.1\n", col);
       }
       //  print out button address
       std::cout << arr;
@@ -525,7 +522,7 @@ void readButtons(int line)
       buttonTick[col - 1][line - 1] = timerCount;
     }
 
-    buttonSysnalCountPerCycle[col] = 0;
+    buttonSysnalCountPerCycle[col - 1] = 0;
   }
 }
 
