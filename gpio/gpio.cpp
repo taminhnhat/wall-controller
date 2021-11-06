@@ -489,9 +489,9 @@ void readButtonOnARowEveryCycle()
 
   for (int col = 1; col <= 6; col++)
   {
-    if (buttonSysnalCountPerCycle[col - 1] >= buttonCountToEmit && (timerCount - buttonTick[col - 1][line - 1]) > 5)
+    if (buttonSysnalCountPerCycle[col - 1] >= buttonCountToEmit && (timerCount - buttonTick[col - 1][lineCount - 1]) > 5)
     {
-      std::cout << "button:" << col << ":" << lineCount << std : endl;
+      std::cout << "button:" << col << ":" << lineCount << std::endl;
     }
   }
   if (lineCount >= 11)
@@ -503,7 +503,7 @@ void readButtonOnARowEveryCycle()
     lineCount++;
   }
 
-  timeStamp = gpioTick() - temp;
+  timeStamp = gpioTick() - tmpTime;
 }
 
 /**
