@@ -29,26 +29,26 @@ class wallState {
 //////              WALL M1             //////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////////
 // Nho dao nguoc lai
-let M_1_1 = new wallState('W.6.5', 'M-1-30', 2);
-let M_1_2 = new wallState('W.5.5', 'M-1-25', 3);
-let M_1_3 = new wallState('W.4.5', 'M-1-20', 4);
-let M_1_4 = new wallState('W.3.5', 'M-1-15', 5);
-let M_1_5 = new wallState('W.2.5', 'M-1-10', 6);
-let M_1_6 = new wallState('W.1.5', 'M-1-5', 7);
+let M_1_1 = new wallState('W.6.5', 'M-1-5', 2);
+let M_1_2 = new wallState('W.5.5', 'M-1-10', 3);
+let M_1_3 = new wallState('W.4.5', 'M-1-15', 4);
+let M_1_4 = new wallState('W.3.5', 'M-1-20', 5);
+let M_1_5 = new wallState('W.2.5', 'M-1-25', 6);
+let M_1_6 = new wallState('W.1.5', 'M-1-30', 7);
 //
-let M_1_7 = new wallState('W.6.4', 'M-1-29', 8);
-let M_1_8 = new wallState('W.5.4', 'M-1-24', 9);
-let M_1_9 = new wallState('W.4.4', 'M-1-19', 10);
-let M_1_10 = new wallState('W.3.4', 'M-1-14', 11);
-let M_1_11 = new wallState('W.2.4', 'M-1-9', 12);
-let M_1_12 = new wallState('W.1.4', 'M-1-4', 13);
+let M_1_7 = new wallState('W.6.4', 'M-1-4', 8);
+let M_1_8 = new wallState('W.5.4', 'M-1-9', 9);
+let M_1_9 = new wallState('W.4.4', 'M-1-14', 10);
+let M_1_10 = new wallState('W.3.4', 'M-1-19', 11);
+let M_1_11 = new wallState('W.2.4', 'M-1-24', 12);
+let M_1_12 = new wallState('W.1.4', 'M-1-29', 13);
 //
-let M_1_13 = new wallState('W.6.3', 'M-1-28', 14);
-let M_1_14 = new wallState('W.5.3', 'M-1-23', 15);
-let M_1_15 = new wallState('W.4.3', 'M-1-18', 16);
-let M_1_16 = new wallState('W.3.3', 'M-1-13', 17);
-let M_1_17 = new wallState('W.2.3', 'M-1-8', 18);
-let M_1_18 = new wallState('W.1.3', 'M-1-3', 19);
+let M_1_13 = new wallState('W.6.3', 'M-1-3', 14);
+let M_1_14 = new wallState('W.5.3', 'M-1-8', 15);
+let M_1_15 = new wallState('W.4.3', 'M-1-13', 16);
+let M_1_16 = new wallState('W.3.3', 'M-1-18', 17);
+let M_1_17 = new wallState('W.2.3', 'M-1-23', 18);
+let M_1_18 = new wallState('W.1.3', 'M-1-28', 19);
 //
 let M_1_19 = new wallState('W.6.2', 'M-1-2', 20);
 let M_1_20 = new wallState('W.5.2', 'M-1-7', 21);
@@ -62,7 +62,6 @@ let M_1_26 = new wallState('W.5.1', 'M-1-6', 27);
 let M_1_27 = new wallState('W.4.1', 'M-1-11', 28);
 let M_1_28 = new wallState('W.3.1', 'M-1-16', 29);
 let M_1_29 = new wallState('W.2.1', 'M-1-21', 30);
-let M_1_30 = new wallState('W.1.1', 'M-1-26', 31);
 //
 //////////////////////////////////////////////////////////////////////////////
 //////              WALL M2             //////////////////////////////////////
