@@ -77,6 +77,7 @@ const MAX_RETRY_COUNT = 5;
 //  temporary scan from scanners 
 let exportToteNow = null;
 let importToteNow = null;
+let exportTote_timeOut = null;
 
 //  Temporary key for every API send to sockert server
 const generateKey = require('./keyGenarate');
@@ -582,6 +583,11 @@ mongoClient.connect(url, { useUnifiedTopology: true }, function (err, client) {
 
         if (isScannedToteValid(scanParams.value)) {
             exportToteNow = scanParams.value;
+            clearTimeout(exportTote_timeOut);
+            exportTote_timeOut = setTimeout(() => {
+                exportToteNow = null
+            }, 10000);
+
             logger.debug({ message: `Export tote: ${exportToteNow}` });
         } else {
             logger.debug({ message: `Unknown export tote:${scanParams.value}`, location: FILE_NAME });
@@ -747,29 +753,17 @@ mongoClient.connect(url, { useUnifiedTopology: true }, function (err, client) {
                 //  Log error
                 logger.error({ message: 'Not a valid message from server', value: { key: tempKey } });
             } else {
-                //  Emit light:off event to execute in ioControl.js
-                event.emit('light:off', {
-                    wall: wallState.name,
-                    location: wallState.location,
-                    lightIndex: wallState.lightIndex,
-                    side: wallSide
-                });
-
-                //  Update states to database
-                const db = client.db(WALL_DB);
-                const queryByName = { name: wallName };
-                let newBackupValues = "";
-
                 if (wallSide === 'front') {
-                    newBackupValues = { $set: { frontLight: false } };
+                    //
                 } else if (wallSide === 'back') {
-                    newBackupValues = { $set: { backLight: false } };
+                    event.emit('light:off', {
+                        wall: wallState.name,
+                        location: wallState.location,
+                        lightIndex: wallState.lightIndex,
+                        side: wallSide
+                    });
+                    event.emit('wall:completeOne', wallName);
                 }
-
-                db.collection(BACKUP_COLLECTION).updateOne(queryByName, newBackupValues, (err, res) => {
-                    if (err) logger.error({ message: error, location: FILE_NAME });
-                    logger.debug({ message: 'update light state to \'backup\' collection', location: FILE_NAME, value: res.result });
-                });
             }
         });
     };

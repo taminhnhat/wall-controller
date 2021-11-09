@@ -23,16 +23,24 @@ sudo /home/ubuntu/wall-controller/gpio/main > /var/log/wall-controller/gpio.log
 
 ```sh
 #
-$ sudo chmod 744 ~/wall-controller/service/wall-gpio.sh
-$ sudo chmod 744 ~/wall-controller/service/wall-gateway.sh
+$ sudo chmod 744 ~/service/wall-gpio.sh
+$ sudo chmod 744 ~/service/wall-gateway.sh
+$ ls ~/service/ -al
 #
 $ sudo chmod 664 /etc/systemd/system/wall-gpio.service
 $ sudo chmod 664 /etc/systemd/system/wall-gateway.service
+$ ls /etc/systemd/system -al
+#
+$ sudo cp wall-controller/service/wall-gpio.service /etc/systemd/system
+$ sudo cp wall-controller/service/wall-gateway.service /etc/systemd/system
 # reload service
 $ systemctl daemon-reload
 #
 $ systemctl enable wall-gpio.service
 $ systemctl enable wall-gateway.service
+# show pipes and logs
+$ ls /tmp -al
+$ ls /var/log/wall-controller/ -al
 #
 $ systemctl start wall-gpio.service
 $ systemctl start wall-gateway.service
