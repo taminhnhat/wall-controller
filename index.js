@@ -520,7 +520,7 @@ mongoClient.connect(url, { useUnifiedTopology: true }, function (err, client) {
     function handleFrontScannerFromSerialPort(scanParams) {
         //logger.debug({message: 'New front scan', location: FILE_NAME, value: scanParams});
 
-        cancelAction();
+        // cancelAction();
 
         frontScanKey = generateKey(3);
 
