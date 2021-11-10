@@ -3,6 +3,7 @@ Description=GATEWAY process service
 
 [Service]
 User=ubuntu
+WorkingDirectory=/home/ubuntu/wall-controller/
 ExecStart=/home/ubuntu/service/wall-gateway.sh
 
 [Install]
