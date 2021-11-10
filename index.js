@@ -520,57 +520,69 @@ mongoClient.connect(url, { useUnifiedTopology: true }, function (err, client) {
     function handleFrontScannerFromSerialPort(scanParams) {
         //logger.debug({message: 'New front scan', location: FILE_NAME, value: scanParams});
 
-        // cancelAction();
+        importToteNow = null;
+        //  Reset front lights
+        db.collection(BACKUP_COLLECTION).updateMany({ frontLight: true }, { $set: { frontLight: false } }, (err, res) => {
+            if (err) logger.error({ message: 'Fail to update database', location: FILE_NAME, value: err });
+            else logger.debug({ message: 'Reset front light', location: FILE_NAME, value: res });
+            restoreLightFromDatabase();
+            frontScanKey = generateKey(3);
 
-        frontScanKey = generateKey(3);
+            //  Check if scanned tote a valid value
+            if (isScannedToteValid(scanParams.value)) {
+                const scanApi = message.generateApi('mergeWall/scanTotePutToLight', { wallIndex: WALL_INDEX, tote: scanParams.value }, frontScanKey);
+                //
+                socket.emit('mergeWall/scanTotePutToLight', scanApi);
+                logger.debug({ message: `Send 'mergeWall/scanTotePutToLight' message to server`, location: FILE_NAME, value: scanApi });
 
-        let scanApi = message.generateApi('mergeWall/scanTotePutToLight', { wallIndex: WALL_INDEX, tote: scanParams.value }, frontScanKey);
+                // function sendScanToServer(callback) {
+                //     let tempMess = {};
+                //     tempMess.count = 0;
 
-        //  Check if scanned tote a valid value
-        if (isScannedToteValid(scanParams.value)) {
-            //
-            socket.emit('mergeWall/scanTotePutToLight', scanApi);
-            logger.debug({ message: `Send 'mergeWall/scanTotePutToLight' message to server`, location: FILE_NAME, value: scanApi });
+                //     tempMess.interval = setInterval(function () {
+                //         logger.debug({ message: `Resend message with key #${frontScanKey}!`, location: FILE_NAME });
+                //         //socket.emit('mergeWall/scanTotePutToLight', scanApi);
+                //         tempMess.count++;
+                //         if (tempMess.count >= MAX_RETRY_COUNT) {
+                //             logger.debug({ message: `Message with key #${frontScanKey} has been called ${MAX_RETRY_COUNT} times and stopped!!!`, location: FILE_NAME });
+                //             //  Stop interval
+                //             clearInterval(tempMess.interval);
+                //         }
+                //     }, 2000);
 
-            // function sendScanToServer(callback) {
-            //     let tempMess = {};
-            //     tempMess.count = 0;
+                //     tempMess.key = frontScanKey;
+                //     pendingMessages.push(tempMess);
 
-            //     tempMess.interval = setInterval(function () {
-            //         logger.debug({ message: `Resend message with key #${frontScanKey}!`, location: FILE_NAME });
-            //         //socket.emit('mergeWall/scanTotePutToLight', scanApi);
-            //         tempMess.count++;
-            //         if (tempMess.count >= MAX_RETRY_COUNT) {
-            //             logger.debug({ message: `Message with key #${frontScanKey} has been called ${MAX_RETRY_COUNT} times and stopped!!!`, location: FILE_NAME });
-            //             //  Stop interval
-            //             clearInterval(tempMess.interval);
-            //         }
-            //     }, 2000);
+                //     if (pendingMessages.length > 10) {
+                //         logger.debug({ message: 'pending messages are larger than 10!!!', location: FILE_NAME });
+                //     }
 
-            //     tempMess.key = frontScanKey;
-            //     pendingMessages.push(tempMess);
+                //     callback();
+                // }
 
-            //     if (pendingMessages.length > 10) {
-            //         logger.debug({ message: 'pending messages are larger than 10!!!', location: FILE_NAME });
-            //     }
+                importToteNow = scanParams.value;
+                logger.debug({ message: `Import tote: ${importToteNow}` });
+            }
+            //  If scanned tote not a valid value
+            else {
+                logger.waring({ message: `Unknown import tote: ${scanParams.value}` });
+                dbLog({ level: 'DEBUG', message: 'Unknown import tote', value: scanParams });
+                const warningMess = `unknown front scan:${scanParams.val}`;
+                const warningObj = message.generateWarning('wall-controller', warningMess);
+                const collection = db.collection(WARNING_COLECTION);
+                collection.insertOne(warningObj, function (err, res) {
+                    if (err) logger.error({ message: error, location: FILE_NAME });
+                });
+            }
+        });
 
-            //     callback();
-            // }
+        event.emit('towerlight:set', {
+            status: 'warning',
+            side: 'front',
+            redLight: false,
+            greenLight: true
+        });
 
-            importToteNow = scanParams.value;
-            logger.debug({ message: `Import tote: ${importToteNow}` });
-        }
-        //  If scanned tote not a valid value
-        else {
-            logger.waring({ message: `Unknown import tote: ${scanParams.value}` });
-            dbLog({ level: 'DEBUG', message: 'Unknown import tote', value: scanParams });
-            const warningMess = `unknown front scan:${scanParams.val}`;
-            const warningObj = message.generateWarning('wall-controller', warningMess);
-            const collection = db.collection(WARNING_COLECTION);
-            collection.insertOne(warningObj, function (err, res) {
-                if (err) logger.error({ message: error, location: FILE_NAME });
-            });
-        }
     };
 
     /**
@@ -850,6 +862,12 @@ mongoClient.connect(url, { useUnifiedTopology: true }, function (err, client) {
         dbLog({ level: 'ERROR', message: 'mergeWall/error', value: errApi });
         db.collection(ERROR_COLLECTION).insertOne(errApi, (err, res) => {
             if (err) logger.error({ message: err, location: FILE_NAME });
+        });
+        event.emit('towerlight:set', {
+            status: 'warning',
+            side: 'front',
+            redLight: true,
+            greenLight: false
         });
 
         // let flashCount = 0;

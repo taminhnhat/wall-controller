@@ -165,35 +165,36 @@ readfifo.on('exit', function (status) {
         // logger.debug({ message: `'towerlight:set' event`, location: FILE_NAME, value: lightParams });
         const errorLightStatus = lightParams.status;
         const wallSide = lightParams.side;
-        let greenLight = false, redLight = false;
-        switch (errorLightStatus) {
-            case 'error':
-                /**
-                 * Turn off green light and turn on red light
-                 */
-                greenLight = false;
-                redLight = true;
-                emitErrorToPipe(greenLight, redLight, wallSide);
-                break;
-            case 'warning':
-                /**
-                 * Turn on red light but ignore green light
-                 */
-                greenLight = 'ignore';
-                redLight = true;
-                emitErrorToPipe(greenLight, redLight, wallSide);
-                break;
-            case 'normal':
-                /**
-                 * Turn on green light and turn off red light
-                 */
-                greenLight = true;
-                redLight = false;
-                emitErrorToPipe(greenLight, redLight, wallSide);
-                break;
-            default:
-                logger.waring({ message: `bad params for 'towerlight:set' event`, location: FILE_NAME, value: lightParams });
-        }
+        const greenLight = lightParams.greenLight;
+        const redLight = lightParams.redLight;
+        emitErrorToPipe(greenLight, redLight, wallSide);
+        // switch (errorLightStatus) {
+        //     case 'error':
+        //         /**
+        //          * Turn off green light and turn on red light
+        //          */
+        //         greenLight = false;
+        //         redLight = true;
+        //         emitErrorToPipe(greenLight, redLight, wallSide);
+        //         break;
+        //     case 'warning':
+        //         /**
+        //          * Turn on red light but ignore green light
+        //          */
+        //         greenLight = 'ignore';
+        //         redLight = true;
+        //         break;
+        //     case 'normal':
+        //         /**
+        //          * Turn on green light and turn off red light
+        //          */
+        //         greenLight = true;
+        //         redLight = false;
+        //         emitErrorToPipe(greenLight, redLight, wallSide);
+        //         break;
+        //     default:
+        //         logger.waring({ message: `bad params for 'towerlight:set' event`, location: FILE_NAME, value: lightParams });
+        // }
     });
 
     event.on('lcd:print', function (data) {
@@ -227,16 +228,18 @@ readfifo.on('exit', function (status) {
 
     function emitErrorToPipe(greenLight, redLight, wallSide) {
         //  generate green light status
-        if (greenLight != 'ignore') {
-            let greenLightState;
-            if (greenLight) greenLightState = 'on';
-            else greenLightState = 'off';
-            // gpioBitmap.bitmapGenerate(30, wallSide, greenLightState);
+        if (greenLight) {
+            gpioBitmap.bitmapGenerate(1, 'front', 'on');
         }
-        //  generate red light status
-        let redLightState;
-        if (redLight) redLightState = 'on';
-        else redLightState = 'off';
+        else {
+            gpioBitmap.bitmapGenerate(1, 'front', 'off');
+        }
+        if (redLight) {
+            gpioBitmap.bitmapGenerate(0, 'front', 'on');
+        }
+        else {
+            gpioBitmap.bitmapGenerate(0, 'front', 'off');
+        }
         // gpioBitmap.bitmapGenerate(31, wallSide, redLightState);
         //  get light bitmap of wall
         const lightBitmap = gpioBitmap.getBitmap(wallSide);
