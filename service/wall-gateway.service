@@ -2,13 +2,8 @@
 Description=GATEWAY process service
 
 [Service]
-User=root
-WorkingDirectory=/home/ubuntu/service/
+User=ubuntu
 ExecStart=/home/ubuntu/service/wall-gateway.sh
-
-SuccessExitStatus=143
-TimeoutStopSec=10
-RestartSec=1
 
 [Install]
 WantedBy=default.target
