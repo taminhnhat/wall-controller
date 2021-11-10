@@ -4,7 +4,7 @@ After=wall-gateway.service
 
 [Service]
 User=ubuntu
-WorkingDirectory=/home/ubuntu/wall-controller/
+WorkingDirectory=/home/ubuntu/wall-controller/gpio/
 ExecStart=/home/ubuntu/service/wall-gpio.sh
  
 [Install]
