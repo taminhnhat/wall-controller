@@ -3,13 +3,8 @@ Description=GPIO process service
 After=wall-gateway.service
 
 [Service]
-User=root
-WorkingDirectory=/home/ubuntu/service/
+User=ubuntu
 ExecStart=/home/ubuntu/service/wall-gpio.sh
-
-SuccessExitStatus=143
-TimeoutStopSec=10
-RestartSec=5
  
 [Install]
 WantedBy=default.target
