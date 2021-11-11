@@ -99,7 +99,7 @@ mongoClient.connect(url, { useUnifiedTopology: true }, function (err, client) {
     //  RESTORE WALL STATUS FROM BACKUP____________________________________________________________________________________________________
     let isRestoredWallDone = false;
 
-    logger.debug({ message: `${Date.now()} Gateway process started`, location: FILE_NAME });
+    logger.debug({ message: `${Date(Date.now())} Gateway process started`, location: FILE_NAME });
     //  Run main process
 
     const projection = {
