@@ -2,7 +2,7 @@
 Description=GATEWAY process service
 
 [Service]
-User=ubuntu
+User=root
 WorkingDirectory=/home/ubuntu/wall-controller/
 ExecStart=/home/ubuntu/service/wall-gateway.sh
 
