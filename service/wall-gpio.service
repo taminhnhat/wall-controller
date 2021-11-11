@@ -3,7 +3,7 @@ Description=GPIO process service
 After=wall-gateway.service
 
 [Service]
-User=ubuntu
+User=root
 WorkingDirectory=/home/ubuntu/wall-controller/gpio/
 ExecStart=/home/ubuntu/service/wall-gpio.sh
  
