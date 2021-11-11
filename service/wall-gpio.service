@@ -1,11 +1,13 @@
 [Unit]
 Description=GPIO process service
+Requires=wall-gateway.service
 After=wall-gateway.service
 
 [Service]
 User=root
 WorkingDirectory=/home/ubuntu/wall-controller/gpio/
 ExecStart=/home/ubuntu/service/wall-gpio.sh
+ExecStartPre=/bin/sleep 5
  
 [Install]
 WantedBy=default.target
