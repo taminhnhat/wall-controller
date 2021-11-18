@@ -12,12 +12,9 @@ const logger = require('./logger/logger');
 
 const FILE_NAME = 'serial.js  ';
 
-// const frontScannerPath = GLOBAL.FRONT_SCANNER_PATH;
-// const backScannerPath = GLOBAL.BACK_SCANNER_PATH;
-let frontScannerPath = process.env.FRONT_SCANNER_PATH;
-let backScannerPath = process.env.BACK_SCANNER_PATH;
-if (frontScannerPath == undefined) frontScannerPath = '/dev/ttyS10';
-if (frontScannerPath == undefined) frontScannerPath = '/dev/ttyS6';
+const frontScannerPath = process.env.FRONT_SCANNER_PATH;
+const backScannerPath = process.env.BACK_SCANNER_PATH;
+const rgbHubPath = process.env.RGB_HUB_PATH;
 
 //  NEED TO CONFIG SERIAL PORT FIRST, READ 'README.md'
 const frontScanner = new SerialPort(frontScannerPath, {
@@ -28,12 +25,19 @@ const backScanner = new SerialPort(backScannerPath, {
   baudRate: 9600,
   autoOpen: false
 });
+const rgbHub = new SerialPort(rgbHubPath, {
+  baudRate: 9600,
+  autoOpen: false
+});
 
 frontScanner.on('open', function () {
   event.emit('scanner:opened', 'Front scanner opened');
 });
 backScanner.on('open', function () {
   event.emit('scanner:opened', 'Back scanner opened');
+});
+rgbHub.on('open', function () {
+  event.emit('rgbHub:opened', 'RGB Hub opened');
 });
 
 frontScanner.on('data', function (data) {
@@ -73,7 +77,11 @@ backScanner.on('data', function (data) {
       value: scanString
     });
   }
+});
 
+rgbHub.on('data', function (data) {
+  const message = String(data).trim();
+  event.emit(`rgbHub:data`, message);
 });
 
 frontScanner.on('close', () => {
@@ -82,12 +90,18 @@ frontScanner.on('close', () => {
 backScanner.on('close', () => {
   event.emit('scanner:closed', 'Back scanner closed');
 });
+rgbHub.on('close', () => {
+  event.emit('rgbHub:closed', 'Back scanner closed');
+});
 
 frontScanner.on('error', (err) => {
   event.emit('scanner:error', err.message);
 });
 backScanner.on('error', (err) => {
   event.emit('scanner:error', err.message);
+});
+backScanner.on('error', (err) => {
+  event.emit('rgbHub:error', err.message);
 });
 
 // event.on('lcd:print:action', function(printParams){
@@ -108,6 +122,16 @@ backScanner.on('error', (err) => {
 //     logger.error({message: 'Cannot write to usb', location: FILE_NAME, value: err});
 //   }
 // });
+
+event.on('rgbLight:set', (lightParams) => {
+  const messageToRgbHub = lightParams.message;
+  try {
+    rgbHub.write(messageToRgbHub);
+  }
+  catch (err) {
+    logger.error({ message: 'Cannot write to rgbLight', location: FILE_NAME, value: err });
+  }
+});
 
 
 /**

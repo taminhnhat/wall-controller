@@ -284,32 +284,11 @@ mongoClient.connect(url, { useUnifiedTopology: true }, function (err, client) {
                 const tempApi = message.generateApi('mergeWall/putToLight', { tote: importToteNow, wall: wallName }, frontScanKey);
                 socket.emit('mergeWall/putToLight', tempApi);
                 importToteNow = null;
-
-                // const newBackupValues = { $set: { frontLight: false } };
-                // db.collection(BACKUP_COLLECTION).updateOne(queryByLocation, newBackupValues, function (err, res) {
-                //     if (err) logger.error({ message: error, location: FILE_NAME });
-                //     logger.debug({ message: 'change light state in database', location: FILE_NAME, value: res.result });
-
-                //     event.emit('light:off', {
-                //         wall: wallName,
-                //         location: wallState.location,
-                //         lightIndex: wallState.lightIndex,
-                //         side: 'front'
-                //     });
-                // });
-
-                // logger.debug({ message: `Tote ${buttonParams.tote} push to wall ${wallName}, key: ${tempApi.key}`, location: FILE_NAME });
             }
             else {
                 logger.debug({ message: 'Front button pressed, not valid button!!!', location: FILE_NAME });
                 dbLog({ level: 'ERROR', message: 'Front button pressed, not valid button!' });
                 restoreLightFromDatabase();
-                // event.emit('light:off', {
-                //     wall: wallName,
-                //     location: wallState.location,
-                //     lightIndex: wallState.lightIndex,
-                //     side: 'front'
-                // });    // This line just for local test run, disable this in production mode
             }
         });
     };
@@ -353,37 +332,7 @@ mongoClient.connect(url, { useUnifiedTopology: true }, function (err, client) {
                     exportToteNow = null;
                     dbLog({ level: 'DEBUG', message: 'Pick to light', value: params });
                     socket.emit('mergeWall/pickToLight', tempApi);
-                })
-
-                // const newBackupValues = { $set: { exportTote: exportToteNow, completed: true, backLight: false } };
-                // backupCollection.updateOne(queryByLocation, newBackupValues)
-                //     // Update exportTote on wall to database
-                //     .then(result => {
-                //         logger.debug({ message: 'update to backup result', location: FILE_NAME, value: result });
-
-                //         const newHistoryValues = {
-                //             wall: wallState.name,
-                //             importTotes: wallState.importTote,
-                //             exportTote: exportToteNow,
-                //             timeComplete: new Date().toISOString()
-                //         }
-                //         // Insert an history event(a complete merge on wall) to database
-                //         return historyColection.insertOne(newHistoryValues);
-                //     })
-                //     .then(result => {
-                //         logger.debug({ message: 'insert to history result', location: FILE_NAME, value: result });
-                //         event.emit('light:off', {
-                //             wall: wallName,
-                //             location: wallState.location,
-                //             lightIndex: wallState.lightIndex,
-                //             side: 'back'
-                //         });
-                //         // All things done, emit an complete event
-                //         event.emit('wall:completeOne', wallName);
-                //     })
-                //     .catch(err => {
-                //         logger.error({ message: 'Fail to insert to database', location: FILE_NAME, value: err });
-                //     });
+                });
 
             } else {
                 if (exportToteNow == null) {
@@ -394,12 +343,6 @@ mongoClient.connect(url, { useUnifiedTopology: true }, function (err, client) {
                     logger.waring({ message: 'Back button pressed, not valid button!!!', location: FILE_NAME });
                     dbLog({ level: 'WARNING', message: 'Back button pressed, not valid button!', value: { wall: wallName } });
                 }
-                // event.emit('light:off', {
-                //     wall: wallName,
-                //     location: wallState.location,
-                //     lightIndex: wallState.lightIndex,
-                //     side: 'back'
-                // });    // This line just for local test run, disable this in production mode
             }
         });
     };
@@ -534,31 +477,6 @@ mongoClient.connect(url, { useUnifiedTopology: true }, function (err, client) {
                 //
                 socket.emit('mergeWall/scanTotePutToLight', scanApi);
                 logger.debug({ message: `Send 'mergeWall/scanTotePutToLight' message to server`, location: FILE_NAME, value: scanApi });
-
-                // function sendScanToServer(callback) {
-                //     let tempMess = {};
-                //     tempMess.count = 0;
-
-                //     tempMess.interval = setInterval(function () {
-                //         logger.debug({ message: `Resend message with key #${frontScanKey}!`, location: FILE_NAME });
-                //         //socket.emit('mergeWall/scanTotePutToLight', scanApi);
-                //         tempMess.count++;
-                //         if (tempMess.count >= MAX_RETRY_COUNT) {
-                //             logger.debug({ message: `Message with key #${frontScanKey} has been called ${MAX_RETRY_COUNT} times and stopped!!!`, location: FILE_NAME });
-                //             //  Stop interval
-                //             clearInterval(tempMess.interval);
-                //         }
-                //     }, 2000);
-
-                //     tempMess.key = frontScanKey;
-                //     pendingMessages.push(tempMess);
-
-                //     if (pendingMessages.length > 10) {
-                //         logger.debug({ message: 'pending messages are larger than 10!!!', location: FILE_NAME });
-                //     }
-
-                //     callback();
-                // }
 
                 importToteNow = scanParams.value;
                 logger.debug({ message: `Import tote: ${importToteNow}` });
@@ -714,6 +632,7 @@ mongoClient.connect(url, { useUnifiedTopology: true }, function (err, client) {
                     wall: wallState.name,
                     location: wallState.location,
                     lightIndex: wallState.lightIndex,
+                    lightColor: [100, 0, 100],
                     side: wallSide
                 });
 
@@ -772,6 +691,7 @@ mongoClient.connect(url, { useUnifiedTopology: true }, function (err, client) {
                         wall: wallState.name,
                         location: wallState.location,
                         lightIndex: wallState.lightIndex,
+                        lightColor: [0, 0, 0],
                         side: wallSide
                     });
                     event.emit('wall:completeOne', wallName);
@@ -804,6 +724,7 @@ mongoClient.connect(url, { useUnifiedTopology: true }, function (err, client) {
                     wall: wallState.name,
                     location: wallState.location,
                     lightIndex: wallState.lightIndex,
+                    lightColor: [0, 0, 0],
                     side: 'front'
                 });
                 logger.debug({ message: `Tote ${confirmApi.params.tote} put to wall ${wallName}, key: ${confirmApi.key}`, location: FILE_NAME });
@@ -842,6 +763,7 @@ mongoClient.connect(url, { useUnifiedTopology: true }, function (err, client) {
                     wall: wallName,
                     location: wallState.location,
                     lightIndex: wallState.lightIndex,
+                    lightColor: [0, 0, 0],
                     side: 'back'
                 });
                 // All things done, emit an complete event
