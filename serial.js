@@ -37,6 +37,7 @@ backScanner.on('open', function () {
   event.emit('scanner:opened', 'Back scanner opened');
 });
 rgbHub.on('open', function () {
+  console.log('rgb hub opened');
   event.emit('rgbHub:opened', 'RGB Hub opened');
 });
 
@@ -91,6 +92,7 @@ backScanner.on('close', () => {
   event.emit('scanner:closed', 'Back scanner closed');
 });
 rgbHub.on('close', () => {
+  console.log('rgb hub closed');
   event.emit('rgbHub:closed', 'Back scanner closed');
 });
 
@@ -101,6 +103,7 @@ backScanner.on('error', (err) => {
   event.emit('scanner:error', err.message);
 });
 rgbHub.on('error', (err) => {
+  console.log('rgb hub error', err);
   event.emit('rgbHub:error', err.message);
 });
 
@@ -189,6 +192,7 @@ function backScannerCheckHealth() {
 function rgbHubCheckHealth() {
   rgbHub.open((err) => {
     if (err) {
+      console.log(err);
       if (err.message !== 'Port is already open')
         event.emit('rgbHub:error', err.message);
     }
