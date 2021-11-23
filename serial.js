@@ -186,5 +186,15 @@ function backScannerCheckHealth() {
   });
 }
 
+function rgbHubCheckHealth() {
+  rgbHub.open((err) => {
+    if (err) {
+      if (err.message !== 'Port is already open')
+        event.emit('rgbHub:error', err.message);
+    }
+  });
+}
+
 setInterval(frontScannerCheckHealth, 5000);
 setInterval(backScannerCheckHealth, 5000);
+setInterval(rgbHubCheckHealths, 5000);
