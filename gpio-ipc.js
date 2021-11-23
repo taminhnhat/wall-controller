@@ -228,14 +228,20 @@ readfifo.on('exit', function (status) {
 
     function emitErrorToPipe(greenLight, redLight, wallSide) {
         //  generate green light status
-        if (greenLight) {
+        if (greenLight == true) {
             gpioBitmap.bitmapGenerate(1, 'front', 'on');
+        }
+        else if (greenLight == 'ignore') {
+            //
         }
         else {
             gpioBitmap.bitmapGenerate(1, 'front', 'off');
         }
-        if (redLight) {
+        if (redLight == true) {
             gpioBitmap.bitmapGenerate(0, 'front', 'on');
+        }
+        else if (redLight == 'ignore') {
+            //
         }
         else {
             gpioBitmap.bitmapGenerate(0, 'front', 'off');

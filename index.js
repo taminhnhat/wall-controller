@@ -32,12 +32,11 @@ const url = GLOBAL.MONGO_DB_URL;
 //  SERIAL PORT________________________________________________________________________________
 require('./serial');
 
-
 //  NAMED PIPE____________________________________________________________________________
 // IPC using named pipe, communicate between c++ side and nodejs side
 const platformOS = process.platform;
 if (platformOS == 'linux' || platformOS == 'darwin') {
-    require('./gpio-ipc');
+    // require('./gpio-ipc');
 } else {
     console.log('Platform does not support gpio-ipc');
 }
@@ -145,15 +144,17 @@ mongoClient.connect(url, { useUnifiedTopology: true }, function (err, client) {
 
             event.on('buttonFromScanner:back', handleBackButtonFromScanner);
 
-            event.on('scanner:front', handleFrontScannerFromSerialPort);
+            // event.on('scanner:front', handleFrontScannerFromSerialPort);
 
-            event.on('scanner:back', handleBackScannerFromSerialPort);
+            // event.on('scanner:back', handleBackScannerFromSerialPort);
 
-            event.on('scanner:opened', handleScannerOpenFromSerialPort);
+            // event.on('scanner:opened', handleScannerOpenFromSerialPort);
 
-            event.on('scanner:closed', handleScannerCloseFromSerialPort);
+            // event.on('scanner:closed', handleScannerCloseFromSerialPort);
 
-            event.on('scanner:error', handleScannerErrorFromSerialPort);
+            // event.on('scanner:error', handleScannerErrorFromSerialPort);
+
+            event.on('rgbHub:data', handleRgbHubFromSerialPort);
 
             event.on('wall:completeOne', handleCompleteEvent);
 
@@ -164,13 +165,13 @@ mongoClient.connect(url, { useUnifiedTopology: true }, function (err, client) {
 
             socket.on('mergeWall/lightOff', handleLightOffFromServer);
 
-            socket.on('mergeWall/lightTest', handleLightTestFromServer);
+            // socket.on('mergeWall/lightTest', handleLightTestFromServer);
 
-            socket.on('mergeWall/confirmPutToLight', handleConfirmPutToLightFromServer);
+            // socket.on('mergeWall/confirmPutToLight', handleConfirmPutToLightFromServer);
 
-            socket.on('mergeWall/confirmPickToLight', handleConfirmPickToLightFromServer);
+            // socket.on('mergeWall/confirmPickToLight', handleConfirmPickToLightFromServer);
 
-            socket.on('mergeWall/getWallStatus', handleGetWallStatusFromServer);
+            // socket.on('mergeWall/getWallStatus', handleGetWallStatusFromServer);
 
             socket.on('mergeWall/error', handleErrorFromServer);
 
@@ -226,6 +227,54 @@ mongoClient.connect(url, { useUnifiedTopology: true }, function (err, client) {
         setTimeout(function () {
             event.emit('light:set', { bitmap: backBitmap, side: 'back' });
         }, 500);
+    }
+
+    /**
+     * 
+     * @param {String} rowOfLedStrip 
+     */
+    function rgbHubSetLight(rowOfLedStrip) {
+        const rgbProjection = {
+            projection: {
+                _id: 0,
+                name: 1,
+                location: 1,
+                row: 1,
+                col: 1,
+                lightColor: 1,
+                frontLight: 1,
+                backLight: 1,
+                lightIndex: 1
+            }
+        };
+        db.collection(BACKUP_COLLECTION)
+            .find({ row: rowOfLedStrip }, rgbProjection)
+            .sort({ col: 1 })
+            .toArray()
+            .then(result => {
+                let mess = `R${rowOfLedStrip}`;
+                for (col = 0; col < result.length; col++) {
+                    mess = mess + ':' + result[col].lightColor;
+                }
+                mess += '\n';
+                console.log(mess);
+                event.emit('rgbHub:emit', { message: mess });
+            });
+    }
+
+    function rgbHubSetFullRowEffect(rowOfLedStrip, lightColor) {
+        const mess = `H${rowOfLedStrip}:${lightColor}\n`;
+        event.emit('rgbHub:emit', { message: mess });
+    }
+
+    function rgbHubGetInfo() {
+        const mess = 'GETINFO\n';
+        event.emit('rgbHub:emit', { message: mess });
+    }
+
+    function rgbHubConfig(leds, cols, nodes) {
+        const mess = `CFG:T${leds}.C${cols}.N${nodes}`;
+        event.emit('rgbHub:emit', { message: mess });
     }
 
     /**
@@ -498,7 +547,7 @@ mongoClient.connect(url, { useUnifiedTopology: true }, function (err, client) {
             status: 'warning',
             side: 'front',
             redLight: false,
-            greenLight: true
+            greenLight: 'ignore'
         });
 
     };
@@ -530,10 +579,6 @@ mongoClient.connect(url, { useUnifiedTopology: true }, function (err, client) {
             side: 'back',
             date: new Date().toISOString()
         };
-
-        db.collection("scanner").insertOne(temp, function (err, res) {
-            if (err) logger.error({ message: error, location: FILE_NAME });
-        });
     };
 
     function handleScannerOpenFromSerialPort(message) {
@@ -551,6 +596,9 @@ mongoClient.connect(url, { useUnifiedTopology: true }, function (err, client) {
         dbLog({ level: 'ERROR', message: message });
     }
 
+    function handleRgbHubFromSerialPort(message) {
+        dbLog({ level: 'DEBUG', message: message });
+    }
 
     /**
      * Handle 'wall:completeOne' event
@@ -567,9 +615,7 @@ mongoClient.connect(url, { useUnifiedTopology: true }, function (err, client) {
             completed: false
         }
 
-        const collection = db.collection(BACKUP_COLLECTION);
-        // Update document where a is 2, set b equal to 1
-        collection.updateOne(queryByName, { $set: newBackupValues }, function (err, res) {
+        db.collection(BACKUP_COLLECTION).updateOne(queryByName, { $set: newBackupValues }, function (err, res) {
             if (err) logger.error({ message: 'Fail to update database', location: FILE_NAME });
             logger.debug({ message: `Empty wall ${wallName}`, location: FILE_NAME });
             dbLog({ level: 'DEBUG', message: `Empty wall ${wallName}` });
@@ -589,29 +635,20 @@ mongoClient.connect(url, { useUnifiedTopology: true }, function (err, client) {
                 logger.debug({ pendingMessages, location: FILE_NAME });
             }
         }
-
-        //  Find and remove message match the key in database
-        const queryByKey = { key: confirmKey, date: confirmDate };
-        const updateFrontScanValue = { $set: { confirm: true } };
-        db.collection("frontScan").updateOne(queryByKey, updateFrontScanValue, function (err, res) {
-            if (err) logger.error({ message: error, location: FILE_NAME });
-            logger.debug({ message: `Delete pending api with key:${confirmKey} from Db`, location: FILE_NAME, value: res.result });
-        });
     };
 
     function handleLightOnFromServer(lightApi) {
         logger.debug({ message: `Message from server`, location: FILE_NAME, value: lightApi });
         dbLog({ level: 'DEBUG', message: `Message from server`, value: lightApi });
-        //  Insert message to database
-        db.collection(RECEIVE_MESSAGE).insertOne(lightApi, (err, res) => {
-            if (err) logger.error({ message: error, location: FILE_NAME });
-            logger.debug({ message: 'insert lightOn event to \'received_messages\' collection', location: FILE_NAME, value: res.result });
-        });
 
         //  Get wall state from db
         const wallName = lightApi.params.wall;
         const wallSide = lightApi.params.side;
         const tempKey = lightApi.key;
+        let lightColor = 'FFFFFF';
+        if (lightApi.params.lightColor != undefined) {
+            lightColor = lightApi.params.lightColor;
+        }
         const queryByName = { name: wallName };
         db.collection(BACKUP_COLLECTION).findOne(queryByName, (err, res) => {
             if (err) logger.error({ message: 'Fail to find wall in database', location: FILE_NAME, value: err });
@@ -632,24 +669,23 @@ mongoClient.connect(url, { useUnifiedTopology: true }, function (err, client) {
                     wall: wallState.name,
                     location: wallState.location,
                     lightIndex: wallState.lightIndex,
-                    lightColor: [100, 0, 100],
+                    lightColor: lightColor,
                     side: wallSide
                 });
+                const rowOfLedStrip = wallState.location.split('.')[2];
+                rgbHubSetLight(rowOfLedStrip);
 
                 //  Update states to database
-                const db = client.db(WALL_DB);
-                const queryByName = { name: wallName };
                 let newBackupValues = "";
 
                 if (wallSide === 'front') {
-                    newBackupValues = { $set: { frontLight: true } };
+                    newBackupValues = { $set: { frontLight: true, lightColor: lightColor } };
                 } else if (wallSide === 'back') {
-                    newBackupValues = { $set: { backLight: true } };
+                    newBackupValues = { $set: { backLight: true, lightColor: lightColor } };
                 }
 
                 db.collection(BACKUP_COLLECTION).updateOne(queryByName, newBackupValues, (err, res) => {
                     if (err) logger.error({ message: error, location: FILE_NAME });
-                    logger.debug({ message: 'update light state to \'backup\' collection', location: FILE_NAME, value: res.result });
                 });
             }
         });
@@ -659,11 +695,6 @@ mongoClient.connect(url, { useUnifiedTopology: true }, function (err, client) {
     function handleLightOffFromServer(lightApi) {
         logger.debug({ message: `Message from server`, location: FILE_NAME, value: lightApi });
 
-        //  Insert message to database
-        db.collection(RECEIVE_MESSAGE).insertOne(lightApi, (err, res) => {
-            if (err) logger.error({ message: error, location: FILE_NAME });
-            logger.debug({ message: 'insert lightOff event to \'received_messages\' collection', location: FILE_NAME, value: res.result });
-        });
 
         //  Get wall state from db
         const wallName = lightApi.params.wall;
@@ -691,7 +722,7 @@ mongoClient.connect(url, { useUnifiedTopology: true }, function (err, client) {
                         wall: wallState.name,
                         location: wallState.location,
                         lightIndex: wallState.lightIndex,
-                        lightColor: [0, 0, 0],
+                        lightColor: '000000',
                         side: wallSide
                     });
                     event.emit('wall:completeOne', wallName);
@@ -789,7 +820,7 @@ mongoClient.connect(url, { useUnifiedTopology: true }, function (err, client) {
             status: 'warning',
             side: 'front',
             redLight: true,
-            greenLight: false
+            greenLight: 'ignore'
         });
 
         // let flashCount = 0;
@@ -838,7 +869,7 @@ mongoClient.connect(url, { useUnifiedTopology: true }, function (err, client) {
                 redLight: false,
                 greenLight: true
             });
-        }, 500);
+        }, 200);
 
         //  emit event to print error message on screen
         event.emit('lcd:print', {
@@ -864,7 +895,7 @@ mongoClient.connect(url, { useUnifiedTopology: true }, function (err, client) {
                 redLight: true,
                 greenLight: false
             });
-        }, 500);
+        }, 200);
 
         //  emit event to print error message on screen
         event.emit('lcd:print', {

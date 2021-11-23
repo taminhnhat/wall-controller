@@ -100,7 +100,7 @@ frontScanner.on('error', (err) => {
 backScanner.on('error', (err) => {
   event.emit('scanner:error', err.message);
 });
-backScanner.on('error', (err) => {
+rgbHub.on('error', (err) => {
   event.emit('rgbHub:error', err.message);
 });
 
@@ -123,14 +123,45 @@ backScanner.on('error', (err) => {
 //   }
 // });
 
-event.on('rgbLight:set', (lightParams) => {
-  const messageToRgbHub = lightParams.message;
-  try {
-    rgbHub.write(messageToRgbHub);
-  }
-  catch (err) {
-    logger.error({ message: 'Cannot write to rgbLight', location: FILE_NAME, value: err });
-  }
+// lightParams{
+//   wall: wallState.name,
+//   location: wallState.location,
+//   lightIndex: wallState.lightIndex,
+//   lightColor: [100, 0, 100],
+//   side: wallSide
+// }
+// event.on('light:on', (lightParams) => {
+//   const lightColor = lightParams.lightColor;
+//   const wallName = `M-${lightParams.wall.split('-')[1]}`;
+//   const wallLocation = lightParams.location;
+//   const messageToRgbHub = `${wallName}:${wallLocation}:${lightColor}`;
+//   try {
+//     console.log('light on:', messageToRgbHub);
+//     rgbHub.write(messageToRgbHub);
+//   }
+//   catch (err) {
+//     logger.error({ message: 'Cannot write to rgbLight', location: FILE_NAME, value: err });
+//   }
+// });
+
+// event.on('light:off', (lightParams) => {
+//   const lightColor = lightParams.lightColor;
+//   const wallName = `M.${lightParams.wall.split('-')[1]}`;
+//   const wallLocation = lightParams.location;
+//   const messageToRgbHub = `${wallName}:${wallLocation}:${lightColor}`;
+//   try {
+//     console.log('light off:', messageToRgbHub);
+//     rgbHub.write(messageToRgbHub);
+//   }
+//   catch (err) {
+//     logger.error({ message: 'Cannot write to rgbLight', location: FILE_NAME, value: err });
+//   }
+// });
+
+event.on('rgbHub:emit', (params) => {
+  const messageToRgbHub = params.message;
+  console.log('emit to rgb hub:', messageToRgbHub);
+  rgbHub.write(messageToRgbHub);
 });
 
 

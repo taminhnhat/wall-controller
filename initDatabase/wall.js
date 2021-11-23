@@ -4,6 +4,7 @@ class wallState {
     col
     row
     lightIndex
+    lightColor
     frontLight
     backLight
     importTote
@@ -17,6 +18,7 @@ class wallState {
         this.col = temp[1];
         this.row = temp[2];
         this.lightIndex = lightIndex;
+        this.lightColor = '000000';
         this.frontLight = false;
         this.backLight = false;
         this.importTote = [];
