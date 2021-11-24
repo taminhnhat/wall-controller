@@ -55,23 +55,17 @@ const logger = require('./logger/logger');
 
 
 //  WALL CLASS_____________________________________________________________________________
-// require wall objects
-const { accessWallByName, accessWallByLocation } = require('./wallApi');
 //  Import API generator send to web socket server
 const message = require('./message');
 
 
 //  VARIABLES______________________________________________________________________________
 
-//  enable mongodb
-const mongoEnable = true;
-
 //  Enable moggodb driver log
 const mongodbLogEnable = true;
 
 // pending messages sending to web socket server
 let pendingMessages = [];
-const MAX_RETRY_COUNT = 5;
 
 //  temporary scan from scanners 
 let exportToteNow = null;
@@ -611,6 +605,7 @@ mongoClient.connect(url, { useUnifiedTopology: true }, function (err, client) {
         const newBackupValues = {
             importTote: [],
             exportTote: null,
+            lightColor: '000000',
             backLight: false,
             completed: false
         }

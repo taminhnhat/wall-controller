@@ -192,7 +192,6 @@ function backScannerCheckHealth() {
 function rgbHubCheckHealth() {
   rgbHub.open((err) => {
     if (err) {
-      console.log(err);
       if (err.message !== 'Port is already open')
         event.emit('rgbHub:error', err.message);
     }
