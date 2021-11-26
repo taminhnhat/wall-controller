@@ -147,6 +147,12 @@ mongoClient.connect(url, { useUnifiedTopology: true }, function (err, client) {
 
             event.on('rgbHub:data', handleRgbHubFromSerialPort);
 
+            event.on('rgbHub:opened', handleRgbHubOpenFromSerialPort);
+
+            event.on('rgbHub:closed', handleRgbHubCloseFromSerialPort);
+
+            event.on('rgbHub:error', handleRgbHubErrorFromSerialPort);
+
             event.on('wall:completeOne', handleCompleteEvent);
 
             //  Handle event from websocket
@@ -582,7 +588,23 @@ mongoClient.connect(url, { useUnifiedTopology: true }, function (err, client) {
     }
 
     function handleRgbHubFromSerialPort(message) {
+        logger.debug({ message: message, location: FILE_NAME });
         dbLog({ level: 'DEBUG', message: message });
+    }
+
+    function handleRgbHubOpenFromSerialPort(message) {
+        logger.debug({ message: message, location: FILE_NAME });
+        dbLog({ level: 'DEBUG', message: message });
+    }
+
+    function handleRgbHubCloseFromSerialPort(message) {
+        logger.debug({ message: message, location: FILE_NAME });
+        dbLog({ level: 'WARNING', message: message });
+    }
+
+    function handleRgbHubErrorFromSerialPort(message) {
+        logger.debug({ message: message, location: FILE_NAME });
+        dbLog({ level: 'ERROR', message: message });
     }
 
     /**

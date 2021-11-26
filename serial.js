@@ -163,8 +163,9 @@ rgbHub.on('error', (err) => {
 
 event.on('rgbHub:emit', (params) => {
   const messageToRgbHub = params.message;
-  console.log('emit to rgb hub:', messageToRgbHub);
-  rgbHub.write(messageToRgbHub);
+  rgbHub.write(messageToRgbHub, (err, res) => {
+    console.log('emit to rgb hub:', messageToRgbHub);
+  });
 });
 
 
