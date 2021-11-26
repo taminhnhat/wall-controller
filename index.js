@@ -14,9 +14,6 @@ const WALL_DB = process.env.DB_NAME;
 const BACKUP_COLLECTION = 'backup';
 const HISTORY_COLLECTION = 'history';
 const LOG_COLLECTION = 'log';
-const ERROR_COLLECTION = 'error';
-const WARNING_COLECTION = 'warning';
-const RECEIVE_MESSAGE = 'received_messages';
 const FILE_NAME = 'index.js   ';
 
 //  WEB SOCKET____________________________________________________________________________
@@ -528,12 +525,6 @@ mongoClient.connect(url, { useUnifiedTopology: true }, function (err, client) {
             else {
                 logger.waring({ message: `Unknown import tote: ${scanParams.value}` });
                 dbLog({ level: 'DEBUG', message: 'Unknown import tote', value: scanParams });
-                const warningMess = `unknown front scan:${scanParams.val}`;
-                const warningObj = message.generateWarning('wall-controller', warningMess);
-                const collection = db.collection(WARNING_COLECTION);
-                collection.insertOne(warningObj, function (err, res) {
-                    if (err) logger.error({ message: error, location: FILE_NAME });
-                });
             }
         });
 
@@ -660,27 +651,27 @@ mongoClient.connect(url, { useUnifiedTopology: true }, function (err, client) {
                 logger.error({ message: 'Not a valid message from server', value: { key: tempKey } });
             } else {
                 //  Emit light:on event to execute in ioControl.js
-                event.emit('light:on', {
-                    wall: wallState.name,
-                    location: wallState.location,
-                    lightIndex: wallState.lightIndex,
-                    lightColor: lightColor,
-                    side: wallSide
-                });
-                const rowOfLedStrip = wallState.location.split('.')[2];
-                rgbHubSetLight(rowOfLedStrip);
 
                 //  Update states to database
                 let newBackupValues = "";
 
                 if (wallSide === 'front') {
-                    newBackupValues = { $set: { frontLight: true, lightColor: lightColor } };
+                    newBackupValues = { $set: { frontLight: true, lightColor: lightColor, importTime: Date.now() } };
                 } else if (wallSide === 'back') {
-                    newBackupValues = { $set: { backLight: true, lightColor: lightColor } };
+                    newBackupValues = { $set: { backLight: true, lightColor: lightColor, exportTime: Date.now() } };
                 }
 
                 db.collection(BACKUP_COLLECTION).updateOne(queryByName, newBackupValues, (err, res) => {
                     if (err) logger.error({ message: error, location: FILE_NAME });
+                    event.emit('light:on', {
+                        wall: wallState.name,
+                        location: wallState.location,
+                        lightIndex: wallState.lightIndex,
+                        lightColor: lightColor,
+                        side: wallSide
+                    });
+                    const rowOfLedStrip = wallState.location.split('.')[2];
+                    rgbHubSetLight(rowOfLedStrip);
                 });
             }
         });
@@ -711,16 +702,45 @@ mongoClient.connect(url, { useUnifiedTopology: true }, function (err, client) {
                 logger.error({ message: 'Not a valid message from server', value: { key: tempKey } });
             } else {
                 if (wallSide === 'front') {
-                    //
+                    const newBackupValues = {
+                        $set: {
+                            lightColor: '000000',
+                            frontLight: false,
+
+                        },
+                        $push: {
+                            importDuration: {
+                                start: '$importTime',
+                                end: Date.now(),
+                                duration: { $concatArrays: [] }
+                            }
+                        }
+                    }
                 } else if (wallSide === 'back') {
-                    event.emit('light:off', {
-                        wall: wallState.name,
-                        location: wallState.location,
-                        lightIndex: wallState.lightIndex,
+                    // create query by wall name to access database
+                    logger.debug({ message: 'wall complete!!!', location: FILE_NAME })
+                    const newBackupValues = {
+                        importTote: [],
+                        exportTote: null,
                         lightColor: '000000',
-                        side: wallSide
+                        backLight: false,
+                        completed: false
+                    };
+
+                    db.collection(BACKUP_COLLECTION).updateOne(queryByName, { $set: newBackupValues, $push: {} }, function (err, res) {
+                        if (err) logger.error({ message: 'Fail to update database', location: FILE_NAME });
+                        logger.debug({ message: `Empty wall ${wallName}`, location: FILE_NAME });
+                        dbLog({ level: 'DEBUG', message: `Empty wall ${wallName}` });
+                        event.emit('light:off', {
+                            wall: wallState.name,
+                            location: wallState.location,
+                            lightIndex: wallState.lightIndex,
+                            lightColor: '000000',
+                            side: wallSide
+                        });
+                        const rowOfLedStrip = wallState.location.split('.')[2];
+                        rgbHubSetLight(rowOfLedStrip);
                     });
-                    event.emit('wall:completeOne', wallName);
                 }
             }
         });
@@ -808,9 +828,6 @@ mongoClient.connect(url, { useUnifiedTopology: true }, function (err, client) {
     function handleErrorFromServer(errApi) {
         logger.debug({ message: `Message from server`, location: FILE_NAME, value: errApi });
         dbLog({ level: 'ERROR', message: 'mergeWall/error', value: errApi });
-        db.collection(ERROR_COLLECTION).insertOne(errApi, (err, res) => {
-            if (err) logger.error({ message: err, location: FILE_NAME });
-        });
         event.emit('towerlight:set', {
             status: 'warning',
             side: 'front',
