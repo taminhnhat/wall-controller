@@ -82,29 +82,28 @@ backScanner.on('data', function (data) {
 
 rgbHub.on('data', function (data) {
   const message = String(data).trim();
-  event.emit(`rgbHub:data`, message);
+  event.emit(`rgbHub:data`, { message: message });
 });
 
 frontScanner.on('close', () => {
-  event.emit('scanner:closed', 'Front scanner closed');
+  event.emit('scanner:closed', { message: 'Front scanner closed' });
 });
 backScanner.on('close', () => {
-  event.emit('scanner:closed', 'Back scanner closed');
+  event.emit('scanner:closed', { message: 'Back scanner closed' });
 });
 rgbHub.on('close', () => {
-  console.log('rgb hub closed');
-  event.emit('rgbHub:closed', 'Back scanner closed');
+  event.emit('rgbHub:closed', { message: 'Back scanner closed' });
 });
 
 frontScanner.on('error', (err) => {
-  event.emit('scanner:error', err.message);
+  event.emit('scanner:error', { message: 'Front scanner error', value: err.message });
 });
 backScanner.on('error', (err) => {
-  event.emit('scanner:error', err.message);
+  event.emit('scanner:error', { message: 'Back scanner error', value: err.message });
 });
 rgbHub.on('error', (err) => {
   console.log('rgb hub error', err);
-  event.emit('rgbHub:error', err.message);
+  event.emit('rgbHub:error', { message: 'Rgb hub error', value: err.message });
 });
 
 // event.on('lcd:print:action', function(printParams){

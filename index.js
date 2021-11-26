@@ -572,39 +572,39 @@ mongoClient.connect(url, { useUnifiedTopology: true }, function (err, client) {
         };
     };
 
-    function handleScannerOpenFromSerialPort(message) {
-        logger.debug({ message: message, location: FILE_NAME });
-        dbLog({ level: 'DEBUG', message: message });
+    function handleScannerOpenFromSerialPort(data) {
+        logger.debug({ message: data.message, location: FILE_NAME });
+        dbLog({ level: 'DEBUG', message: data.message });
     };
 
-    function handleScannerCloseFromSerialPort(message) {
-        logger.debug({ message: message, location: FILE_NAME });
-        dbLog({ level: 'WARNING', message: message });
+    function handleScannerCloseFromSerialPort(data) {
+        logger.debug({ message: data.message, location: FILE_NAME });
+        dbLog({ level: 'WARNING', message: data.message });
     };
 
-    function handleScannerErrorFromSerialPort(message) {
-        logger.debug({ message: message, location: FILE_NAME });
-        dbLog({ level: 'ERROR', message: message });
+    function handleScannerErrorFromSerialPort(data) {
+        logger.debug({ message: data.message, location: FILE_NAME });
+        dbLog({ level: 'ERROR', message: data.message, value: data.value });
     }
 
-    function handleRgbHubFromSerialPort(message) {
-        logger.debug({ message: message, location: FILE_NAME });
-        dbLog({ level: 'DEBUG', message: message });
+    function handleRgbHubFromSerialPort(data) {
+        logger.debug({ message: data.message, location: FILE_NAME });
+        dbLog({ level: 'DEBUG', message: data.message });
     }
 
-    function handleRgbHubOpenFromSerialPort(message) {
-        logger.debug({ message: message, location: FILE_NAME });
-        dbLog({ level: 'DEBUG', message: message });
+    function handleRgbHubOpenFromSerialPort(data) {
+        logger.debug({ message: data.message, location: FILE_NAME });
+        dbLog({ level: 'DEBUG', message: data.message });
     }
 
-    function handleRgbHubCloseFromSerialPort(message) {
-        logger.debug({ message: message, location: FILE_NAME });
-        dbLog({ level: 'WARNING', message: message });
+    function handleRgbHubCloseFromSerialPort(data) {
+        logger.debug({ message: data.message, location: FILE_NAME });
+        dbLog({ level: 'WARNING', message: data.message });
     }
 
-    function handleRgbHubErrorFromSerialPort(message) {
-        logger.debug({ message: message, location: FILE_NAME });
-        dbLog({ level: 'ERROR', message: message });
+    function handleRgbHubErrorFromSerialPort(data) {
+        logger.debug({ message: data.message, location: FILE_NAME });
+        dbLog({ level: 'ERROR', message: data.message, value: data.value });
     }
 
     /**
@@ -613,15 +613,15 @@ mongoClient.connect(url, { useUnifiedTopology: true }, function (err, client) {
      */
     function handleCompleteEvent(wallName) {
         // create query by wall name to access database
-        logger.debug({ message: 'wall complete!!!', location: FILE_NAME })
-        const queryByName = { name: wallName }
+        logger.debug({ message: 'wall complete!!!', location: FILE_NAME });
+        const queryByName = { name: wallName };
         const newBackupValues = {
             importTote: [],
             exportTote: null,
             lightColor: '000000',
             backLight: false,
             completed: false
-        }
+        };
 
         db.collection(BACKUP_COLLECTION).updateOne(queryByName, { $set: newBackupValues }, function (err, res) {
             if (err) logger.error({ message: 'Fail to update database', location: FILE_NAME });
