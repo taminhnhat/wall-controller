@@ -27,7 +27,7 @@ const backScanner = new SerialPort(backScannerPath, {
 });
 const rgbHub = new SerialPort(rgbHubPath, {
   baudRate: 9600,
-  autoOpen: false
+  autoOpen: true
 });
 
 frontScanner.on('open', function () {
