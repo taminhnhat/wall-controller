@@ -26,8 +26,8 @@ const backScanner = new SerialPort(backScannerPath, {
   autoOpen: false
 });
 const rgbHub = new SerialPort(rgbHubPath, {
-  baudRate: 9600,
-  autoOpen: true
+  baudRate: 115200,
+  autoOpen: false
 });
 
 frontScanner.on('open', function () {
@@ -162,10 +162,10 @@ rgbHub.on('error', (err) => {
 event.on('rgbHub:emit', (params) => {
   const messageToRgbHub = params.message;
   rgbHub.write(messageToRgbHub, (err, res) => {
-    logger.debug({ message: 'emit to rgb hub:', value: messageToRgbHub, location: FILE_NAME });
+    if (err) logger.error({ message: 'Cannot write to rgb hub', value: err, location: FILE_NAME });
+    logger.debug({ message: 'emit to rgb hub:', value: res, location: FILE_NAME });
   });
 });
-
 
 /**
  * Reconnecting to serial port every 5 seconds after loosing connection
@@ -199,4 +199,5 @@ function rgbHubCheckHealth() {
 
 setInterval(frontScannerCheckHealth, 5000);
 setInterval(backScannerCheckHealth, 5000);
-setInterval(rgbHubCheckHealth, 5000);
+// setInterval(rgbHubCheckHealth, 5000);
+rgbHubCheckHealth();
