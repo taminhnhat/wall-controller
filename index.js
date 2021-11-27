@@ -578,12 +578,12 @@ mongoClient.connect(url, { useUnifiedTopology: true }, function (err, client) {
     };
 
     function handleScannerCloseFromSerialPort(data) {
-        logger.debug({ message: data.message, location: FILE_NAME });
+        logger.waring({ message: data.message, location: FILE_NAME });
         dbLog({ level: 'WARNING', message: data.message });
     };
 
     function handleScannerErrorFromSerialPort(data) {
-        logger.debug({ message: data.message, value: data.value, location: FILE_NAME });
+        logger.error({ message: data.message, value: data.value, location: FILE_NAME });
         dbLog({ level: 'ERROR', message: data.message, value: data.value });
     }
 
@@ -598,12 +598,12 @@ mongoClient.connect(url, { useUnifiedTopology: true }, function (err, client) {
     }
 
     function handleRgbHubCloseFromSerialPort(data) {
-        logger.debug({ message: data.message, location: FILE_NAME });
+        logger.waring({ message: data.message, location: FILE_NAME });
         dbLog({ level: 'WARNING', message: data.message });
     }
 
     function handleRgbHubErrorFromSerialPort(data) {
-        logger.debug({ message: data.message, value: data.value, location: FILE_NAME });
+        logger.error({ message: data.message, value: data.value, location: FILE_NAME });
         dbLog({ level: 'ERROR', message: data.message, value: data.value });
     }
 
