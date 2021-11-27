@@ -583,7 +583,7 @@ mongoClient.connect(url, { useUnifiedTopology: true }, function (err, client) {
     };
 
     function handleScannerErrorFromSerialPort(data) {
-        logger.debug({ message: data.message, location: FILE_NAME });
+        logger.debug({ message: data.message, value: data.value, location: FILE_NAME });
         dbLog({ level: 'ERROR', message: data.message, value: data.value });
     }
 
@@ -603,7 +603,7 @@ mongoClient.connect(url, { useUnifiedTopology: true }, function (err, client) {
     }
 
     function handleRgbHubErrorFromSerialPort(data) {
-        logger.debug({ message: data.message, location: FILE_NAME });
+        logger.debug({ message: data.message, value: data.value, location: FILE_NAME });
         dbLog({ level: 'ERROR', message: data.message, value: data.value });
     }
 

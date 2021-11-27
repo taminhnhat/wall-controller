@@ -102,7 +102,6 @@ backScanner.on('error', (err) => {
   event.emit('scanner:error', { message: 'Back scanner error', value: err.message });
 });
 rgbHub.on('error', (err) => {
-  console.log('rgb hub error', err);
   event.emit('rgbHub:error', { message: 'Rgb hub error', value: err.message });
 });
 
