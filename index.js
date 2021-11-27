@@ -603,6 +603,7 @@ mongoClient.connect(url, { useUnifiedTopology: true }, function (err, client) {
     }
 
     function handleRgbHubErrorFromSerialPort(data) {
+        console.log('rgb hub error:', data);
         logger.error({ message: data.message, value: data.value, location: FILE_NAME });
         dbLog({ level: 'ERROR', message: data.message, value: data.value });
     }
