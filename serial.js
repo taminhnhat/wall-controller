@@ -162,7 +162,7 @@ rgbHub.on('error', (err) => {
 event.on('rgbHub:emit', (params) => {
   const messageToRgbHub = params.message;
   rgbHub.write(messageToRgbHub, (err, res) => {
-    console.log('emit to rgb hub:', messageToRgbHub);
+    logger.debug({ message: 'emit to rgb hub:', value: messageToRgbHub, location: FILE_NAME });
   });
 });
 
@@ -174,7 +174,7 @@ function frontScannerCheckHealth() {
   frontScanner.open((err) => {
     if (err) {
       if (err.message !== 'Port is already open')
-        event.emit('scanner:error', err.message);
+        event.emit('scanner:error', { message: 'Front scanner error', value: err.message });
     }
   });
 }
@@ -183,7 +183,7 @@ function backScannerCheckHealth() {
   backScanner.open((err) => {
     if (err) {
       if (err.message !== 'Port is already open')
-        event.emit('scanner:error', err.message);
+        event.emit('scanner:error', { message: 'Back scanner error', value: err.message });
     }
   });
 }
@@ -192,7 +192,7 @@ function rgbHubCheckHealth() {
   rgbHub.open((err) => {
     if (err) {
       if (err.message !== 'Port is already open')
-        event.emit('rgbHub:error', err.message);
+        event.emit('rgbHub:error', { message: 'Rgb hub error', value: err.message });
     }
   });
 }
