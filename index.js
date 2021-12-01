@@ -113,6 +113,11 @@ mongoClient.connect(url, { useUnifiedTopology: true }, function (err, client) {
         .toArray()
         .then(result => {
             restoreLight(result);
+            rgbHubSetLight('1');
+            rgbHubSetLight('2');
+            rgbHubSetLight('3');
+            rgbHubSetLight('4');
+            rgbHubSetLight('5');
             return new Promise((resolve, reject) => {
                 if (isRestoredWallDone) resolve('Restore from backup completed');
                 else reject('Fail to restore from backup!');
