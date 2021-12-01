@@ -630,7 +630,7 @@ mongoClient.connect(url, { useUnifiedTopology: true }, function (err, client) {
         };
 
         db.collection(BACKUP_COLLECTION).updateOne(queryByName, { $set: newBackupValues }, function (err, res) {
-            if (err) logger.error({ message: 'Fail to update database', location: FILE_NAME });
+            if (err) logger.error({ message: 'Fail to update database', value: err, location: FILE_NAME });
             logger.debug({ message: `Empty wall ${wallName}`, location: FILE_NAME });
             dbLog({ level: 'DEBUG', message: `Empty wall ${wallName}` });
         });
@@ -756,7 +756,7 @@ mongoClient.connect(url, { useUnifiedTopology: true }, function (err, client) {
                 };
 
                 db.collection(BACKUP_COLLECTION).updateOne(queryByName, { $set: newBackupValues, $push: {} }, function (err, res) {
-                    if (err) logger.error({ message: 'Fail to update database', location: FILE_NAME });
+                    if (err) logger.error({ message: 'Fail to update database', value: err, location: FILE_NAME });
                     logger.debug({ message: `Empty wall ${wallName}`, location: FILE_NAME });
                     dbLog({ level: 'DEBUG', message: `Empty wall ${wallName}` });
                     event.emit('light:off', {
