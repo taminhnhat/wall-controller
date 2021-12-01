@@ -729,47 +729,47 @@ mongoClient.connect(url, { useUnifiedTopology: true }, function (err, client) {
                 //  Log error
                 logger.error({ message: 'Not a valid message from server', value: { key: tempKey } });
             } else {
-                if (wallSide === 'front') {
-                    const newBackupValues = {
-                        $set: {
-                            lightColor: '000000',
-                            frontLight: false,
+                // if (wallSide === 'front') {
+                //     const newBackupValues = {
+                //         $set: {
+                //             lightColor: '000000',
+                //             frontLight: false,
 
-                        },
-                        $push: {
-                            importDuration: {
-                                start: '$importTime',
-                                end: Date.now(),
-                                duration: { $concatArrays: [] }
-                            }
-                        }
-                    }
-                } else if (wallSide === 'back') {
-                    // create query by wall name to access database
-                    logger.debug({ message: 'wall complete!!!', location: FILE_NAME })
-                    const newBackupValues = {
-                        importTote: [],
-                        exportTote: null,
+                //         },
+                //         $push: {
+                //             importDuration: {
+                //                 start: '$importTime',
+                //                 end: Date.now(),
+                //                 duration: { $concatArrays: [] }
+                //             }
+                //         }
+                //     }
+                // } else if (wallSide === 'back') {
+                // create query by wall name to access database
+                logger.debug({ message: 'wall complete!!!', location: FILE_NAME })
+                const newBackupValues = {
+                    importTote: [],
+                    exportTote: null,
+                    lightColor: '000000',
+                    backLight: false,
+                    completed: false
+                };
+
+                db.collection(BACKUP_COLLECTION).updateOne(queryByName, { $set: newBackupValues, $push: {} }, function (err, res) {
+                    if (err) logger.error({ message: 'Fail to update database', location: FILE_NAME });
+                    logger.debug({ message: `Empty wall ${wallName}`, location: FILE_NAME });
+                    dbLog({ level: 'DEBUG', message: `Empty wall ${wallName}` });
+                    event.emit('light:off', {
+                        wall: wallState.name,
+                        location: wallState.location,
+                        lightIndex: wallState.lightIndex,
                         lightColor: '000000',
-                        backLight: false,
-                        completed: false
-                    };
-
-                    db.collection(BACKUP_COLLECTION).updateOne(queryByName, { $set: newBackupValues, $push: {} }, function (err, res) {
-                        if (err) logger.error({ message: 'Fail to update database', location: FILE_NAME });
-                        logger.debug({ message: `Empty wall ${wallName}`, location: FILE_NAME });
-                        dbLog({ level: 'DEBUG', message: `Empty wall ${wallName}` });
-                        event.emit('light:off', {
-                            wall: wallState.name,
-                            location: wallState.location,
-                            lightIndex: wallState.lightIndex,
-                            lightColor: '000000',
-                            side: wallSide
-                        });
-                        const rowOfLedStrip = wallState.location.split('.')[2];
-                        rgbHubSetLight(rowOfLedStrip);
+                        side: wallSide
                     });
-                }
+                    const rowOfLedStrip = wallState.location.split('.')[2];
+                    rgbHubSetLight(rowOfLedStrip);
+                });
+                // }
             }
         });
     };
