@@ -163,7 +163,7 @@ event.on('rgbHub:emit', (params) => {
   const messageToRgbHub = params.message;
   rgbHub.write(messageToRgbHub, (err, res) => {
     if (err) logger.error({ message: 'Cannot write to rgb hub', value: err, location: FILE_NAME });
-    logger.debug({ message: 'emit to rgb hub:', value: res, location: FILE_NAME });
+    logger.debug({ message: 'emit to rgb hub:', value: messageToRgbHub, location: FILE_NAME });
   });
 });
 
