@@ -15,6 +15,7 @@ const FILE_NAME = 'serial.js  ';
 const frontScannerPath = process.env.FRONT_SCANNER_PATH;
 const backScannerPath = process.env.BACK_SCANNER_PATH;
 const rgbHubPath = process.env.RGB_HUB_PATH;
+const rgbHubCycle = process.env.CYCLE_SEND_TO_RGB_HUB || 100;
 
 //  NEED TO CONFIG SERIAL PORT FIRST, READ 'README.md'
 const frontScanner = new SerialPort(frontScannerPath, {
@@ -166,7 +167,7 @@ event.on('rgbHub:emit', handleRgbHubEmit);
 function handleRgbHubEmit(params) {
   const deltaTime = Date.now() - lastTimeEmitToRgbHub;
 
-  if (deltaTime > 10 && emitTorgbHubComplete == true) {
+  if (deltaTime > rgbHubCycle && emitTorgbHubComplete == true) {
     emitTorgbHubComplete = false;
     const messageToRgbHub = params.message;
     rgbHub.write(messageToRgbHub, (err, res) => {
@@ -179,7 +180,7 @@ function handleRgbHubEmit(params) {
   else {
     setTimeout(() => {
       handleRgbHubEmit(params);
-    }, 10);
+    }, rgbHubCycle - deltaTime);
   }
 };
 
