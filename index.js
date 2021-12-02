@@ -596,11 +596,11 @@ mongoClient.connect(url, { useUnifiedTopology: true }, function (err, client) {
 
     function handleRgbHubFromSerialPort(data) {
         if (data == 'RGB Hub start') {
-            rgbHubSetLight(1);
-            rgbHubSetLight(2);
-            rgbHubSetLight(3);
-            rgbHubSetLight(4);
-            rgbHubSetLight(5);
+            rgbHubSetLight('1');
+            rgbHubSetLight('2');
+            rgbHubSetLight('3');
+            rgbHubSetLight('4');
+            rgbHubSetLight('5');
         }
         logger.debug({ message: data.message, value: data.value, location: FILE_NAME });
         dbLog({ level: 'DEBUG', message: data.message });
@@ -793,11 +793,11 @@ mongoClient.connect(url, { useUnifiedTopology: true }, function (err, client) {
         }
         db.collection(BACKUP_COLLECTION).updateMany({}, newValues, (err, res) => {
             if (err) logger.error({ message: error, location: FILE_NAME });
-            rgbHubSetLight(1);
-            rgbHubSetLight(2);
-            rgbHubSetLight(3);
-            rgbHubSetLight(4);
-            rgbHubSetLight(5);
+            rgbHubSetLight('1');
+            rgbHubSetLight('1');
+            rgbHubSetLight('3');
+            rgbHubSetLight('4');
+            rgbHubSetLight('5');
         });
     };
 
