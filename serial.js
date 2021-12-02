@@ -159,13 +159,29 @@ rgbHub.on('error', (err) => {
 //   }
 // });
 
-event.on('rgbHub:emit', (params) => {
-  const messageToRgbHub = params.message;
-  rgbHub.write(messageToRgbHub, (err, res) => {
-    if (err) logger.error({ message: 'Cannot write to rgb hub', value: err, location: FILE_NAME });
-    logger.debug({ message: `${Date.now()}-emit to rgb hub:`, value: messageToRgbHub, location: FILE_NAME });
-  });
-});
+let lastTimeEmitToRgbHub = Date.now();
+let emitTorgbHubComplete = true;
+event.on('rgbHub:emit', handleRgbHubEmit);
+
+function handleRgbHubEmit(params) {
+  const deltaTime = Date.now() - lastTimeEmitToRgbHub;
+
+  if (deltaTime > 10 && emitTorgbHubComplete == true) {
+    emitTorgbHubComplete = false;
+    const messageToRgbHub = params.message;
+    rgbHub.write(messageToRgbHub, (err, res) => {
+      if (err) logger.error({ message: 'Cannot write to rgb hub', value: err, location: FILE_NAME });
+      lastTimeEmitToRgbHub = Date.now();
+      emitTorgbHubComplete = true;
+      logger.debug({ message: `${Date.now()}-emit to rgb hub:`, value: messageToRgbHub, location: FILE_NAME });
+    });
+  }
+  else {
+    setTimeout(() => {
+      handleRgbHubEmit(params);
+    }, 10);
+  }
+};
 
 /**
  * Reconnecting to serial port every 5 seconds after loosing connection
