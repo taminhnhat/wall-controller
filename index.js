@@ -167,6 +167,8 @@ mongoClient.connect(url, { useUnifiedTopology: true }, function (err, client) {
 
             socket.on('mergeWall/lightOff', handleLightOffFromServer);
 
+            socket.on('mergeWall/reset', handleResetFromServer);
+
             // socket.on('mergeWall/lightTest', handleLightTestFromServer);
 
             // socket.on('mergeWall/confirmPutToLight', handleConfirmPutToLightFromServer);
@@ -258,7 +260,7 @@ mongoClient.connect(url, { useUnifiedTopology: true }, function (err, client) {
                 for (col = 0; col < result.length; col++) {
                     mess = mess + ':' + result[col].lightColor;
                 }
-                mess += '\n';
+                mess = mess + '\n';
                 console.log(mess);
                 event.emit('rgbHub:emit', { message: mess });
             });
@@ -593,6 +595,13 @@ mongoClient.connect(url, { useUnifiedTopology: true }, function (err, client) {
     }
 
     function handleRgbHubFromSerialPort(data) {
+        if (data == 'RGB Hub start') {
+            rgbHubSetLight(1);
+            rgbHubSetLight(2);
+            rgbHubSetLight(3);
+            rgbHubSetLight(4);
+            rgbHubSetLight(5);
+        }
         logger.debug({ message: data.message, value: data.value, location: FILE_NAME });
         dbLog({ level: 'DEBUG', message: data.message });
     }
@@ -771,6 +780,24 @@ mongoClient.connect(url, { useUnifiedTopology: true }, function (err, client) {
                 });
                 // }
             }
+        });
+    };
+
+    function handleResetFromServer(resetApi) {
+        logger.debug({ message: `Message from server`, location: FILE_NAME, value: resetApi });
+        dbLog({ level: 'DEBUG', message: `Message from server`, value: resetApi });
+        const newValues = {
+            $set: {
+                lightColor: '000000'
+            }
+        }
+        db.collection(BACKUP_COLLECTION).updateMany({}, newValues, (err, res) => {
+            if (err) logger.error({ message: error, location: FILE_NAME });
+            rgbHubSetLight(1);
+            rgbHubSetLight(2);
+            rgbHubSetLight(3);
+            rgbHubSetLight(4);
+            rgbHubSetLight(5);
         });
     };
 
