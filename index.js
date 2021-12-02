@@ -169,6 +169,8 @@ mongoClient.connect(url, { useUnifiedTopology: true }, function (err, client) {
 
             socket.on('mergeWall/reset', handleResetFromServer);
 
+            socket.on('mergeWall/reload', handleReloadFromServer);
+
             // socket.on('mergeWall/lightTest', handleLightTestFromServer);
 
             // socket.on('mergeWall/confirmPutToLight', handleConfirmPutToLightFromServer);
@@ -794,12 +796,22 @@ mongoClient.connect(url, { useUnifiedTopology: true }, function (err, client) {
         db.collection(BACKUP_COLLECTION).updateMany({}, newValues, (err, res) => {
             if (err) logger.error({ message: error, location: FILE_NAME });
             rgbHubSetLight('1');
-            rgbHubSetLight('1');
+            rgbHubSetLight('2');
             rgbHubSetLight('3');
             rgbHubSetLight('4');
             rgbHubSetLight('5');
         });
     };
+
+    function handleReloadFromServer(reloadApi) {
+        logger.debug({ message: `Message from server`, location: FILE_NAME, value: reloadApi });
+        dbLog({ level: 'DEBUG', message: `Message from server`, value: reloadApi });
+        rgbHubSetLight('1');
+        rgbHubSetLight('2');
+        rgbHubSetLight('3');
+        rgbHubSetLight('4');
+        rgbHubSetLight('5');
+    }
 
     function handleLightTestFromServer(lightApi) {
         logger.debug({ message: `Message from server`, location: FILE_NAME, value: lightApi });
