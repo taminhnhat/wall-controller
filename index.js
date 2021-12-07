@@ -258,9 +258,9 @@ mongoClient.connect(url, { useUnifiedTopology: true }, function (err, client) {
             .sort({ col: 1 })
             .toArray()
             .then(result => {
-                let mess = `R${rowOfLedStrip}`;
+                let mess = `W1:R${rowOfLedStrip}`;
                 for (col = 0; col < result.length; col++) {
-                    mess = 'W1:' + mess + ':' + result[col].lightColor;
+                    mess = mess + ':' + result[col].lightColor;
                 }
                 mess = mess + '\n';
                 event.emit('rgbHub:emit', { message: mess });
