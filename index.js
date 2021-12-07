@@ -260,10 +260,9 @@ mongoClient.connect(url, { useUnifiedTopology: true }, function (err, client) {
             .then(result => {
                 let mess = `R${rowOfLedStrip}`;
                 for (col = 0; col < result.length; col++) {
-                    mess = mess + ':' + result[col].lightColor;
+                    mess = 'W1:' + mess + ':' + result[col].lightColor;
                 }
                 mess = mess + '\n';
-                console.log(mess);
                 event.emit('rgbHub:emit', { message: mess });
             });
     }
