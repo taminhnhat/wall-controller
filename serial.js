@@ -15,19 +15,21 @@ const FILE_NAME = 'serial.js  ';
 const frontScannerPath = process.env.FRONT_SCANNER_PATH;
 const backScannerPath = process.env.BACK_SCANNER_PATH;
 const rgbHubPath = process.env.RGB_HUB_PATH;
+const rgbHubBaudrate = process.env.RGB_HUB_BAUDRATE || 115200;
+const scannerBaudrate = process.env.SCANNER_BAUDRATE || 9600;
 const rgbHubCycle = process.env.RGB_HUB_SERIAL_CYCLE || 100;
 
 //  NEED TO CONFIG SERIAL PORT FIRST, READ 'README.md'
 const frontScanner = new SerialPort(frontScannerPath, {
-  baudRate: 9600,
+  baudRate: scannerBaudrate,
   autoOpen: false
 });
 const backScanner = new SerialPort(backScannerPath, {
-  baudRate: 9600,
+  baudRate: scannerBaudrate,
   autoOpen: false
 });
 const rgbHub = new SerialPort(rgbHubPath, {
-  baudRate: 115200,
+  baudRate: rgbHubBaudrate,
   autoOpen: false
 });
 
