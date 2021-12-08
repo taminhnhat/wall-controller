@@ -9,6 +9,7 @@ require('dotenv').config({ path: './.env' });
 const SERVER_URL = process.env.SERVER_URL;
 const WALL_INDEX = Number(process.env.WALL_INDEX);
 const GLOBAL = require('./CONFIGURATION');
+const rgbHubRFEnable = process.env.RGB_HUB_RF_ENABLE;
 //  db and collections name
 const WALL_DB = process.env.DB_NAME;
 const BACKUP_COLLECTION = 'backup';
@@ -258,7 +259,8 @@ mongoClient.connect(url, { useUnifiedTopology: true }, function (err, client) {
             .sort({ col: 1 })
             .toArray()
             .then(result => {
-                let mess = `W1:R${rowOfLedStrip}`;
+                let mess = `R${rowOfLedStrip}`;
+                if (rgbHubRFEnable == 'true') mess = 'W1:' + mess;
                 for (col = 0; col < result.length; col++) {
                     mess = mess + ':' + result[col].lightColor;
                 }
@@ -268,17 +270,20 @@ mongoClient.connect(url, { useUnifiedTopology: true }, function (err, client) {
     }
 
     function rgbHubSetFullRowEffect(rowOfLedStrip, lightColor) {
-        const mess = `H${rowOfLedStrip}:${lightColor}\n`;
+        const mess = `F${rowOfLedStrip}:${lightColor}\n`;
+        if (rgbHubRFEnable == 'true') mess = 'W1:' + mess;
         event.emit('rgbHub:emit', { message: mess });
     }
 
     function rgbHubGetInfo() {
         const mess = 'GETINFO\n';
+        if (rgbHubRFEnable == 'true') mess = 'W1:' + mess;
         event.emit('rgbHub:emit', { message: mess });
     }
 
     function rgbHubConfig(leds, cols, nodes) {
         const mess = `CFG:T${leds}.C${cols}.N${nodes}`;
+        if (rgbHubRFEnable == 'true') mess = 'W1:' + mess;
         event.emit('rgbHub:emit', { message: mess });
     }
 
