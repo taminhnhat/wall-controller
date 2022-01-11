@@ -237,8 +237,8 @@ mongoClient.connect(url, { useUnifiedTopology: true }, function (err, client) {
     }
 
     /**
-     * 
-     * @param {String} rowOfLedStrip 
+     * Send light command to serial port
+     * @param {String} rowOfLedStrip 1 to 5: row of led strip on wall
      */
     function rgbHubSetLight(rowOfLedStrip) {
         const rgbProjection = {
@@ -666,18 +666,138 @@ mongoClient.connect(url, { useUnifiedTopology: true }, function (err, client) {
         }
     };
 
+    // function handleLightOnFromServer(lightApi) {
+    //     logger.debug({ message: `Message from server`, location: FILE_NAME, value: lightApi });
+    //     dbLog({ level: 'DEBUG', message: `Message from server`, value: lightApi });
+
+    //     //  Get wall state from db
+    //     const wallName = lightApi.params.wall;
+    //     const wallSide = lightApi.params.side;
+    //     const tempKey = lightApi.key;
+    //     let lightColor = 'FFFFFF';
+    //     if (lightApi.params.lightColor != undefined) {
+    //         lightColor = lightApi.params.lightColor;
+    //     }
+    //     const queryByName = { name: wallName };
+    //     db.collection(BACKUP_COLLECTION).findOne(queryByName, (err, res) => {
+    //         if (err) logger.error({ message: 'Fail to find wall in database', location: FILE_NAME, value: err });
+    //         const wallState = res;
+    //         const isWallNameValid = wallState != undefined;
+    //         const isWallSideValid = wallSide === 'front' || wallSide === 'back';
+
+    //         //  Check if wallName is valid
+    //         if (!isWallNameValid) {
+    //             //  Log error
+    //             logger.error({ message: 'Not a valid message from server', value: { key: tempKey } });
+    //         } else if (!isWallSideValid) {
+    //             //  Log error
+    //             logger.error({ message: 'Not a valid message from server', value: { key: tempKey } });
+    //         } else {
+    //             //  Emit light:on event to execute in ioControl.js
+
+    //             //  Update states to database
+    //             let newBackupValues = "";
+
+    //             if (wallSide === 'front') {
+    //                 newBackupValues = { $set: { frontLight: true, lightColor: lightColor, importTime: Date.now() } };
+    //             } else if (wallSide === 'back') {
+    //                 newBackupValues = { $set: { backLight: true, lightColor: lightColor, exportTime: Date.now() } };
+    //             }
+
+    //             db.collection(BACKUP_COLLECTION).updateOne(queryByName, newBackupValues, (err, res) => {
+    //                 if (err) logger.error({ message: error, location: FILE_NAME });
+    //                 event.emit('light:on', {
+    //                     wall: wallState.name,
+    //                     location: wallState.location,
+    //                     lightIndex: wallState.lightIndex,
+    //                     lightColor: lightColor,
+    //                     side: wallSide
+    //                 });
+    //                 const rowOfLedStrip = wallState.location.split('.')[2];
+    //                 rgbHubSetLight(rowOfLedStrip);
+    //             });
+    //         }
+    //     });
+
+    // };
+
+    // function handleLightOffFromServer(lightApi) {
+    //     logger.debug({ message: `Message from server`, location: FILE_NAME, value: lightApi });
+
+
+    //     //  Get wall state from db
+    //     const wallName = lightApi.params.wall;
+    //     const wallSide = lightApi.params.side;
+    //     const tempKey = lightApi.key;
+    //     const queryByName = { name: wallName };
+    //     db.collection(BACKUP_COLLECTION).findOne(queryByName, (err, res) => {
+    //         if (err) logger.error({ message: 'Fail to find wall in database', location: FILE_NAME, value: err });
+    //         const wallState = res;
+    //         const isWallNameValid = wallState != undefined;
+    //         const isWallSideValid = wallSide === 'front' || wallSide === 'back';
+
+    //         //  Check if wallName is valid
+    //         if (!isWallNameValid) {
+    //             //  Log error
+    //             logger.error({ message: 'Not a valid message from server', value: { key: tempKey } });
+    //         } else if (!isWallSideValid) {
+    //             //  Log error
+    //             logger.error({ message: 'Not a valid message from server', value: { key: tempKey } });
+    //         } else {
+    //             // if (wallSide === 'front') {
+    //             //     const newBackupValues = {
+    //             //         $set: {
+    //             //             lightColor: '000000',
+    //             //             frontLight: false,
+
+    //             //         },
+    //             //         $push: {
+    //             //             importDuration: {
+    //             //                 start: '$importTime',
+    //             //                 end: Date.now(),
+    //             //                 duration: { $concatArrays: [] }
+    //             //             }
+    //             //         }
+    //             //     }
+    //             // } else if (wallSide === 'back') {
+    //             // create query by wall name to access database
+    //             logger.debug({ message: 'wall complete!!!', location: FILE_NAME })
+    //             const newBackupValues = {
+    //                 importTote: [],
+    //                 exportTote: null,
+    //                 lightColor: '000000',
+    //                 backLight: false,
+    //                 completed: false
+    //             };
+
+    //             db.collection(BACKUP_COLLECTION).updateOne(queryByName, { $set: newBackupValues }, function (err, res) {
+    //                 if (err) logger.error({ message: 'Fail to update database', value: err, location: FILE_NAME });
+    //                 logger.debug({ message: `Empty wall ${wallName}`, location: FILE_NAME });
+    //                 dbLog({ level: 'DEBUG', message: `Empty wall ${wallName}` });
+    //                 event.emit('light:off', {
+    //                     wall: wallState.name,
+    //                     location: wallState.location,
+    //                     lightIndex: wallState.lightIndex,
+    //                     lightColor: '000000',
+    //                     side: wallSide
+    //                 });
+    //                 const rowOfLedStrip = wallState.location.split('.')[2];
+    //                 rgbHubSetLight(rowOfLedStrip);
+    //             });
+    //             // }
+    //         }
+    //     });
+    // };
+
     function handleLightOnFromServer(lightApi) {
         logger.debug({ message: `Message from server`, location: FILE_NAME, value: lightApi });
         dbLog({ level: 'DEBUG', message: `Message from server`, value: lightApi });
 
-        //  Get wall state from db
         const wallName = lightApi.params.wall;
         const wallSide = lightApi.params.side;
         const tempKey = lightApi.key;
-        let lightColor = 'FFFFFF';
-        if (lightApi.params.lightColor != undefined) {
-            lightColor = lightApi.params.lightColor;
-        }
+        const lightColor = lightApi.params.light;
+
         const queryByName = { name: wallName };
         db.collection(BACKUP_COLLECTION).findOne(queryByName, (err, res) => {
             if (err) logger.error({ message: 'Fail to find wall in database', location: FILE_NAME, value: err });
@@ -693,16 +813,8 @@ mongoClient.connect(url, { useUnifiedTopology: true }, function (err, client) {
                 //  Log error
                 logger.error({ message: 'Not a valid message from server', value: { key: tempKey } });
             } else {
-                //  Emit light:on event to execute in ioControl.js
-
                 //  Update states to database
-                let newBackupValues = "";
-
-                if (wallSide === 'front') {
-                    newBackupValues = { $set: { frontLight: true, lightColor: lightColor, importTime: Date.now() } };
-                } else if (wallSide === 'back') {
-                    newBackupValues = { $set: { backLight: true, lightColor: lightColor, exportTime: Date.now() } };
-                }
+                const newBackupValues = { $set: { lightColor: lightColor } };
 
                 db.collection(BACKUP_COLLECTION).updateOne(queryByName, newBackupValues, (err, res) => {
                     if (err) logger.error({ message: error, location: FILE_NAME });
@@ -718,17 +830,17 @@ mongoClient.connect(url, { useUnifiedTopology: true }, function (err, client) {
                 });
             }
         });
-
     };
 
     function handleLightOffFromServer(lightApi) {
         logger.debug({ message: `Message from server`, location: FILE_NAME, value: lightApi });
+        dbLog({ level: 'DEBUG', message: `Message from server`, value: lightApi });
 
-
-        //  Get wall state from db
         const wallName = lightApi.params.wall;
         const wallSide = lightApi.params.side;
         const tempKey = lightApi.key;
+        const lightColor = '000000';
+
         const queryByName = { name: wallName };
         db.collection(BACKUP_COLLECTION).findOne(queryByName, (err, res) => {
             if (err) logger.error({ message: 'Fail to find wall in database', location: FILE_NAME, value: err });
@@ -744,47 +856,21 @@ mongoClient.connect(url, { useUnifiedTopology: true }, function (err, client) {
                 //  Log error
                 logger.error({ message: 'Not a valid message from server', value: { key: tempKey } });
             } else {
-                // if (wallSide === 'front') {
-                //     const newBackupValues = {
-                //         $set: {
-                //             lightColor: '000000',
-                //             frontLight: false,
+                //  Update states to database
+                const newBackupValues = { $set: { lightColor: lightColor } };
 
-                //         },
-                //         $push: {
-                //             importDuration: {
-                //                 start: '$importTime',
-                //                 end: Date.now(),
-                //                 duration: { $concatArrays: [] }
-                //             }
-                //         }
-                //     }
-                // } else if (wallSide === 'back') {
-                // create query by wall name to access database
-                logger.debug({ message: 'wall complete!!!', location: FILE_NAME })
-                const newBackupValues = {
-                    importTote: [],
-                    exportTote: null,
-                    lightColor: '000000',
-                    backLight: false,
-                    completed: false
-                };
-
-                db.collection(BACKUP_COLLECTION).updateOne(queryByName, { $set: newBackupValues }, function (err, res) {
-                    if (err) logger.error({ message: 'Fail to update database', value: err, location: FILE_NAME });
-                    logger.debug({ message: `Empty wall ${wallName}`, location: FILE_NAME });
-                    dbLog({ level: 'DEBUG', message: `Empty wall ${wallName}` });
+                db.collection(BACKUP_COLLECTION).updateOne(queryByName, newBackupValues, (err, res) => {
+                    if (err) logger.error({ message: error, location: FILE_NAME });
                     event.emit('light:off', {
                         wall: wallState.name,
                         location: wallState.location,
                         lightIndex: wallState.lightIndex,
-                        lightColor: '000000',
+                        lightColor: lightColor,
                         side: wallSide
                     });
                     const rowOfLedStrip = wallState.location.split('.')[2];
                     rgbHubSetLight(rowOfLedStrip);
                 });
-                // }
             }
         });
     };
