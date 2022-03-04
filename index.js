@@ -162,7 +162,7 @@ mongoClient.connect(url, { useUnifiedTopology: true }, function (err, client) {
             event.on('wall:completeOne', handleCompleteEvent);
 
             //  Handle event from websocket
-            socket.on('confirmWall', handleConfirmFromServer);
+            // socket.on('confirmWall', handleConfirmFromServer);
 
             socket.on('mergeWall/lightOn', handleLightOnFromServer);
 
@@ -651,20 +651,20 @@ mongoClient.connect(url, { useUnifiedTopology: true }, function (err, client) {
         });
     };
 
-    function handleConfirmFromServer(confirmApi) {
-        const confirmKey = confirmApi.key;
-        const confirmDate = confirmApi.date;
-        logger.debug({ message: 'Confirm from server', location: FILE_NAME, value: { key: confirmKey } });
+    // function handleConfirmFromServer(confirmApi) {
+    //     const confirmKey = confirmApi.key;
+    //     const confirmDate = confirmApi.date;
+    //     logger.debug({ message: 'Confirm from server', location: FILE_NAME, value: { key: confirmKey } });
 
-        //  Find pennding message match the key then clear interval and remove it from pendingMessage array
-        for (let i = 0; i < pendingMessages.length; i++) {
-            if (pendingMessages[i].key === confirmKey) {
-                clearInterval(pendingMessages[i].interval);
-                pendingMessages.splice(i, 1);
-                logger.debug({ pendingMessages, location: FILE_NAME });
-            }
-        }
-    };
+    //     //  Find pennding message match the key then clear interval and remove it from pendingMessage array
+    //     for (let i = 0; i < pendingMessages.length; i++) {
+    //         if (pendingMessages[i].key === confirmKey) {
+    //             clearInterval(pendingMessages[i].interval);
+    //             pendingMessages.splice(i, 1);
+    //             logger.debug({ pendingMessages, location: FILE_NAME });
+    //         }
+    //     }
+    // };
 
     // function handleLightOnFromServer(lightApi) {
     //     logger.debug({ message: `Message from server`, location: FILE_NAME, value: lightApi });
@@ -979,7 +979,14 @@ mongoClient.connect(url, { useUnifiedTopology: true }, function (err, client) {
 
     function handleGetWallStatusFromServer(d) {
         logger.debug({ message: `Message from server`, value: d });
-        return;
+        db.collection(BACKUP_COLLECTION).find({})
+            .then(res => {
+                return res;
+            })
+            .catch(err => {
+                logger.error({ message: 'Fail to find in database', location: FILE_NAME, value: err });
+                return 'Not found';
+            })
     };
 
     function handleErrorFromServer(errApi) {
