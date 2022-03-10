@@ -161,6 +161,10 @@ mongoClient.connect(url, { useUnifiedTopology: true }, function (err, client) {
 
             event.on('wall:completeOne', handleCompleteEvent);
 
+            event.on('button:refresh', handleRefreshButton);
+
+            event.on('button:reset', handleResetButton);
+
             //  Handle event from websocket
             // socket.on('confirmWall', handleConfirmFromServer);
 
@@ -650,6 +654,17 @@ mongoClient.connect(url, { useUnifiedTopology: true }, function (err, client) {
             dbLog({ level: 'DEBUG', message: `Empty wall ${wallName}` });
         });
     };
+
+    function handleRefreshButton(){
+        logger.debug({message: 'Refresh wall!', location: FILE_NAME});
+        db.collection(BACKUP_COLLECTION).find({})
+        .then(res => {
+            return res;
+        })
+        .catch(err => {
+            logger.error({ message: 'Fail to find in database', location: FILE_NAME, value: err });
+        })
+    }
 
     // function handleConfirmFromServer(confirmApi) {
     //     const confirmKey = confirmApi.key;
