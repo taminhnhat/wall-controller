@@ -655,15 +655,16 @@ mongoClient.connect(url, { useUnifiedTopology: true }, function (err, client) {
         });
     };
 
-    function handleRefreshButton(){
-        logger.debug({message: 'Refresh wall!', location: FILE_NAME});
-        db.collection(BACKUP_COLLECTION).find({})
-        .then(res => {
-            return res;
-        })
-        .catch(err => {
-            logger.error({ message: 'Fail to find in database', location: FILE_NAME, value: err });
-        })
+    function handleRefreshButton() {
+        logger.debug({ message: 'Refresh wall!', location: FILE_NAME });
+        dbLog({ level: 'DEBUG', message: 'Refresh wall' });
+        refreshWallLight();
+    }
+
+    function handleResetButton() {
+        logger.debug({ message: 'Reset wall!', location: FILE_NAME });
+        dbLog({ level: 'DEBUG', message: 'Reset wall' });
+        resetWallLight();
     }
 
     // function handleConfirmFromServer(confirmApi) {
@@ -893,29 +894,13 @@ mongoClient.connect(url, { useUnifiedTopology: true }, function (err, client) {
     function handleResetFromServer(resetApi) {
         logger.debug({ message: `Message from server`, location: FILE_NAME, value: resetApi });
         dbLog({ level: 'DEBUG', message: `Message from server`, value: resetApi });
-        const newValues = {
-            $set: {
-                lightColor: '000000'
-            }
-        }
-        db.collection(BACKUP_COLLECTION).updateMany({}, newValues, (err, res) => {
-            if (err) logger.error({ message: error, location: FILE_NAME });
-            rgbHubSetLight('1');
-            rgbHubSetLight('2');
-            rgbHubSetLight('3');
-            rgbHubSetLight('4');
-            rgbHubSetLight('5');
-        });
+        resetWallLight();
     };
 
     function handleReloadFromServer(reloadApi) {
         logger.debug({ message: `Message from server`, location: FILE_NAME, value: reloadApi });
         dbLog({ level: 'DEBUG', message: `Message from server`, value: reloadApi });
-        rgbHubSetLight('1');
-        rgbHubSetLight('2');
-        rgbHubSetLight('3');
-        rgbHubSetLight('4');
-        rgbHubSetLight('5');
+        refreshWallLight();
     }
 
     function handleLightTestFromServer(lightApi) {
@@ -1135,6 +1120,30 @@ mongoClient.connect(url, { useUnifiedTopology: true }, function (err, client) {
             .catch(err => {
                 if (err) logger.error({ message: err, location: FILE_NAME });
             });
+    }
+
+    function resetWallLight() {
+        const newValues = {
+            $set: {
+                lightColor: '000000'
+            }
+        }
+        db.collection(BACKUP_COLLECTION).updateMany({}, newValues, (err, res) => {
+            if (err) logger.error({ message: error, location: FILE_NAME });
+            rgbHubSetLight('1');
+            rgbHubSetLight('2');
+            rgbHubSetLight('3');
+            rgbHubSetLight('4');
+            rgbHubSetLight('5');
+        });
+    }
+
+    function refreshWallLight() {
+        rgbHubSetLight('1');
+        rgbHubSetLight('2');
+        rgbHubSetLight('3');
+        rgbHubSetLight('4');
+        rgbHubSetLight('5');
     }
 
 });
