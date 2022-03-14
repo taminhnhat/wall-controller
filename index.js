@@ -812,7 +812,7 @@ mongoClient.connect(url, { useUnifiedTopology: true }, function (err, client) {
         const wallName = lightApi.params.wall;
         const wallSide = lightApi.params.side;
         const tempKey = lightApi.key;
-        const lightColor = lightApi.params.light;
+        const lightColor = lightApi.params.lightColor;
 
         const queryByName = { name: wallName };
         db.collection(BACKUP_COLLECTION).findOne(queryByName, (err, res) => {
@@ -829,11 +829,20 @@ mongoClient.connect(url, { useUnifiedTopology: true }, function (err, client) {
                 //  Log error
                 logger.error({ message: 'Not a valid message from server', value: { key: tempKey } });
             } else {
+                let lightArray = wallState.lightArray;
+                if (wallState.lightArray.includes(lightColor) === false) {
+                    lightArray.push(lightColor);
+                }
                 //  Update states to database
-                const newBackupValues = { $set: { lightColor: lightColor } };
+                const newBackupValues = {
+                    $set: {
+                        lightColor: lightColor,
+                        lightArray: lightArray
+                    }
+                };
 
                 db.collection(BACKUP_COLLECTION).updateOne(queryByName, newBackupValues, (err, res) => {
-                    if (err) logger.error({ message: error, location: FILE_NAME });
+                    if (err) logger.error({ message: err, location: FILE_NAME });
                     event.emit('light:on', {
                         wall: wallState.name,
                         location: wallState.location,
@@ -855,7 +864,7 @@ mongoClient.connect(url, { useUnifiedTopology: true }, function (err, client) {
         const wallName = lightApi.params.wall;
         const wallSide = lightApi.params.side;
         const tempKey = lightApi.key;
-        const lightColor = '000000';
+        const lightColor = lightApi.params.lightColor;
 
         const queryByName = { name: wallName };
         db.collection(BACKUP_COLLECTION).findOne(queryByName, (err, res) => {
@@ -872,8 +881,19 @@ mongoClient.connect(url, { useUnifiedTopology: true }, function (err, client) {
                 //  Log error
                 logger.error({ message: 'Not a valid message from server', value: { key: tempKey } });
             } else {
+                let lightArray = wallState.lightArray;
+                for (let i = 0; i < lightArray.length; i++) {
+                    if (lightArray[i] === lightColor) {
+                        lightArray.splice(i, 1);
+                    }
+                }
                 //  Update states to database
-                const newBackupValues = { $set: { lightColor: lightColor } };
+                const newBackupValues = {
+                    $set: {
+                        lightColor: lightColor,
+                        lightArray: lightArray
+                    }
+                };
 
                 db.collection(BACKUP_COLLECTION).updateOne(queryByName, newBackupValues, (err, res) => {
                     if (err) logger.error({ message: error, location: FILE_NAME });
@@ -881,7 +901,7 @@ mongoClient.connect(url, { useUnifiedTopology: true }, function (err, client) {
                         wall: wallState.name,
                         location: wallState.location,
                         lightIndex: wallState.lightIndex,
-                        lightColor: lightColor,
+                        lightColor: '000000',
                         side: wallSide
                     });
                     const rowOfLedStrip = wallState.location.split('.')[2];
@@ -1125,7 +1145,8 @@ mongoClient.connect(url, { useUnifiedTopology: true }, function (err, client) {
     function resetWallLight() {
         const newValues = {
             $set: {
-                lightColor: '000000'
+                lightColor: '000000',
+                lightArray: []
             }
         }
         db.collection(BACKUP_COLLECTION).updateMany({}, newValues, (err, res) => {
@@ -1145,5 +1166,4 @@ mongoClient.connect(url, { useUnifiedTopology: true }, function (err, client) {
         rgbHubSetLight('4');
         rgbHubSetLight('5');
     }
-
 });

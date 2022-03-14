@@ -1,10 +1,11 @@
 class wallState {
     name
     location
-    col
-    row
     lightIndex
     lightColor
+    lightArray
+    col
+    row
     frontLight
     backLight
     importTote
@@ -14,11 +15,12 @@ class wallState {
     constructor(location, name, lightIndex) {
         this.location = location;
         this.name = name;
+        this.lightIndex = lightIndex;
+        this.lightColor = '000000';
+        this.lightArray = [];
         const temp = location.split('.');
         this.col = temp[1];
         this.row = temp[2];
-        this.lightIndex = lightIndex;
-        this.lightColor = '000000';
         this.frontLight = false;
         this.backLight = false;
         this.importTote = [];
