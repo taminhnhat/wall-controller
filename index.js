@@ -10,6 +10,15 @@ const SERVER_URL = process.env.SERVER_URL;
 const WALL_INDEX = Number(process.env.WALL_INDEX);
 const GLOBAL = require('./CONFIGURATION');
 const rgbHubRFEnable = process.env.RGB_HUB_RF_ENABLE;
+const multiUserMode = process.env.MULTI_USER_MODE;
+const lightList = [{ color: '000000', index: 0 },
+{ color: '00ff00', index: 1 },
+{ color: '0000ff', index: 2 },
+{ color: 'ffff00', index: 3 },
+{ color: 'ff00ff', index: 4 },
+{ color: '00ffff', index: 5 },
+{ color: 'ff0000', index: 6 },
+{ color: 'ffffff', index: 7 }];
 //  db and collections name
 const WALL_DB = process.env.DB_NAME;
 const BACKUP_COLLECTION = 'backup';
@@ -253,6 +262,7 @@ mongoClient.connect(url, { useUnifiedTopology: true }, function (err, client) {
                 row: 1,
                 col: 1,
                 lightColor: 1,
+                lightArray: 1,
                 frontLight: 1,
                 backLight: 1,
                 lightIndex: 1
@@ -265,11 +275,31 @@ mongoClient.connect(url, { useUnifiedTopology: true }, function (err, client) {
             .then(result => {
                 let mess = `R${rowOfLedStrip}`;
                 if (rgbHubRFEnable == 'true') mess = 'W1:' + mess;
-                for (col = 0; col < result.length; col++) {
-                    mess = mess + ':' + result[col].lightColor;
+                if (multiUserMode == 'true') {
+                    for (col = 0; col < result.length; col++) {
+                        mess = mess + ':';
+                        console.log(result[col].lightArray);
+                        result[col].lightArray.forEach(element => {
+                            getLightIndexOf(element);
+                            function getLightIndexOf(ele) {
+                                lightList.forEach(light => {
+                                    if (light.color == ele) {
+                                        mess = mess + light.index;
+                                    }
+                                })
+                            }
+                        });
+                    }
+                    mess = mess + ':';
+                }
+                else {
+                    for (col = 0; col < result.length; col++) {
+                        mess = mess + ':' + result[col].lightColor;
+                    }
                 }
                 mess = mess + '\n';
                 event.emit('rgbHub:emit', { message: mess });
+                logger.debug({ message: `message to rgb hub:`, value: mess, location: FILE_NAME });
             });
     }
 
@@ -830,16 +860,27 @@ mongoClient.connect(url, { useUnifiedTopology: true }, function (err, client) {
                 logger.error({ message: 'Not a valid message from server', value: { key: tempKey } });
             } else {
                 let lightArray = wallState.lightArray;
-                if (wallState.lightArray.includes(lightColor) === false) {
-                    lightArray.push(lightColor);
+                let newBackupValues;
+                if (lightColor == 'ffffff') {
+                    newBackupValues = {
+                        $set: {
+                            lightColor: lightColor,
+                            lightArray: [lightColor]
+                        }
+                    };
                 }
-                //  Update states to database
-                const newBackupValues = {
-                    $set: {
-                        lightColor: lightColor,
-                        lightArray: lightArray
+                else {
+                    if (wallState.lightArray.includes(lightColor) === false) {
+                        lightArray.push(lightColor);
                     }
-                };
+                    //  Update states to database
+                    newBackupValues = {
+                        $set: {
+                            lightColor: lightColor,
+                            lightArray: lightArray
+                        }
+                    };
+                }
 
                 db.collection(BACKUP_COLLECTION).updateOne(queryByName, newBackupValues, (err, res) => {
                     if (err) logger.error({ message: err, location: FILE_NAME });
