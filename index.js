@@ -11,6 +11,7 @@ const WALL_INDEX = Number(process.env.WALL_INDEX);
 const GLOBAL = require('./CONFIGURATION');
 const rgbHubRFEnable = process.env.RGB_HUB_RF_ENABLE;
 const multiUserMode = process.env.MULTI_USER_MODE;
+const toggleLedStrip = process.env.TOGGLE_LED_STRIP;
 const lightList = [{ color: '000000', index: 0 },
 { color: '00ff00', index: 1 },
 { color: '0000ff', index: 2 },
@@ -268,9 +269,10 @@ mongoClient.connect(url, { useUnifiedTopology: true }, function (err, client) {
                 lightIndex: 1
             }
         };
+        
         db.collection(BACKUP_COLLECTION)
             .find({ row: rowOfLedStrip }, rgbProjection)
-            .sort({ col: 1 })
+            .sort({ col: 0 })
             .toArray()
             .then(result => {
                 let mess = `R${rowOfLedStrip}`;
