@@ -272,7 +272,7 @@ mongoClient.connect(url, { useUnifiedTopology: true }, function (err, client) {
         
         db.collection(BACKUP_COLLECTION)
             .find({ row: rowOfLedStrip }, rgbProjection)
-            .sort({ col: 0 })
+            .sort({ col: -1 })
             .toArray()
             .then(result => {
                 let mess = `R${rowOfLedStrip}`;
