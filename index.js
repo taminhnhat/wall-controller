@@ -276,6 +276,7 @@ mongoClient.connect(url, { useUnifiedTopology: true }, function (err, client) {
                 let mess = `R${rowOfLedStrip}`;
                 if (rgbHubRFEnable == 'true') mess = 'W1:' + mess;
                 if (multiUserMode == 'true') {
+                    mess = `T${rowOfLedStrip}`;
                     for (col = 0; col < result.length; col++) {
                         mess = mess + ':';
                         console.log(result[col].lightArray);
