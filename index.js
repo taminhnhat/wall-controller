@@ -301,7 +301,7 @@ mongoClient.connect(url, { useUnifiedTopology: true }, function (err, client) {
                 }
                 mess = mess + '\n';
                 event.emit('rgbHub:emit', { message: mess });
-                logger.debug({ message: `message to rgb hub:`, value: mess, location: FILE_NAME });
+                // logger.debug({ message: `message to rgb hub:`, value: mess, location: FILE_NAME });
             });
     }
 
