@@ -269,7 +269,7 @@ mongoClient.connect(url, { useUnifiedTopology: true }, function (err, client) {
                 lightIndex: 1
             }
         };
-        
+
         db.collection(BACKUP_COLLECTION)
             .find({ row: rowOfLedStrip }, rgbProjection)
             .sort({ col: -1 })
@@ -281,7 +281,6 @@ mongoClient.connect(url, { useUnifiedTopology: true }, function (err, client) {
                     mess = `T${rowOfLedStrip}`;
                     for (col = 0; col < result.length; col++) {
                         mess = mess + ':';
-                        console.log(result[col].lightArray);
                         result[col].lightArray.forEach(element => {
                             getLightIndexOf(element);
                             function getLightIndexOf(ele) {
