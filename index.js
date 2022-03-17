@@ -269,10 +269,12 @@ mongoClient.connect(url, { useUnifiedTopology: true }, function (err, client) {
                 lightIndex: 1
             }
         };
+        let sortDirection = 1;
+        if (toggleLedStrip == 'true') sortDirection = -1;
 
         db.collection(BACKUP_COLLECTION)
             .find({ row: rowOfLedStrip }, rgbProjection)
-            .sort({ col: 1 })
+            .sort({ col: sortDirection })
             .toArray()
             .then(result => {
                 let mess = `R${rowOfLedStrip}`;
@@ -863,7 +865,7 @@ mongoClient.connect(url, { useUnifiedTopology: true }, function (err, client) {
             } else {
                 let lightArray = wallState.lightArray;
                 let newBackupValues;
-                if (lightColor == 'ffffff') {
+                if (lightColor == 'ffffff' || lightColor == 'ff0000') {
                     newBackupValues = {
                         $set: {
                             lightColor: lightColor,
