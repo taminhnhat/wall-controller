@@ -865,7 +865,7 @@ mongoClient.connect(url, { useUnifiedTopology: true }, function (err, client) {
                         if (lightArray[i] === lightColor) {
                             lightArray.splice(i, 1);
                             db.collection(BACKUP_COLLECTION).updateOne({ name: wallState.name }, { $set: { lightArray: lightArray } }, (err, res) => {
-                                //
+                                rgbHubSetLight(wallState.location.split('.')[2]);
                             })
                         }
                     }
