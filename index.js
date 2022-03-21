@@ -42,6 +42,7 @@ require('./serial');
 
 //  NAMED PIPE____________________________________________________________________________
 // IPC using named pipe, communicate between c++ side and nodejs side
+require('./readPipe');
 const platformOS = process.platform;
 if (platformOS == 'linux' || platformOS == 'darwin') {
     // require('./gpio-ipc');
@@ -108,6 +109,8 @@ mongoClient.connect(url, { useUnifiedTopology: true }, function (err, client) {
             _id: 0,
             name: 1,
             location: 1,
+            lightColor: 1,
+            lightArray: 1,
             frontLight: 1,
             backLight: 1,
             lightIndex: 1
@@ -137,7 +140,7 @@ mongoClient.connect(url, { useUnifiedTopology: true }, function (err, client) {
         .then(result => {
             logger.debug({ message: result, location: FILE_NAME });
 
-            //  Reload light state on wall (Dit me den tren mach nhieu nhu lone)
+            //  Reload light state on wall
             // setInterval(restoreLightFromDatabase, 5000);
 
             // Handle internal event`
@@ -171,9 +174,13 @@ mongoClient.connect(url, { useUnifiedTopology: true }, function (err, client) {
 
             event.on('wall:completeOne', handleCompleteEvent);
 
-            event.on('button:refresh', handleRefreshButton);
+            event.on('command:lightOn', handleLightOnFromServer);
 
-            event.on('button:reset', handleResetButton);
+            event.on('command:lightOff', handleLightOffFromServer);
+
+            event.on('command:refresh', handleRefreshCommand);
+
+            event.on('command:reset', handleResetButton);
 
             //  Handle event from websocket
             // socket.on('confirmWall', handleConfirmFromServer);
@@ -263,10 +270,7 @@ mongoClient.connect(url, { useUnifiedTopology: true }, function (err, client) {
                 row: 1,
                 col: 1,
                 lightColor: 1,
-                lightArray: 1,
-                frontLight: 1,
-                backLight: 1,
-                lightIndex: 1
+                lightArray: 1
             }
         };
         let sortDirection = 1;
@@ -689,7 +693,7 @@ mongoClient.connect(url, { useUnifiedTopology: true }, function (err, client) {
         });
     };
 
-    function handleRefreshButton() {
+    function handleRefreshCommand() {
         logger.debug({ message: 'Refresh wall!', location: FILE_NAME });
         dbLog({ level: 'DEBUG', message: 'Refresh wall' });
         refreshWallLight();
@@ -849,57 +853,86 @@ mongoClient.connect(url, { useUnifiedTopology: true }, function (err, client) {
         const lightColor = lightApi.params.lightColor;
 
         const queryByName = { name: wallName };
-        db.collection(BACKUP_COLLECTION).findOne(queryByName, (err, res) => {
-            if (err) logger.error({ message: 'Fail to find wall in database', location: FILE_NAME, value: err });
-            const wallState = res;
-            const isWallNameValid = wallState != undefined;
-            const isWallSideValid = wallSide === 'front' || wallSide === 'back';
-
-            //  Check if wallName is valid
-            if (!isWallNameValid) {
-                //  Log error
-                logger.error({ message: 'Not a valid message from server', value: { key: tempKey } });
-            } else if (!isWallSideValid) {
-                //  Log error
-                logger.error({ message: 'Not a valid message from server', value: { key: tempKey } });
-            } else {
-                let lightArray = wallState.lightArray;
-                let newBackupValues;
-                if (lightColor == 'ffffff' || lightColor == 'ff0000') {
-                    newBackupValues = {
-                        $set: {
-                            lightColor: lightColor,
-                            lightArray: [lightColor]
+        db.collection(BACKUP_COLLECTION).find({}, projection)
+            .sort({ location: 1 })
+            .toArray()
+            .then(res => {
+                //
+                if (err) logger.error({ message: 'Fail to find wall in database', location: FILE_NAME, value: err });
+                res.forEach(wallState => {
+                    let lightArray = wallState.lightArray;
+                    for (let i = 0; i < lightArray.length; i++) {
+                        if (lightArray[i] === lightColor) {
+                            lightArray.splice(i, 1);
+                            db.collection(BACKUP_COLLECTION).updateOne({ name: wallState.name }, { $set: { lightArray: lightArray } }, (err, res) => {
+                                //
+                            })
                         }
-                    };
-                }
-                else {
-                    if (wallState.lightArray.includes(lightColor) === false) {
-                        lightArray.push(lightColor);
                     }
-                    //  Update states to database
-                    newBackupValues = {
-                        $set: {
-                            lightColor: lightColor,
-                            lightArray: lightArray
-                        }
-                    };
-                }
-
-                db.collection(BACKUP_COLLECTION).updateOne(queryByName, newBackupValues, (err, res) => {
-                    if (err) logger.error({ message: err, location: FILE_NAME });
-                    event.emit('light:on', {
-                        wall: wallState.name,
-                        location: wallState.location,
-                        lightIndex: wallState.lightIndex,
-                        lightColor: lightColor,
-                        side: wallSide
-                    });
-                    const rowOfLedStrip = wallState.location.split('.')[2];
-                    rgbHubSetLight(rowOfLedStrip);
                 });
-            }
-        });
+                return db.collection(BACKUP_COLLECTION).findOne(queryByName);
+            })
+            .then(res => {
+                if (err) logger.error({ message: 'Fail to find wall in database', location: FILE_NAME, value: err });
+                const wallState = res;
+                const isWallNameValid = wallState != undefined;
+                const isWallSideValid = wallSide === 'front' || wallSide === 'back';
+
+                //  Check if wallName is valid
+                if (!isWallNameValid) {
+                    //  Log error
+                    logger.error({ message: 'Not a valid message from server', value: { key: tempKey } });
+                } else if (!isWallSideValid) {
+                    //  Log error
+                    logger.error({ message: 'Not a valid message from server', value: { key: tempKey } });
+                } else {
+                    let lightArray = wallState.lightArray;
+                    let newBackupValues;
+                    if (lightColor == 'ffffff') {
+                        newBackupValues = {
+                            $set: {
+                                lightColor: lightColor,
+                                lightArray: [lightColor]
+                            }
+                        };
+                    }
+                    else if (lightColor == 'ff0000') {
+                        newBackupValues = {
+                            $set: {
+                                lightArray: []
+                            }
+                        }
+                    }
+                    else {
+                        if (wallState.lightArray.includes(lightColor) === false) {
+                            lightArray.push(lightColor);
+                        }
+                        //  Update states to database
+                        newBackupValues = {
+                            $set: {
+                                lightColor: lightColor,
+                                lightArray: lightArray
+                            }
+                        };
+                    }
+
+                    db.collection(BACKUP_COLLECTION).updateOne(queryByName, newBackupValues, (err, res) => {
+                        if (err) logger.error({ message: err, location: FILE_NAME });
+                        event.emit('light:on', {
+                            wall: wallState.name,
+                            location: wallState.location,
+                            lightIndex: wallState.lightIndex,
+                            lightColor: lightColor,
+                            side: wallSide
+                        });
+                        const rowOfLedStrip = wallState.location.split('.')[2];
+                        rgbHubSetLight(rowOfLedStrip);
+                    });
+                }
+            })
+            .catch(err => {
+                if (err) logger.error({ message: 'Light on error', location: FILE_NAME, value: err });
+            })
     };
 
     function handleLightOffFromServer(lightApi) {
