@@ -859,17 +859,19 @@ mongoClient.connect(url, { useUnifiedTopology: true }, function (err, client) {
             .then(res => {
                 //
                 if (err) logger.error({ message: 'Fail to find wall in database', location: FILE_NAME, value: err });
-                res.forEach(wallState => {
-                    let lightArray = wallState.lightArray;
-                    for (let i = 0; i < lightArray.length; i++) {
-                        if (lightArray[i] === lightColor) {
-                            lightArray.splice(i, 1);
-                            db.collection(BACKUP_COLLECTION).updateOne({ name: wallState.name }, { $set: { lightArray: lightArray } }, (err, res) => {
-                                rgbHubSetLight(wallState.location.split('.')[2]);
-                            });
+                if (lightColor != 'ffffff') {
+                    res.forEach(wallState => {
+                        let lightArray = wallState.lightArray;
+                        for (let i = 0; i < lightArray.length; i++) {
+                            if (lightArray[i] === lightColor) {
+                                lightArray.splice(i, 1);
+                                db.collection(BACKUP_COLLECTION).updateOne({ name: wallState.name }, { $set: { lightArray: lightArray } }, (err, res) => {
+                                    rgbHubSetLight(wallState.location.split('.')[2]);
+                                });
+                            }
                         }
-                    }
-                });
+                    });
+                }
                 return db.collection(BACKUP_COLLECTION).findOne(queryByName);
             })
             .then(res => {
