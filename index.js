@@ -884,10 +884,8 @@ mongoClient.connect(url, { useUnifiedTopology: true }, function (err, client) {
                 if (!isWallNameValid) {
                     //  Log error
                     logger.error({ message: 'Not a valid message from server', value: { key: tempKey } });
-                } else if (!isWallSideValid) {
-                    //  Log error
-                    logger.error({ message: 'Not a valid message from server', value: { key: tempKey } });
-                } else {
+                }
+                else {
                     let lightArray = wallState.lightArray;
                     let newBackupValues;
                     if (lightColor == 'ffffff') {
@@ -934,7 +932,7 @@ mongoClient.connect(url, { useUnifiedTopology: true }, function (err, client) {
             })
             .catch(err => {
                 if (err) logger.error({ message: 'Light on error', location: FILE_NAME, value: err });
-            })
+            });
     };
 
     function handleLightOffFromServer(lightApi) {
@@ -957,10 +955,8 @@ mongoClient.connect(url, { useUnifiedTopology: true }, function (err, client) {
             if (!isWallNameValid) {
                 //  Log error
                 logger.error({ message: 'Not a valid message from server', value: { key: tempKey } });
-            } else if (!isWallSideValid) {
-                //  Log error
-                logger.error({ message: 'Not a valid message from server', value: { key: tempKey } });
-            } else {
+            }
+            else {
                 let lightArray = wallState.lightArray;
                 for (let i = 0; i < lightArray.length; i++) {
                     if (lightArray[i] === lightColor) {
