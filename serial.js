@@ -26,7 +26,7 @@ const frontScanner = new SerialPort({
   autoOpen: false
 });
 const backScanner = new SerialPort({
-  backScannerPath,
+  path: backScannerPath,
   baudRate: scannerBaudrate,
   autoOpen: false
 });
