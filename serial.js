@@ -20,11 +20,13 @@ const scannerBaudrate = Number(process.env.SCANNER_BAUDRATE) || 9600;
 const rgbHubCycle = Number(process.env.RGB_HUB_SERIAL_CYCLE) || 100;
 
 //  NEED TO CONFIG SERIAL PORT FIRST, READ 'README.md'
-const frontScanner = new SerialPort(frontScannerPath, {
+const frontScanner = new SerialPort({
+  path: frontScannerPath,
   baudRate: scannerBaudrate,
   autoOpen: false
 });
-const backScanner = new SerialPort(backScannerPath, {
+const backScanner = new SerialPort({
+  backScannerPath,
   baudRate: scannerBaudrate,
   autoOpen: false
 });
