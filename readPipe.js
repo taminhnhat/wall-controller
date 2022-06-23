@@ -14,47 +14,60 @@ readfifo.on('exit', function (status) {
     // Handle Reading pipe event
     fifoRs.on('data', data => {
         data = String(data).trim();
-        console.log(data);
         const dataArray = data.split(':');
         const header = dataArray[0];
-        if (header == 'on') {
-            const lightApi = {
-                name: 'command:lightOn',
-                clientId: 'command_from_pipe',
-                version: '1.0.0',
-                params: {
-                    wall: dataArray[1],
-                    lightColor: dataArray[2],
-                    side: 'front'
-                },
-                date: new Date().toISOString(),
-                key: generateCheck(5)
-            }
-            event.emit('command:lightOn', lightApi);
+        switch (header) {
+            case 'on':
+                const lightApi = {
+                    name: 'command:lightOn',
+                    clientId: 'command_from_pipe',
+                    version: '1.0.0',
+                    params: {
+                        wall: dataArray[1],
+                        lightColor: dataArray[2],
+                        side: 'front'
+                    },
+                    date: new Date().toISOString(),
+                    key: generateCheck(5)
+                }
+                event.emit('command:lightOn', lightApi);
+                break;
+            case 'off':
+                const lightApi = {
+                    name: 'command:lightOff',
+                    clientId: 'command_from_pipe',
+                    version: '1.0.0',
+                    params: {
+                        wall: dataArray[1],
+                        lightColor: dataArray[2],
+                        side: 'front'
+                    },
+                    date: new Date().toISOString(),
+                    key: generateCheck(5)
+                }
+                event.emit('command:lightOff', lightApi);
+                break;
+            case 'clear':
+                event.emit('command:reset');
+                break;
+            case 'reload':
+                event.emit('command:refresh');
+                break;
+            case 'CFG':
+                event.emit('command:configRgbHub', data);
+            default:
+                break;
         }
-        else if (header == 'off') {
-            const lightApi = {
-                name: 'command:lightOff',
-                clientId: 'command_from_pipe',
-                version: '1.0.0',
-                params: {
-                    wall: dataArray[1],
-                    lightColor: dataArray[2],
-                    side: 'front'
-                },
-                date: new Date().toISOString(),
-                key: generateCheck(5)
-            }
-            event.emit('command:lightOff', lightApi);
-        }
-        else if (header == 'clear') {
-            event.emit('command:reset');
-        }
-        else if (header == 'reload') {
-            event.emit('command:refresh');
-        }
-        else {
-        }
+        // if (header == 'on') {
+        // }
+        // else if (header == 'off') {
+        // }
+        // else if (header == 'clear') {
+        // }
+        // else if (header == 'reload') {
+        // }
+        // else {
+        // }
     });
 
     fifoRs.on('ready', function (err) {

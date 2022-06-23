@@ -83,6 +83,7 @@ let exportTote_timeOut = null;
 
 //  Temporary key for every API send to sockert server
 const generateKey = require('./keyGenarate');
+const { FILE } = require('dns');
 let frontScanKey = generateKey(3);
 let backScanKey = generateKey(3);
 
@@ -181,6 +182,8 @@ mongoClient.connect(url, { useUnifiedTopology: true }, function (err, client) {
             event.on('command:refresh', handleRefreshCommand);
 
             event.on('command:reset', handleResetButton);
+
+            event.on('command:configRgbHub', handleConfigButton);
 
             //  Handle event from websocket
             // socket.on('confirmWall', handleConfirmFromServer);
@@ -703,6 +706,11 @@ mongoClient.connect(url, { useUnifiedTopology: true }, function (err, client) {
         logger.debug({ message: 'Reset wall!', location: FILE_NAME });
         dbLog({ level: 'DEBUG', message: 'Reset wall' });
         resetWallLight();
+    }
+
+    function handleConfigButton() {
+        logger.debug({ message: 'Config Rgb Hub!', location: FILE_NAME });
+
     }
 
     // function handleConfirmFromServer(confirmApi) {
