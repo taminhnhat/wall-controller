@@ -150,40 +150,41 @@ let M_3_30 = new wallState('W.1.1', 'M-3-1', 31);
 //////              WALL M4             //////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////////
 //
-let M_4_1 = new wallState('W.6.5', 'null', 2);
-let M_4_2 = new wallState('W.5.5', 'null', 3);
-let M_4_3 = new wallState('W.4.5', 'null', 4);
-let M_4_4 = new wallState('W.3.5', 'M-4-15', 5);
-let M_4_5 = new wallState('W.2.5', 'M-4-10', 6);
-let M_4_6 = new wallState('W.1.5', 'M-4-5', 7);
-//
-let M_4_7 = new wallState('W.6.4', 'null', 8);
-let M_4_8 = new wallState('W.5.4', 'null', 9);
-let M_4_9 = new wallState('W.4.4', 'null', 10);
-let M_4_10 = new wallState('W.3.4', 'M-4-14', 11);
-let M_4_11 = new wallState('W.2.4', 'M-4-9', 12);
-let M_4_12 = new wallState('W.1.4', 'M-4-4', 13);
-//
-let M_4_13 = new wallState('W.6.3', 'null', 14);
-let M_4_14 = new wallState('W.5.3', 'null', 15);
-let M_4_15 = new wallState('W.4.3', 'null', 16);
-let M_4_16 = new wallState('W.3.3', 'M-4-13', 17);
-let M_4_17 = new wallState('W.2.3', 'M-4-8', 18);
-let M_4_18 = new wallState('W.1.3', 'M-4-3', 19);
-//
-let M_4_19 = new wallState('W.6.2', 'null', 20);
-let M_4_20 = new wallState('W.5.2', 'null', 21);
-let M_4_21 = new wallState('W.4.2', 'null', 22);
-let M_4_22 = new wallState('W.3.2', 'M-4-12', 23);
-let M_4_23 = new wallState('W.2.2', 'M-4-7', 24);
-let M_4_24 = new wallState('W.1.2', 'M-4-2', 25);
-//
-let M_4_25 = new wallState('W.6.1', 'null', 26);
-let M_4_26 = new wallState('W.5.1', 'null', 27);
-let M_4_27 = new wallState('W.4.1', 'null', 28);
-let M_4_28 = new wallState('W.3.1', 'M-4-11', 29);
-let M_4_29 = new wallState('W.2.1', 'M-4-6', 30);
-let M_4_30 = new wallState('W.1.1', 'M-4-1', 31);
+let M_4_1 = new wallState('W.1.1', 'M-4-1', 31);
+let M_4_2 = new wallState('W.1.2', 'M-4-2', 25);
+let M_4_3 = new wallState('W.1.3', 'M-4-3', 19);
+let M_4_4 = new wallState('W.1.4', 'M-4-4', 13);
+let M_4_5 = new wallState('W.1.5', 'M-4-5', 7);
+
+let M_4_6 = new wallState('W.2.1', 'M-4-6', 30);
+let M_4_7 = new wallState('W.2.2', 'M-4-7', 24);
+let M_4_8 = new wallState('W.2.3', 'M-4-8', 18);
+let M_4_9 = new wallState('W.2.4', 'M-4-9', 12);
+let M_4_10 = new wallState('W.2.5', 'M-4-10', 6);
+
+let M_4_11 = new wallState('W.3.1', 'M-4-11', 29);
+let M_4_12 = new wallState('W.3.2', 'M-4-12', 23);
+let M_4_13 = new wallState('W.3.3', 'M-4-13', 17);
+let M_4_14 = new wallState('W.3.4', 'M-4-14', 11);
+let M_4_15 = new wallState('W.3.5', 'M-4-15', 5);
+
+let M_4_16 = new wallState('W.4.1', 'M-4-16', 28);
+let M_4_17 = new wallState('W.4.2', 'M-4-17', 22);
+let M_4_18 = new wallState('W.4.3', 'M-4-18', 16);
+let M_4_19 = new wallState('W.4.4', 'M-4-19', 10);
+let M_4_20 = new wallState('W.4.5', 'M-4-20', 4);
+
+let M_4_21 = new wallState('W.5.1', 'M-4-21', 27);
+let M_4_22 = new wallState('W.5.2', 'M-4-22', 21);
+let M_4_23 = new wallState('W.5.3', 'M-4-23', 15);
+let M_4_24 = new wallState('W.5.4', 'M-4-24', 9);
+let M_4_25 = new wallState('W.5.5', 'M-4-25', 3);
+
+let M_4_26 = new wallState('W.6.1', 'M-4-26', 26);
+let M_4_27 = new wallState('W.6.2', 'M-4-27', 20);
+let M_4_28 = new wallState('W.6.3', 'M-4-28', 14);
+let M_4_29 = new wallState('W.6.4', 'M-4-29', 8);
+let M_4_30 = new wallState('W.6.5', 'M-4-30', 2);
 
 const WAll_M1 = [M_1_1, M_1_2, M_1_3, M_1_4, M_1_5, M_1_6,
     M_1_7, M_1_8, M_1_9, M_1_10, M_1_11, M_1_12,
