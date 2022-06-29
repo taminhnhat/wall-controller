@@ -5,7 +5,7 @@
 
 require('dotenv').config({ path: './.env' });
 const GLOBAL = require('./CONFIGURATION');
-const { SerialPort } = require('serialport');
+const SerialPort = require('serialport');
 const event = require('./event');
 
 const logger = require('./logger/logger');
@@ -20,18 +20,15 @@ const scannerBaudrate = Number(process.env.SCANNER_BAUDRATE) || 9600;
 const rgbHubCycle = Number(process.env.RGB_HUB_SERIAL_CYCLE) || 100;
 
 //  NEED TO CONFIG SERIAL PORT FIRST, READ 'README.md'
-const frontScanner = new SerialPort({
-  path: frontScannerPath,
+const frontScanner = new SerialPort(frontScannerPath, {
   baudRate: scannerBaudrate,
   autoOpen: false
 });
-const backScanner = new SerialPort({
-  path: backScannerPath,
+const backScanner = new SerialPort(backScannerPath, {
   baudRate: scannerBaudrate,
   autoOpen: false
 });
-const rgbHub = new SerialPort({
-  path: rgbHubPath,
+const rgbHub = new SerialPort(rgbHubPath, {
   baudRate: rgbHubBaudrate,
   autoOpen: false
 });

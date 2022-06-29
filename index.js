@@ -185,6 +185,8 @@ mongoClient.connect(url, { useUnifiedTopology: true }, function (err, client) {
 
             event.on('command:configRgbHub', handleConfigButton);
 
+            event.on('command:testLight', handleTestLightButton);
+
             //  Handle event from websocket
             // socket.on('confirmWall', handleConfirmFromServer);
 
@@ -708,9 +710,22 @@ mongoClient.connect(url, { useUnifiedTopology: true }, function (err, client) {
         resetWallLight();
     }
 
-    function handleConfigButton() {
-        logger.debug({ message: 'Config Rgb Hub!', location: FILE_NAME });
+    function handleConfigButton(data) {
+        logger.debug({ message: 'Config rgb hub!', location: FILE_NAME });
+        const mess = `CFG:${data.mess}\n`;
+        event.emit('rgbHub:emit', { message: mess });
+    }
 
+    function handleTestLightButton() {
+        logger.debug({ message: 'Test rgb hub', location: FILE_NAME });
+        event.emit('rgbHub:emit', { message: 'R1:00ff00:00ffff:0000ff:ffff00:ff00ff:ffffff\n' });
+        event.emit('rgbHub:emit', { message: 'R2:00ff00:00ffff:0000ff:ffff00:ff00ff:ffffff\n' });
+        event.emit('rgbHub:emit', { message: 'R3:00ff00:00ffff:0000ff:ffff00:ff00ff:ffffff\n' });
+        event.emit('rgbHub:emit', { message: 'R4:00ff00:00ffff:0000ff:ffff00:ff00ff:ffffff\n' });
+        event.emit('rgbHub:emit', { message: 'R5:00ff00:00ffff:0000ff:ffff00:ff00ff:ffffff\n' });
+        setTimeout(() => {
+            refreshWallLight();
+        }, 2000);
     }
 
     // function handleConfirmFromServer(confirmApi) {
@@ -914,6 +929,10 @@ mongoClient.connect(url, { useUnifiedTopology: true }, function (err, client) {
                     else {
                         if (wallState.lightArray.includes(lightColor) === false) {
                             lightArray.push(lightColor);
+                        }
+                        const indexOfWhiteLight = wallState.lightArray.indexOf('ffffff');
+                        if (indexOfWhiteLight != -1) {
+                            lightArray.splice(indexOfWhiteLight, 1);
                         }
                         //  Update states to database
                         newBackupValues = {

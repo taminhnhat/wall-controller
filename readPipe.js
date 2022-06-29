@@ -16,9 +16,10 @@ readfifo.on('exit', function (status) {
         data = String(data).trim();
         const dataArray = data.split(':');
         const header = dataArray[0];
+        let lightApi;
         switch (header) {
             case 'on':
-                const lightApi = {
+                lightApi = {
                     name: 'command:lightOn',
                     clientId: 'command_from_pipe',
                     version: '1.0.0',
@@ -33,7 +34,7 @@ readfifo.on('exit', function (status) {
                 event.emit('command:lightOn', lightApi);
                 break;
             case 'off':
-                const lightApi = {
+                lightApi = {
                     name: 'command:lightOff',
                     clientId: 'command_from_pipe',
                     version: '1.0.0',
@@ -54,7 +55,11 @@ readfifo.on('exit', function (status) {
                 event.emit('command:refresh');
                 break;
             case 'CFG':
-                event.emit('command:configRgbHub', data);
+                event.emit('command:configRgbHub', { mess: dataArray[1] });
+                break;
+            case 'test':
+                event.emit('command:testLight');
+                break;
             default:
                 break;
         }
