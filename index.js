@@ -127,7 +127,6 @@ mongoClient.connect(url, { useUnifiedTopology: true }, function (err, client) {
         .sort({ location: 1 })
         .toArray()
         .then(result => {
-            restoreLight(result);
             rgbHubSetLight('1');
             rgbHubSetLight('2');
             rgbHubSetLight('3');
@@ -140,9 +139,6 @@ mongoClient.connect(url, { useUnifiedTopology: true }, function (err, client) {
         })
         .then(result => {
             logger.debug({ message: result, location: FILE_NAME });
-
-            //  Reload light state on wall
-            // setInterval(restoreLightFromDatabase, 5000);
 
             // Handle internal event`
             event.on('button:front', handleFrontButtonFromGPIO);

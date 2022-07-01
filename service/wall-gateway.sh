@@ -1,7 +1,7 @@
 #!/bin/bash
 
-mkfifo /tmp/emit_gpio
-mkfifo /tmp/gpio_callback
-chmod 777 /tmp/emit_gpio
-chmod 777 /tmp/gpio_callback
-node /home/ubuntu/wall-controller/index.js > ~/gateway.log
+mkfifo /tmp/user_cmd
+chmod 777 /tmp/user_cmd
+sudo echo '' > /var/log/wall-controller/gateway.log
+sudo chmod 744 /var/log/wall-controller/gateway.log
+node /home/ubuntu/wall-controller/index.js > /var/log/wall-controller/gateway.log

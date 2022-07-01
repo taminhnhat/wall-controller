@@ -10,7 +10,7 @@ Two processes communicate to each other using ipc (named-pipe).
 - Os: ubuntu server 20.04 LTS (without desktop)  
 - Mongodb server for raspberry pi using this [guide](https://developer.mongodb.com/how-to/mongodb-on-raspberry-pi/)
 - [Node.js](https://github.com/nodesource/distributions/blob/master/README.md) 14 or above
-- gcc, g++, make - to build c++
+- gcc, g++, make
 - [pigpio](https://abyz.me.uk/rpi/pigpio/index.html) - an gpio library for c++
 
 # INSTALLATION

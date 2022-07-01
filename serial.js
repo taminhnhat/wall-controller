@@ -18,6 +18,7 @@ const rgbHubPath = process.env.RGB_HUB_PATH;
 const rgbHubBaudrate = Number(process.env.RGB_HUB_BAUDRATE) || 115200;
 const scannerBaudrate = Number(process.env.SCANNER_BAUDRATE) || 9600;
 const rgbHubCycle = Number(process.env.RGB_HUB_SERIAL_CYCLE) || 100;
+const rgbHubDebugMode = process.env.RGB_DEBUG_MODE;
 
 //  NEED TO CONFIG SERIAL PORT FIRST, READ 'README.md'
 const frontScanner = new SerialPort(frontScannerPath, {
@@ -176,6 +177,7 @@ function handleRgbHubEmit(params) {
       if (err) logger.error({ message: 'Cannot write to rgb hub', value: err, location: FILE_NAME });
       lastTimeEmitToRgbHub = Date.now();
       emitTorgbHubComplete = true;
+      if (rgbHubDebugMode == 'true');
       logger.debug({ message: `${Date.now()}-emit to rgb hub:`, value: messageToRgbHub, location: FILE_NAME });
     });
   }
