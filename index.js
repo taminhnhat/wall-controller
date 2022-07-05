@@ -716,11 +716,11 @@ mongoClient.connect(url, { useUnifiedTopology: true }, function (err, client) {
 
     function handleTestLightButton() {
         logger.debug({ message: 'Test rgb hub', location: FILE_NAME });
-        event.emit('rgbHub:emit', { message: 'T1:00ff00:00ffff:0000ff:ffff00:ff00ff:ffffff\n' });
-        event.emit('rgbHub:emit', { message: 'T2:00ff00:00ffff:0000ff:ffff00:ff00ff:ffffff\n' });
-        event.emit('rgbHub:emit', { message: 'T3:00ff00:00ffff:0000ff:ffff00:ff00ff:ffffff\n' });
-        event.emit('rgbHub:emit', { message: 'T4:00ff00:00ffff:0000ff:ffff00:ff00ff:ffffff\n' });
-        event.emit('rgbHub:emit', { message: 'T5:00ff00:00ffff:0000ff:ffff00:ff00ff:ffffff\n' });
+        event.emit('rgbHub:emit', { message: 'R1:00ff00:00ffff:0000ff:ffff00:ff00ff:ffffff\n' });
+        event.emit('rgbHub:emit', { message: 'R2:00ff00:00ffff:0000ff:ffff00:ff00ff:ffffff\n' });
+        event.emit('rgbHub:emit', { message: 'R3:00ff00:00ffff:0000ff:ffff00:ff00ff:ffffff\n' });
+        event.emit('rgbHub:emit', { message: 'R4:00ff00:00ffff:0000ff:ffff00:ff00ff:ffffff\n' });
+        event.emit('rgbHub:emit', { message: 'R5:00ff00:00ffff:0000ff:ffff00:ff00ff:ffffff\n' });
         setTimeout(() => {
             refreshWallLight();
         }, 2000);
