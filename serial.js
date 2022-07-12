@@ -193,8 +193,8 @@ function handleRgbHubEmit(params) {
 function handleRgbHubStart() {
   rgbHub.open((err) => {
     if (err) {
-      if (err.message !== 'Port is already open')
-        event.emit('rgbHub:error', { message: 'Rgb hub error', value: err.message });
+      // if (err.message !== 'Port is already open')
+      event.emit('rgbHub:error', { message: 'Rgb hub error', value: err.message });
     }
     else {
       rgbHub.write('R6:00ff00\n', (err, res) => {
