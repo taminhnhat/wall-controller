@@ -167,6 +167,7 @@ rgbHub.on('error', (err) => {
 let lastTimeEmitToRgbHub = Date.now();
 let emitTorgbHubComplete = true;
 event.on('rgbHub:emit', handleRgbHubEmit);
+event.on('rgbHub:start', handleRgbHubStart);
 
 function handleRgbHubEmit(params) {
   const deltaTime = Date.now() - lastTimeEmitToRgbHub;
@@ -188,6 +189,15 @@ function handleRgbHubEmit(params) {
     }, rgbHubCycle - deltaTime);
   }
 };
+
+function handleRgbHubStart() {
+  rgbHub.open((err) => {
+    if (err) {
+      if (err.message !== 'Port is already open')
+        event.emit('rgbHub:error', { message: 'Rgb hub error', value: err.message });
+    }
+  });
+}
 
 /**
  * Reconnecting to serial port every 5 seconds after loosing connection
@@ -211,15 +221,18 @@ function backScannerCheckHealth() {
 }
 
 function rgbHubCheckHealth() {
-  rgbHub.open((err) => {
-    if (err) {
-      if (err.message !== 'Port is already open')
-        event.emit('rgbHub:error', { message: 'Rgb hub error', value: err.message });
-    }
+  // rgbHub.open((err) => {
+  //   if (err) {
+  //     if (err.message !== 'Port is already open')
+  //       event.emit('rgbHub:error', { message: 'Rgb hub error', value: err.message });
+  //   }
+  // });
+  rgbHub.write('STT', (err, res) => {
+    if (err) logger.error({ message: 'Cannot write to rgb hub', value: err, location: FILE_NAME });
   });
 }
 
-setInterval(frontScannerCheckHealth, 5000);
-setInterval(backScannerCheckHealth, 5000);
-// setInterval(rgbHubCheckHealth, 5000);
-rgbHubCheckHealth();
+// setInterval(frontScannerCheckHealth, 5000);
+// setInterval(backScannerCheckHealth, 5000);
+setInterval(rgbHubCheckHealth, 2000);
+// rgbHubCheckHealth();

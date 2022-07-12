@@ -84,6 +84,7 @@ let exportTote_timeOut = null;
 //  Temporary key for every API send to sockert server
 const generateKey = require('./keyGenarate');
 const { FILE } = require('dns');
+const { eventNames } = require('process');
 let frontScanKey = generateKey(3);
 let backScanKey = generateKey(3);
 
@@ -141,6 +142,8 @@ mongoClient.connect(url, { useUnifiedTopology: true }, function (err, client) {
         })
         .then(result => {
             logger.debug({ message: result, location: FILE_NAME });
+
+            event.emit('rgbHub:start');
 
             // Handle internal event`
             event.on('button:front', handleFrontButtonFromGPIO);
