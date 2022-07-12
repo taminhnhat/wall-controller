@@ -196,6 +196,11 @@ function handleRgbHubStart() {
       if (err.message !== 'Port is already open')
         event.emit('rgbHub:error', { message: 'Rgb hub error', value: err.message });
     }
+    else {
+      rgbHub.write('R6:00ff00\n', (err, res) => {
+        if (err) logger.error({ message: 'Cannot write to rgb hub', value: err, location: FILE_NAME });
+      });
+    }
   });
 }
 
@@ -234,5 +239,5 @@ function rgbHubCheckHealth() {
 
 // setInterval(frontScannerCheckHealth, 5000);
 // setInterval(backScannerCheckHealth, 5000);
-setInterval(rgbHubCheckHealth, 2000);
+setInterval(rgbHubCheckHealth, 5000);
 // rgbHubCheckHealth();
