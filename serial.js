@@ -42,7 +42,7 @@ backScanner.on('open', function () {
 });
 rgbHub.on('open', function () {
   console.log('rgb hub opened');
-  event.emit('rgbHub:opened', 'RGB Hub opened');
+  event.emit('rgbHub:opened', { message: 'RGB Hub opened' });
 });
 
 frontScanner.on('data', function (data) {
@@ -86,8 +86,7 @@ backScanner.on('data', function (data) {
 
 rgbHub.on('data', function (data) {
   const value = String(data).trim();
-  console.log(value);
-  // event.emit(`rgbHub:data`, { message: 'rgb hub data', value: value });
+  event.emit(`rgbHub:data`, { message: 'rgb hub data', value: value });
 });
 
 frontScanner.on('close', () => {
