@@ -86,6 +86,7 @@ backScanner.on('data', function (data) {
 
 rgbHub.on('data', function (data) {
   const value = String(data).trim();
+  console.log(value);
   // event.emit(`rgbHub:data`, { message: 'rgb hub data', value: value });
 });
 
