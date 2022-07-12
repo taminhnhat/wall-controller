@@ -232,6 +232,9 @@ function rgbHubCheckHealth() {
   //       event.emit('rgbHub:error', { message: 'Rgb hub error', value: err.message });
   //   }
   // });
+  rgbHub.write('R6:00ff00\n', (err, res) => {
+    if (err) logger.error({ message: 'Cannot write to rgb hub', value: err, location: FILE_NAME });
+  });
   rgbHub.write('STT\n', (err, res) => {
     if (err) logger.error({ message: 'Cannot write to rgb hub', value: err, location: FILE_NAME });
   });
