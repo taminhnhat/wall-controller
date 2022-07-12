@@ -376,7 +376,7 @@ mongoClient.connect(url, { useUnifiedTopology: true }, function (err, client) {
         const backupCollection = db.collection(BACKUP_COLLECTION);
         //  Get wall state from db
         backupCollection.findOne(queryByLocation, (err, res) => {
-            if (err) console.log(err);
+            if (err) logger.error({ message: 'mongodb error', value: err, location: FILE_NAME });
             const wallState = res;
             const wallName = wallState.name;
             const frontLightState = wallState.frontLight;
@@ -414,7 +414,7 @@ mongoClient.connect(url, { useUnifiedTopology: true }, function (err, client) {
 
         //  Get wall state from db
         db.collection(BACKUP_COLLECTION).findOne(queryByLocation, (err, res) => {
-            if (err) console.log(err);
+            if (err) logger.error({ message: 'mongodb error', value: err, location: FILE_NAME });
             const wallState = res;
             const wallName = wallState.name;
             const backLightState = wallState.backLight;
@@ -671,7 +671,6 @@ mongoClient.connect(url, { useUnifiedTopology: true }, function (err, client) {
     }
 
     function handleRgbHubErrorFromSerialPort(data) {
-        console.log('rgb hub error:', data);
         logger.error({ message: data.message, value: data.value, location: FILE_NAME });
         dbLog({ level: 'ERROR', message: data.message, value: data.value });
     }
