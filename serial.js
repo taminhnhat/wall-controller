@@ -241,5 +241,4 @@ function rgbHubCheckHealth() {
 
 // setInterval(frontScannerCheckHealth, 5000);
 // setInterval(backScannerCheckHealth, 5000);
-// setInterval(rgbHubCheckHealth, 5000);
-// rgbHubCheckHealth();
+// setInterval(rgbHubCheckHealth, 60000);
