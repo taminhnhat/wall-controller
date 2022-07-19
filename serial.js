@@ -41,7 +41,7 @@ backScanner.on('open', function () {
   event.emit('scanner:opened', 'Back scanner opened');
 });
 rgbHub.on('open', function () {
-  console.log('rgb hub opened');
+  logger.debug({ message: 'rgb hub opened', location: FILE_NAME })
   event.emit('rgbHub:opened', { message: 'RGB Hub opened' });
 });
 
@@ -196,9 +196,7 @@ function handleRgbHubStart() {
       event.emit('rgbHub:error', { message: 'Rgb hub error', value: err.message });
     }
     else {
-      rgbHub.write('R6:00ff00\n', (err, res) => {
-        if (err) logger.error({ message: 'Cannot write to rgb hub', value: err, location: FILE_NAME });
-      });
+      handleRgbHubEmit({ message: 'R6:00ff00\n' });
     }
   });
 }
@@ -231,12 +229,7 @@ function rgbHubCheckHealth() {
   //       event.emit('rgbHub:error', { message: 'Rgb hub error', value: err.message });
   //   }
   // });
-  rgbHub.write('R6:00ff00\n', (err, res) => {
-    if (err) logger.error({ message: 'Cannot write to rgb hub', value: err, location: FILE_NAME });
-  });
-  rgbHub.write('STT\n', (err, res) => {
-    if (err) logger.error({ message: 'Cannot write to rgb hub', value: err, location: FILE_NAME });
-  });
+  handleRgbHubEmit({ message: 'STT\n' });
 }
 
 // setInterval(frontScannerCheckHealth, 5000);
