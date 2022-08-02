@@ -656,8 +656,8 @@ mongoClient.connect(url, { useUnifiedTopology: true }, function (err, client) {
             rgbHubSetLight('4');
             rgbHubSetLight('5');
         }
-        logger.debug({ message: data.message, value: data.value, location: FILE_NAME });
-        dbLog({ level: 'DEBUG', message: data.message, value: data.value });
+        // logger.debug({ message: data.message, value: data.value, location: FILE_NAME });
+        // dbLog({ level: 'DEBUG', message: data.message, value: data.value });
     }
 
     function handleRgbHubOpenFromSerialPort(data) {
