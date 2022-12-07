@@ -31,6 +31,10 @@ const FILE_NAME = 'index.js   ';
 const io = require('socket.io-client');
 const socket = io.connect(SERVER_URL);
 
+socket.on('connect', () => {
+    console.log('Connected to web socket Server!');
+});
+
 
 //  MONGODB_______________________________________________________________________________
 const mongoClient = require('mongodb').MongoClient;
