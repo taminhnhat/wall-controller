@@ -8,7 +8,11 @@ Two processes communicate to each other using ipc (named-pipe).
 # REQUIREMENTS
 - Platform: raspberry pi 3 B+/4  
 - Os: ubuntu server 20.04 LTS (without desktop)  
-- Mongodb server for raspberry pi using this [guide](https://developer.mongodb.com/how-to/mongodb-on-raspberry-pi/)
+- Mongodb server for raspberry pi using this [guide](https://developer.mongodb.com/how-to/mongodb-on-raspberry-pi/)  
+Note: Install mongodb 4.4.18. Higher mongodb version requires a Sandy Bridge or newer CPU. Get a newer processor or use an older version of MongoDB.  
+```sh
+sudo apt-get install -y mongodb-org=4.4.18 mongodb-org-server=4.4.18 mongodb-org-shell=4.4.18 mongodb-org-mongos=4.4.18 mongodb-org-tools=4.4.18
+```
 - [Node.js](https://github.com/nodesource/distributions/blob/master/README.md) 14 or above
 - gcc, g++, make  
 ```sh
