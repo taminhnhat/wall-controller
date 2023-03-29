@@ -31,9 +31,11 @@ const FILE_NAME = 'index.js   ';
 const io = require('socket.io-client');
 const socket = io.connect(SERVER_URL);
 
-socket.on('connect', () => {
-    console.log('Connected to web socket Server ${socket.id}');
-});
+socket.on('connect', handleSocketConnection);
+
+socket.on('disconnect', handleSocketDisconnection);
+
+socket.on('error', handleSocketError);
 
 
 //  MONGODB_______________________________________________________________________________
@@ -212,12 +214,6 @@ mongoClient.connect(url, { useUnifiedTopology: true }, function (err, client) {
             // socket.on('mergeWall/getWallStatus', handleGetWallStatusFromServer);
 
             socket.on('mergeWall/error', handleErrorFromServer);
-
-            socket.on('connect', handleSocketConnection);
-
-            socket.on('disconnect', handleSocketDisconnection);
-
-            socket.on('error', handleSocketError);
         })
         .catch(error => logger.error({ message: error, location: FILE_NAME }));
     /**
@@ -1155,84 +1151,6 @@ mongoClient.connect(url, { useUnifiedTopology: true }, function (err, client) {
         });
     };
 
-    function handleSocketConnection() {
-        logger.debug({ message: 'Connected to web socket Server!', location: FILE_NAME });
-
-
-        event.emit('towerlight:set', {
-            status: 'normal',
-            side: 'front',
-            redLight: false,
-            greenLight: true
-        });
-        setTimeout(function () {
-            event.emit('towerlight:set', {
-                status: 'normal',
-                side: 'back',
-                redLight: false,
-                greenLight: true
-            });
-        }, 200);
-
-        //  emit event to print error message on screen
-        event.emit('lcd:print', {
-            code: 201,
-            message: 'Da ket noi SERVER!'
-        });
-    };
-
-    function handleSocketDisconnection() {
-        logger.fatal({ message: 'disconnected from socketServer!' });
-
-
-        event.emit('towerlight:set', {
-            status: 'error',
-            side: 'front',
-            redLight: true,
-            greenLight: false
-        });
-        setTimeout(function () {
-            event.emit('towerlight:set', {
-                status: 'error',
-                side: 'back',
-                redLight: true,
-                greenLight: false
-            });
-        }, 200);
-
-        //  emit event to print error message on screen
-        event.emit('lcd:print', {
-            code: 202,
-            message: 'Mat ket noi SERVER'
-        });
-    };
-
-    function handleSocketError() {
-        logger.error({ message: error, location: FILE_NAME });
-
-
-        event.emit('towerlight:set', {
-            status: 'error',
-            side: 'front',
-            redLight: true,
-            greenLight: flase
-        });
-        setTimeout(function () {
-            event.emit('towerlight:set', {
-                status: 'error',
-                side: 'back',
-                redLight: true,
-                greenLight: false
-            });
-        }, 500);
-
-        //  emit event to print error message on screen
-        event.emit('lcd:print', {
-            code: 203,
-            message: 'Loi ket noi SERVER'
-        });
-    };
-
     function dbLog({ level = 'INFO', message, value = null }) {
         const newLog = {
             level: level,
@@ -1274,3 +1192,80 @@ mongoClient.connect(url, { useUnifiedTopology: true }, function (err, client) {
         rgbHubSetLight('5');
     }
 });
+
+function handleSocketConnection() {
+    logger.debug({ message: `Connected to web socket Server ${socket.id}`, location: FILE_NAME });
+
+    event.emit('towerlight:set', {
+        status: 'normal',
+        side: 'front',
+        redLight: false,
+        greenLight: true
+    });
+    setTimeout(function () {
+        event.emit('towerlight:set', {
+            status: 'normal',
+            side: 'back',
+            redLight: false,
+            greenLight: true
+        });
+    }, 200);
+
+    //  emit event to print error message on screen
+    event.emit('lcd:print', {
+        code: 201,
+        message: 'Da ket noi SERVER!'
+    });
+};
+
+function handleSocketDisconnection() {
+    logger.fatal({ message: 'disconnected from socketServer!' });
+
+
+    event.emit('towerlight:set', {
+        status: 'error',
+        side: 'front',
+        redLight: true,
+        greenLight: false
+    });
+    setTimeout(function () {
+        event.emit('towerlight:set', {
+            status: 'error',
+            side: 'back',
+            redLight: true,
+            greenLight: false
+        });
+    }, 200);
+
+    //  emit event to print error message on screen
+    event.emit('lcd:print', {
+        code: 202,
+        message: 'Mat ket noi SERVER'
+    });
+};
+
+function handleSocketError() {
+    logger.error({ message: error, location: FILE_NAME });
+
+
+    event.emit('towerlight:set', {
+        status: 'error',
+        side: 'front',
+        redLight: true,
+        greenLight: flase
+    });
+    setTimeout(function () {
+        event.emit('towerlight:set', {
+            status: 'error',
+            side: 'back',
+            redLight: true,
+            greenLight: false
+        });
+    }, 500);
+
+    //  emit event to print error message on screen
+    event.emit('lcd:print', {
+        code: 203,
+        message: 'Loi ket noi SERVER'
+    });
+};
