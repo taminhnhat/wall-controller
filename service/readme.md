@@ -23,8 +23,8 @@ sudo /home/ubuntu/wall-controller/gpio/main > /var/log/wall-controller/gpio.log
 
 ```sh
 #
-$ sudo chmod 744 ~/service/wall-gpio.sh
-$ sudo chmod 744 ~/service/wall-gateway.sh
+$ sudo chmod 744 ~/wall-controller/service/wall-gpio.sh
+$ sudo chmod 744 ~/wall-controller/service/wall-gateway.sh
 $ ls ~/service/ -al
 #
 $ sudo chmod 664 /etc/systemd/system/wall-gpio.service

@@ -35,7 +35,7 @@ socket.on('connect', handleSocketConnection);
 
 socket.on('disconnect', handleSocketDisconnection);
 
-socket.on('error', handleSocketError);
+socket.io.on('error', handleSocketError);
 
 
 //  MONGODB_______________________________________________________________________________
@@ -1244,8 +1244,8 @@ function handleSocketDisconnection() {
     });
 };
 
-function handleSocketError() {
-    logger.error({ message: error, location: FILE_NAME });
+function handleSocketError(err) {
+    logger.error({ message: 'socket error', location: FILE_NAME, value: err });
 
 
     event.emit('towerlight:set', {
