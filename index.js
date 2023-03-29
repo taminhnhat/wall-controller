@@ -1252,7 +1252,7 @@ function handleSocketError(err) {
         status: 'error',
         side: 'front',
         redLight: true,
-        greenLight: flase
+        greenLight: false
     });
     setTimeout(function () {
         event.emit('towerlight:set', {
