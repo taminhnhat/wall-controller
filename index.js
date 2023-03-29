@@ -32,7 +32,7 @@ const io = require('socket.io-client');
 const socket = io.connect(SERVER_URL);
 
 socket.on('connect', () => {
-    console.log('Connected to web socket Server!');
+    console.log('Connected to web socket Server ${socket.id}');
 });
 
 

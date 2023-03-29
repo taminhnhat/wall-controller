@@ -4,7 +4,7 @@ Description=GATEWAY process service
 [Service]
 User=root
 WorkingDirectory=/home/ubuntu/wall-controller/
-ExecStart=/home/ubuntu/service/wall-gateway.sh
+ExecStart=/home/ubuntu/wall-controller/service/wall-gateway.sh
 
 [Install]
 WantedBy=default.target
