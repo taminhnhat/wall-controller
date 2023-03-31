@@ -867,7 +867,7 @@ mongoClient.connect(url, { useUnifiedTopology: true }, function (err, client) {
     // };
 
     function handleLightOnFromServer(lightApi) {
-        logger.debug({ message: `Message from server`, location: FILE_NAME, value: lightApi });
+        logger.debug({ message: `mergeWall/lightOn`, location: FILE_NAME, value: lightApi });
         dbLog({ level: 'DEBUG', message: `Message from server`, value: lightApi });
 
         const wallName = lightApi.params.wall;
@@ -876,11 +876,11 @@ mongoClient.connect(url, { useUnifiedTopology: true }, function (err, client) {
         const lightColor = lightApi.params.lightColor;
 
         const queryByName = { name: wallName };
+        // Remove this light color on all bins
         db.collection(BACKUP_COLLECTION).find({}, projection)
             .sort({ location: 1 })
             .toArray()
             .then(res => {
-                //
                 if (err) logger.error({ message: 'Fail to find wall in database', location: FILE_NAME, value: err });
                 if (lightColor != 'ffffff') {
                     res.forEach(wallState => {
@@ -895,6 +895,7 @@ mongoClient.connect(url, { useUnifiedTopology: true }, function (err, client) {
                         }
                     });
                 }
+                // Update light color to input bin
                 return db.collection(BACKUP_COLLECTION).findOne(queryByName);
             })
             .then(res => {
@@ -963,7 +964,7 @@ mongoClient.connect(url, { useUnifiedTopology: true }, function (err, client) {
     };
 
     function handleLightOffFromServer(lightApi) {
-        logger.debug({ message: `Message from server`, location: FILE_NAME, value: lightApi });
+        logger.debug({ message: `mergeWall/lightOff`, location: FILE_NAME, value: lightApi });
         dbLog({ level: 'DEBUG', message: `Message from server`, value: lightApi });
 
         const wallName = lightApi.params.wall;
