@@ -66,7 +66,7 @@ const path = require('path');
 
 
 //  LOGGER__________________________________________________________________________
-const logger = require('./logger/logger');
+const logger = require('./logger/winston');
 
 
 //  WALL CLASS_____________________________________________________________________________
@@ -109,7 +109,7 @@ mongoClient.connect(url, { useUnifiedTopology: true }, function (err, client) {
     //  RESTORE WALL STATUS FROM BACKUP____________________________________________________________________________________________________
     let isRestoredWallDone = false;
 
-    logger.debug({ message: `${Date(Date.now())} Gateway process started`, location: FILE_NAME });
+    logger.info({ message: `${Date(Date.now())} Gateway process started`, location: FILE_NAME });
     //  Run main process
 
     const projection = {
@@ -147,7 +147,7 @@ mongoClient.connect(url, { useUnifiedTopology: true }, function (err, client) {
             // });
         })
         .then(result => {
-            logger.debug({ message: result, location: FILE_NAME });
+            logger.info({ message: result, location: FILE_NAME });
 
             event.emit('rgbHub:start');
 
@@ -313,7 +313,7 @@ mongoClient.connect(url, { useUnifiedTopology: true }, function (err, client) {
                 }
                 mess = mess + '\n';
                 event.emit('rgbHub:emit', { message: mess });
-                // logger.debug({ message: `message to rgb hub:`, value: mess, location: FILE_NAME });
+                // logger.info({ message: `message to rgb hub:`, value: mess, location: FILE_NAME });
             });
     }
 
@@ -357,7 +357,7 @@ mongoClient.connect(url, { useUnifiedTopology: true }, function (err, client) {
         //  Reset front lights
         db.collection(BACKUP_COLLECTION).updateMany({ frontLight: true }, { $set: { frontLight: false } }, (err, res) => {
             if (err) logger.error({ message: 'Fail to update database', location: FILE_NAME, value: err });
-            else logger.debug({ message: 'Reset front light', location: FILE_NAME, value: res });
+            else logger.info({ message: 'Reset front light', location: FILE_NAME, value: res });
             restoreLightFromDatabase();
         });
     }
@@ -367,7 +367,7 @@ mongoClient.connect(url, { useUnifiedTopology: true }, function (err, client) {
      * Emitted in 'gpio-ipc.js'
      */
     function handleFrontButtonFromGPIO(buttonParams) {
-        logger.debug({ message: 'button:front', location: FILE_NAME, value: buttonParams });
+        logger.info({ message: 'button:front', location: FILE_NAME, value: buttonParams });
         dbLog({ level: 'DEBUG', message: 'button:front', value: buttonParams });
         const buttonLocation = buttonParams.button;
 
@@ -393,7 +393,7 @@ mongoClient.connect(url, { useUnifiedTopology: true }, function (err, client) {
                 importToteNow = null;
             }
             else {
-                logger.debug({ message: 'Front button pressed, not valid button!!!', location: FILE_NAME });
+                logger.info({ message: 'Front button pressed, not valid button!!!', location: FILE_NAME });
                 dbLog({ level: 'ERROR', message: 'Front button pressed, not valid button!' });
                 restoreLightFromDatabase();
             }
@@ -405,7 +405,7 @@ mongoClient.connect(url, { useUnifiedTopology: true }, function (err, client) {
      * Emitted in 'gpio-ipc.js'
      */
     function handleBackButtonFromGPIO(buttonParams) {
-        logger.debug({ message: 'button:back', location: FILE_NAME, value: buttonParams });
+        logger.info({ message: 'button:back', location: FILE_NAME, value: buttonParams });
         dbLog({ level: 'DEBUG', message: 'button:back', value: buttonParams });
         const buttonLocation = buttonParams.button;
 
@@ -435,7 +435,7 @@ mongoClient.connect(url, { useUnifiedTopology: true }, function (err, client) {
                         exportTote: exportToteNow
                     };
                     const tempApi = message.generateApi('mergeWall/pickToLight', params, backScanKey);
-                    logger.debug({ message: `Wall ${wallName} pick to tote ${exportToteNow}, key: ${tempApi.key}`, location: FILE_NAME });
+                    logger.info({ message: `Wall ${wallName} pick to tote ${exportToteNow}, key: ${tempApi.key}`, location: FILE_NAME });
                     exportToteNow = null;
                     dbLog({ level: 'DEBUG', message: 'Pick to light', value: params });
                     socket.emit('mergeWall/pickToLight', tempApi);
@@ -443,11 +443,11 @@ mongoClient.connect(url, { useUnifiedTopology: true }, function (err, client) {
 
             } else {
                 if (exportToteNow == null) {
-                    logger.waring({ message: 'Back button pressed, scan tote first!!!', location: FILE_NAME });
+                    logger.warning({ message: 'Back button pressed, scan tote first!!!', location: FILE_NAME });
                     dbLog({ level: 'WARNING', message: 'Back button pressed, No tote was scanned!' });
                 }
                 else {
-                    logger.waring({ message: 'Back button pressed, not valid button!!!', location: FILE_NAME });
+                    logger.warning({ message: 'Back button pressed, not valid button!!!', location: FILE_NAME });
                     dbLog({ level: 'WARNING', message: 'Back button pressed, not valid button!', value: { wall: wallName } });
                 }
             }
@@ -460,7 +460,7 @@ mongoClient.connect(url, { useUnifiedTopology: true }, function (err, client) {
      * These buttons locate on elecrical cabin
      */
     function handleUserButtonFromGPIO(buttonParams) {
-        logger.debug({ message: 'button:user event', location: FILE_NAME, value: buttonParams });
+        logger.info({ message: 'button:user event', location: FILE_NAME, value: buttonParams });
         dbLog({ level: 'DEBUG', message: 'button:user', value: buttonParams });
         switch (buttonParams.button) {
             case 'U.1.1':
@@ -482,7 +482,7 @@ mongoClient.connect(url, { useUnifiedTopology: true }, function (err, client) {
                 cancelAction();
                 break;
             default:
-                logger.waring({ message: `Bad params for 'button:user' event`, location: FILE_NAME });
+                logger.warning({ message: `Bad params for 'button:user' event`, location: FILE_NAME });
         }
 
         function runningLight() {
@@ -568,13 +568,13 @@ mongoClient.connect(url, { useUnifiedTopology: true }, function (err, client) {
      * Emitted in 'gpio-ipc.js'
      */
     function handleFrontScannerFromSerialPort(scanParams) {
-        //logger.debug({message: 'New front scan', location: FILE_NAME, value: scanParams});
+        //logger.info({message: 'New front scan', location: FILE_NAME, value: scanParams});
 
         importToteNow = null;
         //  Reset front lights
         db.collection(BACKUP_COLLECTION).updateMany({ frontLight: true }, { $set: { frontLight: false } }, (err, res) => {
             if (err) logger.error({ message: 'Fail to update database', location: FILE_NAME, value: err });
-            else logger.debug({ message: 'Reset front light', location: FILE_NAME, value: res });
+            else logger.info({ message: 'Reset front light', location: FILE_NAME, value: res });
             restoreLightFromDatabase();
             frontScanKey = generateKey(3);
 
@@ -583,14 +583,14 @@ mongoClient.connect(url, { useUnifiedTopology: true }, function (err, client) {
                 const scanApi = message.generateApi('mergeWall/scanTotePutToLight', { wallIndex: WALL_INDEX, tote: scanParams.value }, frontScanKey);
                 //
                 socket.emit('mergeWall/scanTotePutToLight', scanApi);
-                logger.debug({ message: `Send 'mergeWall/scanTotePutToLight' message to server`, location: FILE_NAME, value: scanApi });
+                logger.info({ message: `Send 'mergeWall/scanTotePutToLight' message to server`, location: FILE_NAME, value: scanApi });
 
                 importToteNow = scanParams.value;
-                logger.debug({ message: `Import tote: ${importToteNow}` });
+                logger.info({ message: `Import tote: ${importToteNow}` });
             }
             //  If scanned tote not a valid value
             else {
-                logger.waring({ message: `Unknown import tote: ${scanParams.value}` });
+                logger.warning({ message: `Unknown import tote: ${scanParams.value}` });
                 dbLog({ level: 'DEBUG', message: 'Unknown import tote', value: scanParams });
             }
         });
@@ -619,9 +619,9 @@ mongoClient.connect(url, { useUnifiedTopology: true }, function (err, client) {
                 exportToteNow = null
             }, 10000);
 
-            logger.debug({ message: `Export tote: ${exportToteNow}` });
+            logger.info({ message: `Export tote: ${exportToteNow}` });
         } else {
-            logger.debug({ message: `Unknown export tote:${scanParams.value}`, location: FILE_NAME });
+            logger.info({ message: `Unknown export tote:${scanParams.value}`, location: FILE_NAME });
             dbLog({ level: 'WARNING', message: 'Unknown export tote', value: scanParams });
         }
         // Insert new event to database
@@ -634,12 +634,12 @@ mongoClient.connect(url, { useUnifiedTopology: true }, function (err, client) {
     };
 
     function handleScannerOpenFromSerialPort(data) {
-        logger.debug({ message: data.message, location: FILE_NAME });
+        logger.info({ message: data.message, location: FILE_NAME });
         dbLog({ level: 'DEBUG', message: data.message });
     };
 
     function handleScannerCloseFromSerialPort(data) {
-        logger.waring({ message: data.message, location: FILE_NAME });
+        logger.warning({ message: data.message, location: FILE_NAME });
         dbLog({ level: 'WARNING', message: data.message });
     };
 
@@ -656,17 +656,17 @@ mongoClient.connect(url, { useUnifiedTopology: true }, function (err, client) {
             rgbHubSetLight('4');
             rgbHubSetLight('5');
         }
-        // logger.debug({ message: data.message, value: data.value, location: FILE_NAME });
+        // logger.info({ message: data.message, value: data.value, location: FILE_NAME });
         // dbLog({ level: 'DEBUG', message: data.message, value: data.value });
     }
 
     function handleRgbHubOpenFromSerialPort(data) {
-        logger.debug({ message: data.message, location: FILE_NAME });
+        logger.info({ message: data.message, location: FILE_NAME });
         dbLog({ level: 'DEBUG', message: data.message });
     }
 
     function handleRgbHubCloseFromSerialPort(data) {
-        logger.waring({ message: data.message, location: FILE_NAME });
+        logger.warning({ message: data.message, location: FILE_NAME });
         dbLog({ level: 'WARNING', message: data.message });
     }
 
@@ -681,7 +681,7 @@ mongoClient.connect(url, { useUnifiedTopology: true }, function (err, client) {
      */
     function handleCompleteEvent(wallName) {
         // create query by wall name to access database
-        logger.debug({ message: 'wall complete!!!', location: FILE_NAME });
+        logger.info({ message: 'wall complete!!!', location: FILE_NAME });
         const queryByName = { name: wallName };
         const newBackupValues = {
             importTote: [],
@@ -693,31 +693,31 @@ mongoClient.connect(url, { useUnifiedTopology: true }, function (err, client) {
 
         db.collection(BACKUP_COLLECTION).updateOne(queryByName, { $set: newBackupValues }, function (err, res) {
             if (err) logger.error({ message: 'Fail to update database', value: err, location: FILE_NAME });
-            logger.debug({ message: `Empty wall ${wallName}`, location: FILE_NAME });
+            logger.info({ message: `Empty wall ${wallName}`, location: FILE_NAME });
             dbLog({ level: 'DEBUG', message: `Empty wall ${wallName}` });
         });
     };
 
     function handleRefreshCommand() {
-        logger.debug({ message: 'Refresh wall!', location: FILE_NAME });
+        logger.info({ message: 'Refresh wall!', location: FILE_NAME });
         dbLog({ level: 'DEBUG', message: 'Refresh wall' });
         refreshWallLight();
     }
 
     function handleResetButton() {
-        logger.debug({ message: 'Reset wall!', location: FILE_NAME });
+        logger.info({ message: 'Reset wall!', location: FILE_NAME });
         dbLog({ level: 'DEBUG', message: 'Reset wall' });
         resetWallLight();
     }
 
     function handleConfigButton(data) {
-        logger.debug({ message: 'Config rgb hub!', location: FILE_NAME });
+        logger.info({ message: 'Config rgb hub!', location: FILE_NAME });
         const mess = `CFG:${data.mess}\n`;
         event.emit('rgbHub:emit', { message: mess });
     }
 
     function handleTestLightButton() {
-        logger.debug({ message: 'Test rgb hub', location: FILE_NAME });
+        logger.info({ message: 'Test rgb hub', location: FILE_NAME });
         event.emit('rgbHub:emit', { message: 'R1:00ff00:00ffff:0000ff:ffff00:ff00ff:ffffff\n' });
         event.emit('rgbHub:emit', { message: 'R2:00ff00:00ffff:0000ff:ffff00:ff00ff:ffffff\n' });
         event.emit('rgbHub:emit', { message: 'R3:00ff00:00ffff:0000ff:ffff00:ff00ff:ffffff\n' });
@@ -731,20 +731,20 @@ mongoClient.connect(url, { useUnifiedTopology: true }, function (err, client) {
     // function handleConfirmFromServer(confirmApi) {
     //     const confirmKey = confirmApi.key;
     //     const confirmDate = confirmApi.date;
-    //     logger.debug({ message: 'Confirm from server', location: FILE_NAME, value: { key: confirmKey } });
+    //     logger.info({ message: 'Confirm from server', location: FILE_NAME, value: { key: confirmKey } });
 
     //     //  Find pennding message match the key then clear interval and remove it from pendingMessage array
     //     for (let i = 0; i < pendingMessages.length; i++) {
     //         if (pendingMessages[i].key === confirmKey) {
     //             clearInterval(pendingMessages[i].interval);
     //             pendingMessages.splice(i, 1);
-    //             logger.debug({ pendingMessages, location: FILE_NAME });
+    //             logger.info({ pendingMessages, location: FILE_NAME });
     //         }
     //     }
     // };
 
     // function handleLightOnFromServer(lightApi) {
-    //     logger.debug({ message: `Message from server`, location: FILE_NAME, value: lightApi });
+    //     logger.info({ message: `Message from server`, location: FILE_NAME, value: lightApi });
     //     dbLog({ level: 'DEBUG', message: `Message from server`, value: lightApi });
 
     //     //  Get wall state from db
@@ -799,7 +799,7 @@ mongoClient.connect(url, { useUnifiedTopology: true }, function (err, client) {
     // };
 
     // function handleLightOffFromServer(lightApi) {
-    //     logger.debug({ message: `Message from server`, location: FILE_NAME, value: lightApi });
+    //     logger.info({ message: `Message from server`, location: FILE_NAME, value: lightApi });
 
 
     //     //  Get wall state from db
@@ -838,7 +838,7 @@ mongoClient.connect(url, { useUnifiedTopology: true }, function (err, client) {
     //             //     }
     //             // } else if (wallSide === 'back') {
     //             // create query by wall name to access database
-    //             logger.debug({ message: 'wall complete!!!', location: FILE_NAME })
+    //             logger.info({ message: 'wall complete!!!', location: FILE_NAME })
     //             const newBackupValues = {
     //                 importTote: [],
     //                 exportTote: null,
@@ -849,7 +849,7 @@ mongoClient.connect(url, { useUnifiedTopology: true }, function (err, client) {
 
     //             db.collection(BACKUP_COLLECTION).updateOne(queryByName, { $set: newBackupValues }, function (err, res) {
     //                 if (err) logger.error({ message: 'Fail to update database', value: err, location: FILE_NAME });
-    //                 logger.debug({ message: `Empty wall ${wallName}`, location: FILE_NAME });
+    //                 logger.info({ message: `Empty wall ${wallName}`, location: FILE_NAME });
     //                 dbLog({ level: 'DEBUG', message: `Empty wall ${wallName}` });
     //                 event.emit('light:off', {
     //                     wall: wallState.name,
@@ -867,7 +867,7 @@ mongoClient.connect(url, { useUnifiedTopology: true }, function (err, client) {
     // };
 
     function handleLightOnFromServer(lightApi) {
-        logger.debug({ message: `mergeWall/lightOn`, location: FILE_NAME, value: lightApi });
+        logger.info({ message: `mergeWall/lightOn`, location: FILE_NAME, value: lightApi });
         dbLog({ level: 'DEBUG', message: `Message from server`, value: lightApi });
 
         const wallName = lightApi.params.wall;
@@ -964,7 +964,7 @@ mongoClient.connect(url, { useUnifiedTopology: true }, function (err, client) {
     };
 
     function handleLightOffFromServer(lightApi) {
-        logger.debug({ message: `mergeWall/lightOff`, location: FILE_NAME, value: lightApi });
+        logger.info({ message: `mergeWall/lightOff`, location: FILE_NAME, value: lightApi });
         dbLog({ level: 'DEBUG', message: `Message from server`, value: lightApi });
 
         const wallName = lightApi.params.wall;
@@ -1016,24 +1016,24 @@ mongoClient.connect(url, { useUnifiedTopology: true }, function (err, client) {
     };
 
     function handleResetFromServer(resetApi) {
-        logger.debug({ message: `Message from server`, location: FILE_NAME, value: resetApi });
+        logger.info({ message: `Message from server`, location: FILE_NAME, value: resetApi });
         dbLog({ level: 'DEBUG', message: `Message from server`, value: resetApi });
         resetWallLight();
     };
 
     function handleReloadFromServer(reloadApi) {
-        logger.debug({ message: `Message from server`, location: FILE_NAME, value: reloadApi });
+        logger.info({ message: `Message from server`, location: FILE_NAME, value: reloadApi });
         dbLog({ level: 'DEBUG', message: `Message from server`, value: reloadApi });
         refreshWallLight();
     }
 
     function handleLightTestFromServer(lightApi) {
-        logger.debug({ message: `Message from server`, location: FILE_NAME, value: lightApi });
+        logger.info({ message: `Message from server`, location: FILE_NAME, value: lightApi });
         //
     };
 
     function handleConfirmPutToLightFromServer(confirmApi) {
-        logger.debug({ message: `Message from server`, location: FILE_NAME, value: confirmApi });
+        logger.info({ message: `Message from server`, location: FILE_NAME, value: confirmApi });
         dbLog({ level: 'DEBUG', message: `Message from server`, value: confirmApi });
         const wallName = confirmApi.params.wall;
         const querybyName = { name: wallName };
@@ -1045,7 +1045,7 @@ mongoClient.connect(url, { useUnifiedTopology: true }, function (err, client) {
                 return db.collection(BACKUP_COLLECTION).updateOne(querybyName, newBackupValues)
             })
             .then(result => {
-                logger.debug({ message: 'change light state in database', location: FILE_NAME, value: result });
+                logger.info({ message: 'change light state in database', location: FILE_NAME, value: result });
 
                 event.emit('light:off', {
                     wall: wallState.name,
@@ -1054,7 +1054,7 @@ mongoClient.connect(url, { useUnifiedTopology: true }, function (err, client) {
                     lightColor: [0, 0, 0],
                     side: 'front'
                 });
-                logger.debug({ message: `Tote ${confirmApi.params.tote} put to wall ${wallName}, key: ${confirmApi.key}`, location: FILE_NAME });
+                logger.info({ message: `Tote ${confirmApi.params.tote} put to wall ${wallName}, key: ${confirmApi.key}`, location: FILE_NAME });
             })
             .catch(err => {
                 if (err) logger.error({ message: error, location: FILE_NAME });
@@ -1063,7 +1063,7 @@ mongoClient.connect(url, { useUnifiedTopology: true }, function (err, client) {
     }
 
     function handleConfirmPickToLightFromServer(confirmApi) {
-        logger.debug({ message: `Message from server`, location: FILE_NAME, value: confirmApi });
+        logger.info({ message: `Message from server`, location: FILE_NAME, value: confirmApi });
         dbLog({ level: 'DEBUG', message: `Message from server`, value: confirmApi });
 
         const wallName = confirmApi.params.wall;
@@ -1071,7 +1071,7 @@ mongoClient.connect(url, { useUnifiedTopology: true }, function (err, client) {
         let wallState;
         db.collection(BACKUP_COLLECTION).findOne(queryByName)
             .then(result => {
-                // logger.debug({ message: 'update to backup result', location: FILE_NAME, value: result });
+                // logger.info({ message: 'update to backup result', location: FILE_NAME, value: result });
                 wallState = result;
 
                 const newHistoryValues = {
@@ -1085,7 +1085,7 @@ mongoClient.connect(url, { useUnifiedTopology: true }, function (err, client) {
             })
             .then(result => {
                 // Update exportTote on wall to database
-                // logger.debug({ message: 'insert to history result', location: FILE_NAME, value: result });
+                // logger.info({ message: 'insert to history result', location: FILE_NAME, value: result });
                 event.emit('light:off', {
                     wall: wallName,
                     location: wallState.location,
@@ -1102,7 +1102,7 @@ mongoClient.connect(url, { useUnifiedTopology: true }, function (err, client) {
     }
 
     function handleGetWallStatusFromServer(d) {
-        logger.debug({ message: `Message from server`, value: d });
+        logger.info({ message: `Message from server`, value: d });
         db.collection(BACKUP_COLLECTION).find({})
             .then(res => {
                 return res;
@@ -1114,7 +1114,7 @@ mongoClient.connect(url, { useUnifiedTopology: true }, function (err, client) {
     };
 
     function handleErrorFromServer(errApi) {
-        logger.debug({ message: `Message from server`, location: FILE_NAME, value: errApi });
+        logger.info({ message: `Message from server`, location: FILE_NAME, value: errApi });
         dbLog({ level: 'ERROR', message: 'mergeWall/error', value: errApi });
         event.emit('towerlight:set', {
             status: 'warning',
@@ -1161,7 +1161,7 @@ mongoClient.connect(url, { useUnifiedTopology: true }, function (err, client) {
         }
         db.collection(LOG_COLLECTION).insertOne(newLog)
             .then(result => {
-                // logger.debug({ message: 'New log to database', location: FILE_NAME, value: result });
+                // logger.info({ message: 'New log to database', location: FILE_NAME, value: result });
             })
             .catch(err => {
                 if (err) logger.error({ message: err, location: FILE_NAME });
@@ -1195,7 +1195,7 @@ mongoClient.connect(url, { useUnifiedTopology: true }, function (err, client) {
 });
 
 function handleSocketConnection() {
-    logger.debug({ message: `Connected to web socket Server ${socket.id}`, location: FILE_NAME });
+    logger.info({ message: `Connected to web socket Server ${socket.id}`, location: FILE_NAME });
 
     event.emit('towerlight:set', {
         status: 'normal',
