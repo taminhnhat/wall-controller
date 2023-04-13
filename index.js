@@ -91,6 +91,7 @@ let exportTote_timeOut = null;
 const generateKey = require('./keyGenarate');
 const { FILE } = require('dns');
 const { eventNames } = require('process');
+const { error } = require('console');
 let frontScanKey = generateKey(3);
 let backScanKey = generateKey(3);
 
@@ -103,13 +104,13 @@ mongoClient.connect(url, { useUnifiedTopology: true }, function (err, client) {
      * -----------------------------------------------------------------------------------------------------------------------------------------------------------------------
      * -----------------------------------------------------------------------------------------------------------------------------------------------------------------------
      */
-    if (err) logger.error({ message: error, location: FILE_NAME });
+    if (err) logger.error({ message: 'mongo error', location: FILE_NAME, value: err });
     const db = client.db(WALL_DB);
 
     //  RESTORE WALL STATUS FROM BACKUP____________________________________________________________________________________________________
     let isRestoredWallDone = false;
 
-    logger.info({ message: `${Date(Date.now())} Gateway process started`, location: FILE_NAME });
+    logger.info({ message: `=========== MERGEWALL GATEWAY STARTED ===========`, location: FILE_NAME });
     //  Run main process
 
     const projection = {

@@ -1,11 +1,18 @@
 require('dotenv').config({ path: './.env' });
 const { format } = require('logform');
 const winston = require('winston');
-const myFormat = winston.format.printf(info => `${info.timestamp} [${info.level.toUpperCase()}] ${info.message}`)
+const myFormat = winston.format.printf(({ level, message, timestamp, error, value }) => {
+    let res = `${timestamp} ${level.toUpperCase()} ${message}`
+    if (error != undefined) res += ` ${error}`
+    if (value != undefined) res += ` ${value}`
+    return res
+})
+const myErrorFormat = winston.format.printf(error => `${error.timestamp} ${error.level.toUpperCase()} ${error.message} ${error.value}`)
+const myWarningFormat = winston.format.printf(warning => `${warning.timestamp} ${warning.level.toUpperCase()} ${warning.message} ${warning.value}`)
 const logger = winston.createLogger({
     level: 'debug',
     format: winston.format.combine(
-        winston.format.timestamp({ format: 'DD/MM/YYYY hh:mm:ss A Z U G' }),
+        winston.format.timestamp({ format: 'DD/MM/YYYY hh:mm:ss A' }),
         winston.format.json(),
         myFormat
     ),
@@ -26,34 +33,20 @@ const logger = winston.createLogger({
 if (process.env.NODE_ENV !== 'production') {
     logger.add(new winston.transports.Console({
         format: winston.format.combine(
+            winston.format.timestamp({ format: 'hh:mm:ss A' }),
             winston.format.colorize(),
-            winston.format.timestamp(),
-            winston.format.splat(),
-            winston.format.simple()
-        ),
-    }));
+            winston.format.printf(({ level, message, timestamp, error, value }) => {
+                let res = `${timestamp} ${level} ${message}`
+                if (error != undefined) res += ` ${error}`
+                if (value != undefined) res += ` ${value}`
+                return res
+            })
+        )
+    }))
 }
 
 logger.exceptions.handle(
     new winston.transports.File({ filename: './logs/exceptions.log' })
-);
-// const options = {
-//     from: new Date() - (1 * 1000),
-//     until: new Date(),
-//     limit: 100,
-//     start: 0,
-//     order: 'desc',
-//     fields: ['level', 'message']
-// };
-
-
-// logger.query(options, function (err, results) {
-//     if (err) {
-//         /* TODO: handle me */
-//         throw err;
-//     }
-
-//     console.log(results);
-// });
+)
 
 module.exports = logger;
