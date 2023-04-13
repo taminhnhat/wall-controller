@@ -3,8 +3,8 @@ const { format } = require('logform');
 const winston = require('winston');
 const myFormat = winston.format.printf(({ level, message, timestamp, error, value }) => {
     let res = `${timestamp} ${level.toUpperCase()} ${message}`
-    if (error != undefined) res += ` ${error}`
-    if (value != undefined) res += ` ${value}`
+    if (error != undefined) res += ` ${JSON.stringify(error)}`
+    if (value != undefined) res += ` ${JSON.stringify(value)}`
     return res
 })
 const myErrorFormat = winston.format.printf(error => `${error.timestamp} ${error.level.toUpperCase()} ${error.message} ${error.value}`)
@@ -37,8 +37,8 @@ if (process.env.NODE_ENV !== 'production') {
             winston.format.colorize(),
             winston.format.printf(({ level, message, timestamp, error, value }) => {
                 let res = `${timestamp} ${level} ${message}`
-                if (error != undefined) res += ` ${error}`
-                if (value != undefined) res += ` ${value}`
+                if (error != undefined) res += ` ${JSON.stringify(error)}`
+                if (value != undefined) res += ` ${JSON.stringify(value)}`
                 return res
             })
         )
@@ -48,5 +48,7 @@ if (process.env.NODE_ENV !== 'production') {
 logger.exceptions.handle(
     new winston.transports.File({ filename: './logs/exceptions.log' })
 )
+
+logger.debug({ message: 'debug test', value: 'taminhnhat' })
 
 module.exports = logger;

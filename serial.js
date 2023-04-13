@@ -8,7 +8,7 @@ const GLOBAL = require('./CONFIGURATION');
 const SerialPort = require('serialport');
 const event = require('./event');
 
-const logger = require('./logger/logger');
+const logger = require('./logger/winston');
 
 const FILE_NAME = 'serial.js  ';
 

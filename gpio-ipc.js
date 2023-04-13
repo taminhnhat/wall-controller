@@ -8,7 +8,7 @@ const GLOBAL = require('./CONFIGURATION');
 const fs = require('fs');
 const { spawn, fork } = require('child_process');
 const event = require('./event');
-const logger = require('./logger/logger');
+const logger = require('./logger/winston');
 const FILE_NAME = 'gpio-ipc.js';
 
 const message = require('./message');
