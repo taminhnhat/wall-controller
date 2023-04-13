@@ -1,13 +1,13 @@
 const fs = require('fs');
 const { spawn, fork } = require('child_process');
-
+const logger = require('./logger/winston');
 const event = require('./event');
 
 const read_pipe_path = '/tmp/user_cmd';
 let readfifo = spawn('mkfifo', [read_pipe_path]);
 
 readfifo.on('exit', function (status) {
-    console.log('pipe opened');
+    logger.info('pipe opened');
     const fileHandle = fs.openSync(read_pipe_path, 'r+');
     let fifoRs = fs.createReadStream(null, { fd: fileHandle });
 

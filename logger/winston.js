@@ -49,6 +49,4 @@ logger.exceptions.handle(
     new winston.transports.File({ filename: './logs/exceptions.log' })
 )
 
-logger.debug({ message: 'debug test', value: 'taminhnhat' })
-
 module.exports = logger;
