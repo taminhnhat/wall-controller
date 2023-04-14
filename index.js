@@ -444,11 +444,11 @@ mongoClient.connect(url, { useUnifiedTopology: true }, function (err, client) {
 
             } else {
                 if (exportToteNow == null) {
-                    logger.warning({ message: 'Back button pressed, scan tote first!!!', location: FILE_NAME });
+                    logger.warn({ message: 'Back button pressed, scan tote first!!!', location: FILE_NAME });
                     dbLog({ level: 'WARNING', message: 'Back button pressed, No tote was scanned!' });
                 }
                 else {
-                    logger.warning({ message: 'Back button pressed, not valid button!!!', location: FILE_NAME });
+                    logger.warn({ message: 'Back button pressed, not valid button!!!', location: FILE_NAME });
                     dbLog({ level: 'WARNING', message: 'Back button pressed, not valid button!', value: { wall: wallName } });
                 }
             }
@@ -483,7 +483,7 @@ mongoClient.connect(url, { useUnifiedTopology: true }, function (err, client) {
                 cancelAction();
                 break;
             default:
-                logger.warning({ message: `Bad params for 'button:user' event`, location: FILE_NAME });
+                logger.warn({ message: `Bad params for 'button:user' event`, location: FILE_NAME });
         }
 
         function runningLight() {
@@ -591,7 +591,7 @@ mongoClient.connect(url, { useUnifiedTopology: true }, function (err, client) {
             }
             //  If scanned tote not a valid value
             else {
-                logger.warning({ message: `Unknown import tote: ${scanParams.value}` });
+                logger.warn({ message: `Unknown import tote: ${scanParams.value}` });
                 dbLog({ level: 'DEBUG', message: 'Unknown import tote', value: scanParams });
             }
         });
@@ -640,7 +640,7 @@ mongoClient.connect(url, { useUnifiedTopology: true }, function (err, client) {
     };
 
     function handleScannerCloseFromSerialPort(data) {
-        logger.warning({ message: data.message, location: FILE_NAME });
+        logger.warn({ message: data.message, location: FILE_NAME });
         dbLog({ level: 'WARNING', message: data.message });
     };
 
@@ -667,7 +667,7 @@ mongoClient.connect(url, { useUnifiedTopology: true }, function (err, client) {
     }
 
     function handleRgbHubCloseFromSerialPort(data) {
-        logger.warning({ message: data.message, location: FILE_NAME });
+        logger.warn({ message: data.message, location: FILE_NAME });
         dbLog({ level: 'WARNING', message: data.message });
     }
 
