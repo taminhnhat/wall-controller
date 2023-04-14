@@ -908,7 +908,7 @@ mongoClient.connect(url, { useUnifiedTopology: true }, function (err, client) {
                 //  Check if wallName is valid
                 if (!isWallNameValid) {
                     //  Log error
-                    logger.error({ message: 'Not a valid message from server', value: { key: tempKey } });
+                    logger.error({ message: 'Not a valid message from server', value: { wallName: wallName, key: tempKey } });
                 }
                 else {
                     let lightArray = wallState.lightArray;
@@ -983,7 +983,7 @@ mongoClient.connect(url, { useUnifiedTopology: true }, function (err, client) {
             //  Check if wallName is valid
             if (!isWallNameValid) {
                 //  Log error
-                logger.error({ message: 'Not a valid message from server', value: { key: tempKey } });
+                logger.error({ message: 'Not a valid message from server', value: { wallName: wallName, key: tempKey } });
             }
             else {
                 let lightArray = wallState.lightArray;

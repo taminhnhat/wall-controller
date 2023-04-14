@@ -48,5 +48,5 @@ if (process.env.NODE_ENV !== 'production') {
 logger.exceptions.handle(
     new winston.transports.File({ filename: './logs/exceptions.log' })
 )
-
+logger.error({ message: 'error test', error: { id: 1233 }, value: { name: 'minh_nhat', code: 401 } })
 module.exports = logger;
