@@ -4,10 +4,8 @@
  */
 
 require('dotenv').config({ path: './.env' });
+const logger = require('./logger.middleware');
 const SerialPort = require('serialport');
-const event = require('./event');
-
-const logger = require('./logger/logger');
 
 const rgbHubPath = process.env.RGB_HUB_PATH;
 const rgbHubBaudrate = Number(process.env.RGB_HUB_BAUDRATE) || 115200;
@@ -15,6 +13,8 @@ const rgbHubCycleInMilis = Number(process.env.RGB_HUB_SERIAL_CYCLE) || 100;
 const rgbHubDebugMode = process.env.RGB_DEBUG_MODE;
 
 let isRgbHubOpen = false
+
+let messageBufferFromRgbHub = ''
 
 let messageInQueue = []
 let lastCallInMilis = 0
@@ -29,12 +29,17 @@ const rgbHub = new SerialPort(rgbHubPath, {
 rgbHub.on('open', function () {
   isRgbHubOpen = true
   clearInterval(reconnectHubInterval)
-  logger.info({ message: 'rgb hub opened' })
+  logger.info('rgb hub opened')
 });
 
 rgbHub.on('data', function (data) {
-  const value = String(data).trim();
-  event.emit(`rgbHub:data`, { message: 'rgb hub data', value: value });
+  const value = String(data).trim()
+  if (messageBufferFromRgbHub == '\n') {
+    logger.debug(messageBufferFromRgbHub)
+    messageBufferFromRgbHub = ''
+  }
+  else
+    messageBufferFromRgbHub += value
 });
 
 rgbHub.on('close', () => {
@@ -50,8 +55,10 @@ rgbHub.on('error', (err) => {
   logger.error('Rgb hub error', { error: err })
 });
 
-event.on('rgbHub:start', handleRgbHubStart);
-
+/**
+ * 
+ * @param {String} message 
+ */
 function queue(message) {
   messageInQueue.push(message)
   next()
@@ -91,15 +98,13 @@ function next() {
   messageInQueue.pop()
 }
 
-function handleRgbHubStart() {
-  rgbHub.open((err) => {
-    if (err) logger.error('Can not open rgbHub', { error: err });
-    reconnectHubInterval = setInterval(() => {
-      rgbHub.open((err) => {
-        //
-      });
-    }, 10000)
-  });
-}
+rgbHub.open((err) => {
+  if (err) logger.error('Can not open rgbHub', { error: err });
+  reconnectHubInterval = setInterval(() => {
+    rgbHub.open((err) => {
+      //
+    });
+  }, 10000)
+});
 
 module.exports = { write: queue }

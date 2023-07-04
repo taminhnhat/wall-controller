@@ -1,6 +1,6 @@
 const fs = require('fs');
 const { spawn, fork } = require('child_process');
-const logger = require('./logger/winston');
+const logger = require('./logger/logger');
 const event = require('./event');
 
 const read_pipe_path = '/tmp/user_cmd';
