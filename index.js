@@ -56,13 +56,12 @@ const logger = require('./logger/logger');
 
 //  NAMED PIPE____________________________________________________________________________
 // IPC using named pipe, communicate between c++ side and nodejs side
-// require('./readPipe');
-// const platformOS = process.platform;
-// if (platformOS == 'linux' || platformOS == 'darwin') {
-//     require('./gpio-ipc');
-// } else {
-//     logger.info('Platform does not support gpio-ipc');
-// }
+const platformOS = process.platform;
+if (platformOS == 'linux' || platformOS == 'darwin') {
+    require('./readPipe');
+} else {
+    logger.warn('Platform does not support gpio-ipc');
+}
 
 //  EVENT EMITTER__________________________________________________________________________
 const event = require('./event');
