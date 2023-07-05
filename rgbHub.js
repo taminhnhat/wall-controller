@@ -4,7 +4,7 @@
  */
 
 require('dotenv').config({ path: './.env' });
-const logger = require('./logger.middleware');
+const logger = require('./logger/logger');
 const SerialPort = require('serialport');
 
 const rgbHubPath = process.env.RGB_HUB_PATH;
