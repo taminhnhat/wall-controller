@@ -545,6 +545,7 @@ mongoClient.connect(databaseUrl, { useUnifiedTopology: true }, function (err, cl
         }
         db.collection(BACKUP_COLLECTION).updateMany({}, newValues, (err, res) => {
             if (err) logger.error({ message: error });
+            logger.info('Reset light!');
             rgbHubLightGenerate('1');
             rgbHubLightGenerate('2');
             rgbHubLightGenerate('3');
@@ -554,6 +555,7 @@ mongoClient.connect(databaseUrl, { useUnifiedTopology: true }, function (err, cl
     }
 
     function refreshWallLight() {
+        logger.info('Refresh light!');
         rgbHubLightGenerate('1');
         rgbHubLightGenerate('2');
         rgbHubLightGenerate('3');
