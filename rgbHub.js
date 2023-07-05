@@ -81,7 +81,7 @@ function next() {
     setTimeout(() => {
       rgbHub.write(messageToRgbHub, (err, res) => {
         if (err) logger.error({ message: 'Cannot write to rgb hub', error: err });
-        if (rgbHubDebugMode == 'true');
+        logger.debug({ message: 'Write to rgbhub', value: messageToRgbHub })
       });
     }, delayTimeInMilis)
     lastCallInMilis += rgbHubCycleInMilis
@@ -90,7 +90,7 @@ function next() {
     setImmediate(() => {
       rgbHub.write(messageToRgbHub, (err, res) => {
         if (err) logger.error({ message: 'Cannot write to rgb hub', error: err });
-        if (rgbHubDebugMode == 'true');
+        logger.debug({ message: 'Write to rgbhub', value: messageToRgbHub })
       });
     })
     lastCallInMilis = presentInMilis

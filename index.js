@@ -12,14 +12,18 @@ const GLOBAL = require('./CONFIGURATION');
 const rgbHubRFEnable = process.env.RGB_HUB_RF_ENABLE;
 const multiUserMode = process.env.MULTI_USER_MODE;
 const toggleLedStrip = process.env.TOGGLE_LED_STRIP;
-const lightList = [{ color: '000000', index: 0 },
-{ color: '00ff00', index: 1 },
-{ color: '0000ff', index: 2 },
-{ color: 'ffff00', index: 3 },
-{ color: 'ff00ff', index: 4 },
-{ color: '00ffff', index: 5 },
-{ color: 'ff0000', index: 6 },
-{ color: 'ffffff', index: 7 }];
+
+const lightList = [
+    { color: '000000', colorId: 0 },
+    { color: '00ff00', colorId: 1 },
+    { color: '0000ff', colorId: 2 },
+    { color: 'ffff00', colorId: 3 },
+    { color: 'ff00ff', colorId: 4 },
+    { color: '00ffff', colorId: 5 },
+    { color: 'ff0000', colorId: 6 },
+    { color: 'ffffff', colorId: 7 }
+];
+
 //  db and collections name
 const WALL_DB = process.env.DB_NAME;
 const BACKUP_COLLECTION = 'backup';
@@ -40,7 +44,7 @@ socket.io.on('error', handleSocketError);
 
 //  MONGODB_______________________________________________________________________________
 const mongoClient = require('mongodb').MongoClient;
-const databaseUrl = GLOBAL.MONGO_DB_URL;
+const databaseUrl = process.env.DATABASE_URL;
 
 
 //  SERIAL PORT________________________________________________________________________________
@@ -62,6 +66,7 @@ const logger = require('./logger/logger');
 
 //  EVENT EMITTER__________________________________________________________________________
 const event = require('./event');
+const rgbHub = require('./rgbHub');
 
 mongoClient.connect(databaseUrl, { useUnifiedTopology: true }, function (err, client) {
     /**
@@ -101,11 +106,11 @@ mongoClient.connect(databaseUrl, { useUnifiedTopology: true }, function (err, cl
         .sort({ location: 1 })
         .toArray()
         .then(result => {
-            rgbHubSetLight('1');
-            rgbHubSetLight('2');
-            rgbHubSetLight('3');
-            rgbHubSetLight('4');
-            rgbHubSetLight('5');
+            rgbHubLightGenerate('1');
+            rgbHubLightGenerate('2');
+            rgbHubLightGenerate('3');
+            rgbHubLightGenerate('4');
+            rgbHubLightGenerate('5');
             return 'Restore from backup completed'
         })
         .then(result => {
@@ -200,7 +205,7 @@ mongoClient.connect(databaseUrl, { useUnifiedTopology: true }, function (err, cl
      * Send light command to serial port
      * @param {String} rowOfLedStrip 1 to 5: row of led strip on wall
      */
-    function rgbHubSetLight(rowOfLedStrip) {
+    function rgbHubLightGenerate(rowOfLedStrip) {
         const rgbProjection = {
             projection: {
                 _id: 0,
@@ -219,33 +224,40 @@ mongoClient.connect(databaseUrl, { useUnifiedTopology: true }, function (err, cl
             .find({ row: rowOfLedStrip }, rgbProjection)
             .sort({ col: sortDirection })
             .toArray()
-            .then(result => {
+            .then(bins => {
                 let mess = `R${rowOfLedStrip}`;
                 if (rgbHubRFEnable == 'true') mess = 'W1:' + mess;
                 if (multiUserMode == 'true') {
-                    mess = `T${rowOfLedStrip}`;
-                    for (col = 0; col < result.length; col++) {
-                        mess = mess + ':';
-                        result[col].lightArray.forEach(element => {
-                            getLightIndexOf(element);
-                            function getLightIndexOf(ele) {
-                                lightList.forEach(light => {
-                                    if (light.color == ele) {
-                                        mess = mess + light.index;
+                    mess = `T${rowOfLedStrip}:`;
+                    bins.forEach((bin, binIdx) => {
+                        bin.lightArray.forEach((lightColor, lightIdx) => {
+                            // find colorId of input color
+                            const tmp = lightList.find(ob => {
+                                return ob.color == lightColor
+                            })
+                            // if colorId is not undefined
+                            if (tmp != undefined) mess += tmp.colorId
+                            else
+                                logger.warn({
+                                    message: 'Light color not found', value: {
+                                        lightColor: lightColor,
+                                        lightList: lightList.map(ob => { return ob.color })
                                     }
-                                })
-                            }
-                        });
-                    }
-                    mess = mess + ':';
+                                });
+                        })
+                        mess += ':';
+                    })
                 }
                 else {
-                    for (col = 0; col < result.length; col++) {
-                        mess = mess + ':' + result[col].lightColor;
+                    for (let col = 0; col < bins.length; col++) {
+                        mess = mess + ':' + bins[col].lightColor;
                     }
+                    bins.forEach(bin => {
+                        mess = mess + ':' + bin.lightColor
+                    })
                 }
                 mess = mess + '\n';
-                event.emit('rgbHub:emit', { message: mess });
+                rgbHub.write(mess);
             });
     }
 
@@ -266,11 +278,11 @@ mongoClient.connect(databaseUrl, { useUnifiedTopology: true }, function (err, cl
 
     function handleRgbHubFromSerialPort(data) {
         if (data == 'RGB Hub start') {
-            rgbHubSetLight('1');
-            rgbHubSetLight('2');
-            rgbHubSetLight('3');
-            rgbHubSetLight('4');
-            rgbHubSetLight('5');
+            rgbHubLightGenerate('1');
+            rgbHubLightGenerate('2');
+            rgbHubLightGenerate('3');
+            rgbHubLightGenerate('4');
+            rgbHubLightGenerate('5');
         }
     }
 
@@ -321,16 +333,16 @@ mongoClient.connect(databaseUrl, { useUnifiedTopology: true }, function (err, cl
     function handleConfigButton(data) {
         logger.info({ message: 'Config rgb hub!' });
         const mess = `CFG:${data.mess}\n`;
-        event.emit('rgbHub:emit', { message: mess });
+        rgbHub.write(mess);
     }
 
     function handleTestLightButton() {
         logger.info({ message: 'Test rgb hub' });
-        event.emit('rgbHub:emit', { message: 'R1:00ff00:00ffff:0000ff:ffff00:ff00ff:ffffff\n' });
-        event.emit('rgbHub:emit', { message: 'R2:00ff00:00ffff:0000ff:ffff00:ff00ff:ffffff\n' });
-        event.emit('rgbHub:emit', { message: 'R3:00ff00:00ffff:0000ff:ffff00:ff00ff:ffffff\n' });
-        event.emit('rgbHub:emit', { message: 'R4:00ff00:00ffff:0000ff:ffff00:ff00ff:ffffff\n' });
-        event.emit('rgbHub:emit', { message: 'R5:00ff00:00ffff:0000ff:ffff00:ff00ff:ffffff\n' });
+        rgbHub.write('R1:00ff00:00ffff:0000ff:ffff00:ff00ff:ffffff\n');
+        rgbHub.write('R2:00ff00:00ffff:0000ff:ffff00:ff00ff:ffffff\n');
+        rgbHub.write('R3:00ff00:00ffff:0000ff:ffff00:ff00ff:ffffff\n');
+        rgbHub.write('R4:00ff00:00ffff:0000ff:ffff00:ff00ff:ffffff\n');
+        rgbHub.write('R5:00ff00:00ffff:0000ff:ffff00:ff00ff:ffffff\n');
         setTimeout(() => {
             refreshWallLight();
         }, 2000);
@@ -342,7 +354,7 @@ mongoClient.connect(databaseUrl, { useUnifiedTopology: true }, function (err, cl
         const wallName = lightApi.params.wall;
         const wallSide = lightApi.params.side;
         const tempKey = lightApi.key;
-        const lightColor = lightApi.params.lightColor;
+        const lightColor = lightApi.params.lightColor.toLowerCase();
 
         const queryByName = { name: wallName };
         // Remove this light color on all bins
@@ -358,7 +370,7 @@ mongoClient.connect(databaseUrl, { useUnifiedTopology: true }, function (err, cl
                             if (lightArray[i] === lightColor) {
                                 lightArray.splice(i, 1);
                                 db.collection(BACKUP_COLLECTION).updateOne({ name: wallState.name }, { $set: { lightArray: lightArray } }, (err, res) => {
-                                    rgbHubSetLight(wallState.location.split('.')[2]);
+                                    rgbHubLightGenerate(wallState.location.split('.')[2]);
                                 });
                             }
                         }
@@ -381,6 +393,7 @@ mongoClient.connect(databaseUrl, { useUnifiedTopology: true }, function (err, cl
                     let lightArray = wallState.lightArray;
                     let newBackupValues;
                     if (lightColor == 'ffffff') {
+                        // if light is white, clear other light color then set only white light
                         newBackupValues = {
                             $set: {
                                 lightColor: lightColor,
@@ -389,6 +402,7 @@ mongoClient.connect(databaseUrl, { useUnifiedTopology: true }, function (err, cl
                         };
                     }
                     else if (lightColor == 'ff0000') {
+                        // if light is red, clear all light color
                         newBackupValues = {
                             $set: {
                                 lightArray: []
@@ -396,6 +410,7 @@ mongoClient.connect(databaseUrl, { useUnifiedTopology: true }, function (err, cl
                         }
                     }
                     else {
+                        // add new light color to this bin
                         if (wallState.lightArray.includes(lightColor) === false) {
                             lightArray.push(lightColor);
                         }
@@ -414,15 +429,8 @@ mongoClient.connect(databaseUrl, { useUnifiedTopology: true }, function (err, cl
 
                     db.collection(BACKUP_COLLECTION).updateOne(queryByName, newBackupValues, (err, res) => {
                         if (err) logger.error({ message: err });
-                        event.emit('light:on', {
-                            wall: wallState.name,
-                            location: wallState.location,
-                            lightIndex: wallState.lightIndex,
-                            lightColor: lightColor,
-                            side: wallSide
-                        });
                         const rowOfLedStrip = wallState.location.split('.')[2];
-                        rgbHubSetLight(rowOfLedStrip);
+                        rgbHubLightGenerate(rowOfLedStrip);
                     });
                 }
             })
@@ -475,24 +483,24 @@ mongoClient.connect(databaseUrl, { useUnifiedTopology: true }, function (err, cl
                         side: wallSide
                     });
                     const rowOfLedStrip = wallState.location.split('.')[2];
-                    rgbHubSetLight(rowOfLedStrip);
+                    rgbHubLightGenerate(rowOfLedStrip);
                 });
             }
         });
     };
 
     function handleResetFromServer(resetApi) {
-        logger.info({ message: `Message from server`, value: resetApi });
+        logger.info({ message: 'WS-INBOX: mergeWall/reset', value: resetApi });
         resetWallLight();
     };
 
     function handleReloadFromServer(reloadApi) {
-        logger.info({ message: `Message from server`, value: reloadApi });
+        logger.info({ message: 'WS-INBOX: mergeWall/reload', value: reloadApi });
         refreshWallLight();
     }
 
     function handleErrorFromServer(errApi) {
-        logger.info({ message: `Message from server`, error: errApi });
+        logger.info({ message: 'WS-INBOX: mergeWall/error', error: errApi });
         event.emit('towerlight:set', {
             status: 'warning',
             side: 'front',
@@ -538,20 +546,20 @@ mongoClient.connect(databaseUrl, { useUnifiedTopology: true }, function (err, cl
         }
         db.collection(BACKUP_COLLECTION).updateMany({}, newValues, (err, res) => {
             if (err) logger.error({ message: error });
-            rgbHubSetLight('1');
-            rgbHubSetLight('2');
-            rgbHubSetLight('3');
-            rgbHubSetLight('4');
-            rgbHubSetLight('5');
+            rgbHubLightGenerate('1');
+            rgbHubLightGenerate('2');
+            rgbHubLightGenerate('3');
+            rgbHubLightGenerate('4');
+            rgbHubLightGenerate('5');
         });
     }
 
     function refreshWallLight() {
-        rgbHubSetLight('1');
-        rgbHubSetLight('2');
-        rgbHubSetLight('3');
-        rgbHubSetLight('4');
-        rgbHubSetLight('5');
+        rgbHubLightGenerate('1');
+        rgbHubLightGenerate('2');
+        rgbHubLightGenerate('3');
+        rgbHubLightGenerate('4');
+        rgbHubLightGenerate('5');
     }
 });
 
@@ -581,7 +589,7 @@ function handleSocketConnection() {
 };
 
 function handleSocketDisconnection() {
-    logger.fatal({ message: 'disconnected from socketServer!' });
+    logger.error({ message: 'disconnected from socketServer!' });
 
 
     event.emit('towerlight:set', {
