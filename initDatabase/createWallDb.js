@@ -2,9 +2,10 @@
  * Run this script to create wall database
  * Edit 'WALL_TO_INIT' before running
  */
+require('dotenv').config()
 const prompt = require('prompt');
 const MongoClient = require('mongodb').MongoClient;
-const url = "mongodb://localhost:27017/";
+const url = process.env.DATABASE_URL || "mongodb://localhost:27017/";
 
 const mongoClient = new MongoClient(url, { useUnifiedTopology: true });
 
