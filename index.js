@@ -354,6 +354,7 @@ mongoClient.connect(databaseUrl, { useUnifiedTopology: true }, function (err, cl
             logger.error('Invalid lightColor from server', { value: lightColor });
             return;
         }
+        else lightColor = lightColor.toLowerCase();
 
         const queryByName = { name: wallName };
         // Remove this light color on all bins
