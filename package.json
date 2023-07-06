@@ -24,6 +24,7 @@
   },
   "homepage": "https://github.com/taminhnhat/wall-controller#readme",
   "dependencies": {
+    "dayjs": "^1.11.9",
     "dotenv": "^10.0.0",
     "mongodb": "^4.1.3",
     "prompt": "^1.2.0",
