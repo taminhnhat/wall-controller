@@ -92,7 +92,6 @@ mongoClient.connect(databaseUrl, { useUnifiedTopology: true }, function (err, cl
         .sort({ location: 1 })
         .toArray()
         .then(history => {
-            console.log('history: ', history)
             let lastDate;
             let thisCount = 1;
             let thisTime = date('seconds');
@@ -103,7 +102,6 @@ mongoClient.connect(databaseUrl, { useUnifiedTopology: true }, function (err, cl
                 thisCount = lastStartup.count + 1;
             }
             const thisDate = Number(thisTime.substring(0, 2));
-            console.log(lastDate, thisDate);
 
             if (lastDate != thisDate) {
                 resetWallLight();
