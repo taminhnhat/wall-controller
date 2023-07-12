@@ -22,8 +22,8 @@ sudo apt install build-essential
 
 # INSTALLATION
 - Install all [requirements](#requirements)
-- [Set static dhcp](./static-dhcp/readme.md)
-- [Set static usb port path for scanner](./static-dhcp/readme.md)
+- [Set static dhcp](./documentation/static-dhcp/readme.md)
+- [Set static usb port path for scanner](./documentation/static-dhcp/readme.md)
 - [Create database](./initDatabase/readme.md)
 - [Clone and build source from github](#get-and-build-project)
 
