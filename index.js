@@ -581,6 +581,8 @@ function handleSocketConnection() {
         });
     }, 200);
 
+    rgbHub.write('F6:00ff00\r\n');
+
     //  emit event to print error message on screen
     event.emit('lcd:print', {
         code: 201,
@@ -632,6 +634,8 @@ function handleSocketError(err) {
             greenLight: false
         });
     }, 500);
+
+    rgbHub.write('F6:ff0000\r\n');
 
     //  emit event to print error message on screen
     event.emit('lcd:print', {
