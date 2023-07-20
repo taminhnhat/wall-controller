@@ -347,7 +347,7 @@ mongoClient.connect(databaseUrl, { useUnifiedTopology: true }, function (err, cl
         const wallName = lightApi.params.wall;
         const wallSide = lightApi.params.side;
         const tempKey = lightApi.key;
-        const lightColor = lightApi.params.lightColor;
+        let lightColor = lightApi.params.lightColor;
         if (lightColor == undefined || lightColor == null) {
             logger.error('Invalid lightColor from server', { value: lightColor });
             return;
