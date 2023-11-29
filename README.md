@@ -26,6 +26,7 @@ sudo apt install build-essential
 - [Set static usb port path for scanner](./documentation/static-serialport/readme.md)
 - [Create database](./initDatabase/readme.md)
 - [Clone and build source from github](#get-and-build-project)
+- [Install openvpn](./documentation/openvpn/readme.md)
 
 # OPERATING
 - Do [THIS](#prepare-to-run) first!

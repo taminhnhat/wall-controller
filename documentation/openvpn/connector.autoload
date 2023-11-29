@@ -1,0 +1,7 @@
+{
+   "autostart": true,
+    "name": "fahasaopenvpn",
+    "tunnel": {
+        "persist": true
+    }
+}
