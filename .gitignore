@@ -6,5 +6,4 @@ gpio/gpio.o
 gpio/lcd-i2c.o
 gpio/main
 gpio/build/
-test/
 logs/

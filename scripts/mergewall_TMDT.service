@@ -1,0 +1,12 @@
+[Unit]
+Description=Mergewall TMDT service
+
+[Service]
+Type=simple
+WorkingDirectory=/home/nhattm/wall-controller
+ExecStart=/home/nhattm/wall-controller/scripts/server.sh
+Restart=on-failure
+StandardOutput=file:/home/nhattm/.mergewall/mergewall_TMDT.log
+
+[Install]
+WantedBy=default.target
