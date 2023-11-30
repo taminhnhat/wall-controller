@@ -4,7 +4,7 @@
 - Copy vpn profile to /etc/openvpn3/autoload/
 ```sh
 # download or using scp to send profile to client
-scp *ovpn ubuntu@192.168.1.20:/home/ubuntu
+scp -P 22 *ovpn ubuntu@192.168.1.20:/home/ubuntu
 # move profile to autooad folder
 cd /home/ubuntu
 sudo mv *ovpn /etc/openvpn3/autoload/
