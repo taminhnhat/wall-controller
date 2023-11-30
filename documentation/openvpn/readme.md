@@ -3,14 +3,15 @@
 - Download vpn profile (*.ovpn)  
 - Copy vpn profile to /etc/openvpn3/autoload/
 ```sh
-# copy in the same machine
-sudo cp *ovpn /etc/openvpn3/autoload/
-# or using scp
-scp *ovpn nhattm@192.168.1.20:/etc/openvpn3/autoload/
+# download or using scp to send profile to client
+scp *ovpn ubuntu@192.168.1.20:/home/ubuntu
+# move profile to autooad folder
+cd /home/ubuntu
+sudo mv *ovpn /etc/openvpn3/autoload/
 ```
 - Import vpn profile  
 ```sh
-sudo openvpn3 config-import --config /etc/openvpn3/autoload/*.ovpn --name "Fahasa OpenVPN" --persistent
+sudo openvpn3 config-import --config /etc/openvpn3/autoload/*.ovpn --name "fahasaopenvpn" --persistent
 ```
 - Create autoload file [/etc/openvpn3/autoload/connector.autoload](./connector.autoload)  
 
