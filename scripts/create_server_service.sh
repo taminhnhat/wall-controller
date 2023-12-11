@@ -1,6 +1,6 @@
 #!/bin/bash
 
-sudo cp mergewall_TMDT.service /home/nhattm/.config/systemd/user
-systemctl --user daemon-reload
-systemctl --user enable mergewall_TMDT.service
-systemctl --user start mergewall_TMDT.service
+sudo cp mergewall_TMDT.service /etc/systemd/system/
+systemctl daemon-reload
+systemctl enable mergewall_TMDT.service
+systemctl start mergewall_TMDT.service

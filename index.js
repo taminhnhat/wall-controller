@@ -343,9 +343,11 @@ mongoClient.connect(databaseUrl, { useUnifiedTopology: true }, function (err, cl
 
     function handleLightOnFromServer(lightApi) {
         logger.info({ message: `mergeWall/lightOn`, value: lightApi });
+        if (lightApi.params.bookstoreId != process.env.BOOKSTORE_ID) {
+            return;
+        }
 
         const wallName = lightApi.params.wall;
-        const wallSide = lightApi.params.side;
         const tempKey = lightApi.key;
         let lightColor = lightApi.params.lightColor;
         if (lightColor == undefined || lightColor == null) {
@@ -439,11 +441,18 @@ mongoClient.connect(databaseUrl, { useUnifiedTopology: true }, function (err, cl
 
     function handleLightOffFromServer(lightApi) {
         logger.info({ message: `mergeWall/lightOff`, value: lightApi });
+        if (lightApi.params.bookstoreId != process.env.BOOKSTORE_ID) {
+            return;
+        }
 
         const wallName = lightApi.params.wall;
         const wallSide = lightApi.params.side;
         const tempKey = lightApi.key;
         const lightColor = lightApi.params.lightColor;
+        if (lightColor == undefined || lightColor == null) {
+            logger.error('Invalid lightColor from server', { value: lightColor });
+            return;
+        }
 
         const queryByName = { name: wallName };
         db.collection(BACKUP_COLLECTION).findOne(queryByName, (err, res) => {

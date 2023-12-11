@@ -9,11 +9,12 @@ Two processes communicate to each other using ipc (named-pipe).
 - Platform: raspberry pi 3 B+/4  
 - Os: ubuntu server 20.04 LTS (without desktop)  
 - Mongodb server for raspberry pi using this [guide](https://developer.mongodb.com/how-to/mongodb-on-raspberry-pi/)  
-Note: Install mongodb 4.4.18. Higher mongodb version requires a Sandy Bridge or newer CPU. Get a newer processor or use an older version of MongoDB.  
+
+**Note**: Install mongodb 4.4.18. Higher mongodb version requires a Sandy Bridge or newer CPU. Get a newer processor or use an older version of MongoDB.  
 ```sh
 sudo apt-get install -y mongodb-org=4.4.18 mongodb-org-server=4.4.18 mongodb-org-shell=4.4.18 mongodb-org-mongos=4.4.18 mongodb-org-tools=4.4.18
 ```
-- [Node.js](https://github.com/nodesource/distributions/blob/master/README.md) 14 or above
+- [Node.js](https://github.com/nodesource/distributions/blob/master/README.md) 14 or 16
 - gcc, g++, make  
 ```sh
 sudo apt install build-essential
@@ -310,6 +311,34 @@ button:W.3.4
 $ cd ~/
 $ git clone https://github.com/taminhnhat/wall-controller.git
 $ npm install mongodb serialport socket.io-client dotenv
+```
+Create .env file
+```
+SERVER_URL=<server url>
+DATABASE_URL=<mongodb url> # eg: mongodb://localhost:27017
+LOG_DIR=/home/ubuntu/logs
+NODE_ENV=development
+WALL_ID=<>
+WALL_INDEX=<>
+BOOKSTORE_ID=<>
+DB_NAME=<>
+RGB_HUB_PATH=/dev/ttyUSB0
+# sending message to rgb hub every cycle in milisecond
+RGB_HUB_SERIAL_CYCLE=100
+TOKEN=<>
+ENABLE_RGB_HUB=true
+RGB_HUB_BAUDRATE=115200
+RGB_HUB_RF_ENABLE=false
+ENABLE_SCANNER_HUB=true
+MULTI_USER_MODE=true
+TOGGLE_LED_STRIP=true
+ENABLE_PANEL_HUB=true
+NUM_OF_LEDS_PER_ONE_STRIP=180
+NUM_OF_ROW_ON_WALL=6
+NUM_OF_COLUMN_ON_WALL=6
+# logging mode: console/file
+LOG_MODE=file
+
 ```
 
 ## 2. Build cpp
