@@ -4,7 +4,7 @@ Description=Mergewall TMDT service
 [Service]
 Type=simple
 WorkingDirectory=/home/ubuntu/wall-controller
-ExecStart=/home/ubuntu/wall-controller/scripts/server.sh
+ExecStart=/home/ubuntu/wall-controller/scripts/mergewall_TMDT.sh
 Restart=on-failure
 StandardOutput=file:/home/ubuntu/logs/mergewall_TMDT.log
 
