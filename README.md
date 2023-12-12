@@ -33,7 +33,7 @@ sudo apt install build-essential
 - Do [THIS](#prepare-to-run) first!
 - [Run test in console](#test)
 - [Create pipes](#named-pipe)
-- [Create and start service](./service/readme.md)
+- [Create and start service](./documentation/service/readme.md)
 
 # API
 ## 1. Interface
