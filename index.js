@@ -463,7 +463,7 @@ mongoClient.connect(databaseUrl, { useUnifiedTopology: true }, function (err, cl
             //  Check if wallName is valid
             if (!isWallNameValid) {
                 //  Log error
-                logger.error({ message: 'Not a valid message from server', value: { wallName: wallName, key: tempKey } });
+                logger.error({ message: 'Wallname not found', value: { wallName: wallName, key: tempKey } });
             }
             else {
                 let lightArray = wallState.lightArray;
@@ -617,6 +617,8 @@ function handleSocketDisconnection() {
             greenLight: false
         });
     }, 200);
+
+    rgbHub.write('F6:ff0000\r\n');
 
     //  emit event to print error message on screen
     event.emit('lcd:print', {
