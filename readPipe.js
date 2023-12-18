@@ -1,4 +1,5 @@
 const fs = require('fs');
+require('dotenv').config({ path: './.env' });
 const { spawn, fork } = require('child_process');
 const logger = require('./logger/logger');
 const event = require('./event');
@@ -26,9 +27,9 @@ readfifo.on('exit', function (status) {
                     params: {
                         wall: dataArray[1],
                         lightColor: dataArray[2],
-                        side: 'front'
+                        bookstoreId: process.env.BOOKSTORE_ID,
+                        timestamp: new Date().toISOString(),
                     },
-                    date: new Date().toISOString(),
                     key: generateCheck(5)
                 }
                 event.emit('command:lightOn', lightApi);
