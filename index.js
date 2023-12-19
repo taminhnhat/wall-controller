@@ -23,7 +23,7 @@ const FILE_NAME = 'index.js   ';
 //  WEB SOCKET____________________________________________________________________________
 const io = require('socket.io-client');
 const socket = io.connect(SERVER_URL);
-console.log(`Connecting to ${SERVER_URL}`)
+logger.info(`Connecting to ${SERVER_URL}`)
 
 socket.on('connect', handleSocketConnection);
 
