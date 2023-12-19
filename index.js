@@ -20,6 +20,10 @@ const HISTORY_COLLECTION = 'history';
 const LOG_COLLECTION = 'log';
 const FILE_NAME = 'index.js   ';
 
+//  LOGGER__________________________________________________________________________
+const logger = require('./logger/logger');
+const date = require('./timeDate');
+
 //  WEB SOCKET____________________________________________________________________________
 const io = require('socket.io-client');
 const socket = io.connect(SERVER_URL);
@@ -39,10 +43,6 @@ const databaseUrl = process.env.DATABASE_URL;
 
 //  SERIAL PORT________________________________________________________________________________
 const rgbHub = require('./rgbHub');
-
-//  LOGGER__________________________________________________________________________
-const logger = require('./logger/logger');
-const date = require('./timeDate');
 
 //  NAMED PIPE____________________________________________________________________________
 // IPC using named pipe, communicate between c++ side and nodejs side
