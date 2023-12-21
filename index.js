@@ -343,10 +343,10 @@ mongoClient.connect(databaseUrl, { useUnifiedTopology: true }, function (err, cl
     }
 
     function handleLightOnFromServer(lightApi) {
-        logger.info({ message: `mergeWall/lightOn`, value: lightApi });
         if (lightApi.params.bookstoreId != process.env.BOOKSTORE_ID) {
             return;
         }
+        logger.info({ message: `mergeWall/lightOn`, value: lightApi });
 
         const wallName = lightApi.params.wall;
         const tempKey = lightApi.key;
