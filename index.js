@@ -441,10 +441,10 @@ mongoClient.connect(databaseUrl, { useUnifiedTopology: true }, function (err, cl
     };
 
     function handleLightOffFromServer(lightApi) {
-        logger.info({ message: `mergeWall/lightOff`, value: lightApi });
         if (lightApi.params.bookstoreId != process.env.BOOKSTORE_ID) {
             return;
         }
+        logger.info({ message: `mergeWall/lightOff`, value: lightApi });
 
         const wallName = lightApi.params.wall;
         const wallSide = lightApi.params.side;
