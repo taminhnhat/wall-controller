@@ -344,6 +344,7 @@ mongoClient.connect(databaseUrl, { useUnifiedTopology: true }, function (err, cl
 
     function handleLightOnFromServer(lightApi) {
         if (lightApi.params.bookstoreId != process.env.BOOKSTORE_ID) {
+            logger.verbose({ message: `mergeWall/lightOn`, value: lightApi });
             return;
         }
         logger.info({ message: `mergeWall/lightOn`, value: lightApi });
@@ -442,6 +443,7 @@ mongoClient.connect(databaseUrl, { useUnifiedTopology: true }, function (err, cl
 
     function handleLightOffFromServer(lightApi) {
         if (lightApi.params.bookstoreId != process.env.BOOKSTORE_ID) {
+            logger.verbose({ message: `mergeWall/lightOff`, value: lightApi });
             return;
         }
         logger.info({ message: `mergeWall/lightOff`, value: lightApi });
