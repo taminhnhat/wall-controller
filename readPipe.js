@@ -42,6 +42,7 @@ readfifo.on('exit', function (status) {
                     params: {
                         wall: dataArray[1],
                         lightColor: dataArray[2],
+                        bookstoreId: process.env.BOOKSTORE_ID,
                         side: 'front'
                     },
                     date: new Date().toISOString(),
