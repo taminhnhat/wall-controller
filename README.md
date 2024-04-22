@@ -23,6 +23,7 @@ sudo apt-get install -y mongodb-org=4.4.18 mongodb-org-server=4.4.18 mongodb-org
 - gcc, g++, make
 
 ```sh
+sudo apt update
 sudo apt install build-essential
 ```
 
